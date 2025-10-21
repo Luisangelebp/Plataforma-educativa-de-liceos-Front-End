@@ -1,0 +1,129 @@
+@use "const"as *;
+
+h1 {
+    font-family: $primary-font;
+}
+
+h2 {
+    font-family: $secondary-font;
+}
+
+h3,
+h4,
+h5,
+p,
+a,
+label,
+input,
+button {
+    font-family: $text-font !important;
+}
+
+.container-fluid {
+    background: $backgroundGradient;
+    padding: 5% 0 0 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    .container-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 80%;
+
+        img {
+            width: 20%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: white;
+            text-align: center;
+        }
+    }
+
+    h3 {
+        color: white;
+        text-align: center;
+        font-size: 2.5rem;
+        margin: 10% 0 10% 0
+    }
+
+    .container-form {
+        background-color: white;
+        width: 100%;
+        padding: 5%;
+        border-radius: 10% 10% 0 0;
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            p {
+                font-weight: bold;
+                margin-bottom: 5%;
+            }
+
+            .form-group {
+                margin: 4% 0 4% 0;
+
+            }
+
+            .pass,
+            .user {
+                width: 80%;
+                display: flex;
+                border: 2px solid rgb(95, 186, 238);
+                border-radius: 0.5rem;
+
+                label {
+                    width: 10%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+
+
+                }
+
+                input {
+                    width: 90%;
+                    border: none;
+
+                    &:focus {
+                        border: none;
+                        box-shadow: none;
+                    }
+                }
+            }
+
+            .recordar {
+                font-size: 0.7rem;
+                display: flex;
+                width: 80%;
+                justify-content: space-between;
+
+
+
+                a {
+                    color: black;
+                    text-decoration: none;
+                }
+            }
+
+            button {
+                margin: 4% 0 4% 0;
+                background-color: $backgroundGradient !important;
+            }
+        }
+    }
+}
