@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+.btn {
+  background-color: white;
+  padding: 1%;
+  border: 1px solid #005cff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.btn:hover {
+  background-color: rgb(216, 216, 216);
+}
+
+.menuNormal {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  width: 60vw;
+  justify-content: space-evenly;
+}
+.menuNormal li {
+  margin: 10px 0;
+  font-family: "Chonburi", serif;
+  font-size: 1.2rem;
+  transition: border-color 0.3s ease-in-out;
+  border-bottom: 3px solid transparent;
+}
+.menuNormal li:hover {
+  border-color: #005cff;
+}
+.menuNormal li .menu-item {
+  text-decoration: none !important;
+  font-weight: bold;
+  color: rgb(0, 0, 0);
+}
+.menuNormal li .menu-item:visited {
+  color: rgb(0, 0, 0);
+}/*# sourceMappingURL=Menu.css.map */

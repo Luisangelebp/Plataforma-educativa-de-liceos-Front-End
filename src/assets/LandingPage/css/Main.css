@@ -1,0 +1,182 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+.btn {
+  background-color: white;
+  padding: 1%;
+  border: 1px solid #005cff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.btn:hover {
+  background-color: rgb(216, 216, 216);
+}
+
+header .cenit {
+  display: flex;
+  flex-direction: column;
+}
+header .cenit h1 {
+  margin: 0;
+}
+header .cenit h3 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.svg-logo {
+  width: 1em;
+}
+
+.login-container {
+  width: 100%;
+  height: 60dvh;
+  position: relative;
+  z-index: 1;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.login-container button {
+  padding: 0.8em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: "Chonburi", serif;
+}
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("../../img/banner_landing.jpg");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5;
+  /* Ajusta la opacidad aquí */
+  z-index: -1;
+}
+
+.AboutUs {
+  margin: 0 0.5em;
+}
+.AboutUs h2 {
+  font-size: 2em;
+  color: rgb(0, 0, 0);
+  text-align: center;
+}
+.AboutUs p {
+  font-family: "Instrument Serif", serif;
+  font-size: 1em;
+  color: rgb(0, 0, 0);
+  text-align: center;
+  margin-top: 1em;
+  text-align: justify;
+}
+
+.services {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 0.5em;
+  border-top: 1px solid #005cff;
+}
+.services h2 {
+  font-family: "Chonburi", serif;
+  font-size: 2em;
+  color: rgb(0, 0, 0);
+  text-align: center;
+}
+.services .service {
+  background-color: white;
+  padding: 1em;
+  border-radius: 1em;
+  margin-top: 1em;
+  border: 1px solid #005cff;
+}
+.services .service p {
+  font-family: "Instrument Serif", serif;
+  font-size: 1em;
+  color: rgb(0, 0, 0);
+  text-align: justify;
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1em;
+  border-top: 1px solid #005cff;
+}
+.contact h2 {
+  font-family: "Chonburi", serif;
+  font-size: 2em;
+  color: rgb(0, 0, 0);
+  text-align: center;
+}
+.contact p {
+  font-family: "Instrument Serif", serif;
+  font-size: 1em;
+  color: rgb(0, 0, 0);
+  text-align: center;
+  margin-top: 1em;
+  text-align: justify;
+}
+
+@media screen and (min-width: 480px) {
+  .cenit {
+    flex-direction: row !important;
+  }
+  .cenit h1 {
+    padding: 0 1rem 0 1rem;
+    margin: auto 0;
+  }
+  .cenit h3 {
+    margin: auto 0;
+    padding-left: 1rem;
+    border-left: 1px solid #005cff;
+    font-size: 1.17em !important;
+  }
+}
+@media screen and (min-width: 768px) {
+  .login-container {
+    flex-direction: row;
+  }
+  .login-container button {
+    margin: 5%;
+  }
+  .services .service {
+    width: 80%;
+    max-width: 600px;
+  }
+}
+@media screen and (min-width: 1024px) {
+  .AboutUs {
+    display: flex;
+    flex-direction: row;
+    height: 50vh;
+    align-items: center;
+  }
+  .AboutUs h2 {
+    width: 30%;
+  }
+  .AboutUs p {
+    border-left: 1px solid #005cff;
+    padding-left: 2em;
+    width: 60%;
+  }
+  .services {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .services h2 {
+    margin-top: 2em;
+    width: 100%;
+    text-align: center;
+  }
+  .services .service {
+    width: 30%;
+    margin: 1em;
+  }
+}/*# sourceMappingURL=Main.css.map */

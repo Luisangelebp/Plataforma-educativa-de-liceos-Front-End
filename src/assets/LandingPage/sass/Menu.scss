@@ -1,0 +1,32 @@
+@use '../../../sass/constants.scss'as c;
+
+.menuNormal {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    width: 60vw;
+    justify-content: space-evenly;
+
+    li {
+        margin: 10px 0;
+        font-family: c.$fontPrimary;
+        font-size: 1.2rem;
+        transition: border-color 0.3s ease-in-out;
+        border-bottom: 3px solid transparent;
+
+        &:hover {
+
+            border-color: c.$borderColor;
+        }
+
+        .menu-item {
+            text-decoration: none !important;
+            font-weight: bold;
+            color: c.$textColor;
+
+            &:visited {
+                color: c.$textColor;
+            }
+        }
+    }
+}

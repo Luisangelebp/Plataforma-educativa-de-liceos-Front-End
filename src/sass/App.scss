@@ -1,0 +1,49 @@
+@use 'constants'as c;
+
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(246, 245, 243);
+
+
+
+}
+
+h1,
+h2 {
+    font-family: c.$fontPrimary;
+}
+
+h3,
+h4,
+h5,
+h6,
+button {
+    font-family: c.$fontSecondary;
+}
+
+p,
+span,
+a,
+li,
+div {
+    font-family: c.$fontText;
+}
+
+header {
+    width: 100%;
+    height: 15dvh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid c.$borderColor;
+
+    .logo {
+        cursor: pointer;
+        height: 100%;
+        width: 15dvh;
+    }
+
+
+}

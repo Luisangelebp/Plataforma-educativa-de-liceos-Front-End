@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+.btn {
+  background-color: white;
+  padding: 1%;
+  border: 1px solid #005cff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.btn:hover {
+  background-color: rgb(216, 216, 216);
+}
+
+footer {
+  background: linear-gradient(to top, #0236fb, #005cff, #0079ff, #2c92ff, #62aafc);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 2em;
+}
+footer p {
+  text-align: center;
+}
+footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+footer ul li {
+  margin: 0 1em;
+}
+footer ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+footer ul li a:hover {
+  text-decoration: underline;
+}/*# sourceMappingURL=Footer.css.map */
