@@ -1,0 +1,219 @@
+/* Footer.css - Íconos Perfectamente Centrados */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+:root {
+    --primary-blue: #2563eb;
+    --secondary-blue: #3b82f6;
+    --white: #ffffff;
+    --gray-800: #1f2937;
+    --gray-600: #4b5563;
+    --gray-400: #9ca3af;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+}
+
+footer {
+    background: var(--white);
+    color: var(--gray-800);
+    padding: 2.5rem 0;
+    border-top: 1px solid var(--gray-200);
+    position: relative;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.footer-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.social-links {
+    display: flex;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.social-links li {
+    display: flex;
+}
+
+/* CORRECCIÓN PRINCIPAL: Contenedor del enlace */
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.social-links a:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    border-color: var(--primary-blue);
+}
+
+/* CORRECCIÓN: Íconos perfectamente centrados */
+.social-links a i {
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Asegurar que Font Awesome no sobreescriba nuestros estilos */
+.social-links a .fab,
+.social-links a .fas {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.social-links a:hover i {
+    transform: scale(1.1);
+    color: var(--white) !important;
+}
+
+/* Eliminar estilos específicos por clase que puedan interferir */
+.social-links .facebook i,
+.social-links .twitter i,
+.social-links .instagram i,
+.social-links .linkedin i,
+.social-links .youtube i {
+    color: inherit;
+}
+
+/* Tooltip en hover */
+.social-links a::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-800);
+    color: var(--white);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.social-links a::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--gray-800);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.social-links a:hover::after,
+.social-links a:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .social-links {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .social-links a {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .social-links a i {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    footer {
+        padding: 2rem 0;
+    }
+    
+    .footer-content {
+        padding: 0 1rem;
+        gap: 1.25rem;
+    }
+    
+    .social-links {
+        gap: 0.5rem;
+    }
+    
+    .social-links a {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .social-links a i {
+        font-size: 1.1rem;
+    }
+    
+    .footer-content p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Asegurar contraste y accesibilidad */
+.social-links a:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+}
+
+.social-links a:focus:not(:hover) {
+    background: var(--gray-200);
+    color: var(--gray-800);
+}

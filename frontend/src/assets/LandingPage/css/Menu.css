@@ -1,0 +1,202 @@
+/* Header.css - Estilo Minimalista Actualizado */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-blue: #2563eb;
+    --secondary-blue: #3b82f6;
+    --white: #ffffff;
+    --gray-900: #111827;
+    --gray-700: #374151;
+    --gray-400: #9ca3af;
+    --gray-200: #e5e7eb;
+    --gray-50: #f9fafb;
+}
+
+header {
+    background: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo svg {
+    width: 40px;
+    height: 40px;
+    color: var(--primary-blue);
+}
+
+.cenit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.cenit h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 0;
+    line-height: 1;
+}
+
+.cenit h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--gray-700);
+    margin: 0.25rem 0 0 0;
+    font-style: italic;
+    max-width: 200px;
+}
+
+/* Menu Normal - Versión Minimalista */
+.menuNormal {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+}
+
+.menuNormal li {
+    margin: 0;
+}
+
+.menuNormal .menu-item {
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    padding: 0.5rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.menuNormal .menu-item:hover {
+    color: var(--primary-blue);
+}
+
+.menuNormal .menu-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-blue);
+    transition: width 0.3s ease;
+}
+
+.menuNormal .menu-item:hover::after {
+    width: 100%;
+}
+
+/* Mobile Menu (si necesitas estilos básicos) */
+.mobile-menu {
+    display: none;
+}
+
+.mobile-menu-button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--gray-700);
+    transition: color 0.3s ease;
+}
+
+.mobile-menu-button:hover {
+    color: var(--primary-blue);
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+    header {
+        padding: 1rem;
+    }
+    
+    .cenit h1 {
+        font-size: 1.25rem;
+    }
+    
+    .cenit h3 {
+        font-size: 0.7rem;
+        max-width: 150px;
+    }
+    
+    .menuNormal {
+        display: none;
+    }
+    
+    .mobile-menu {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo-container {
+        gap: 0.75rem;
+    }
+    
+    .cenit h1 {
+        font-size: 1.1rem;
+    }
+    
+    .cenit h3 {
+        font-size: 0.65rem;
+        max-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .logo svg {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .logo-container {
+        gap: 0.5rem;
+    }
+    
+    .cenit h1 {
+        font-size: 1rem;
+    }
+    
+    .cenit h3 {
+        font-size: 0.6rem;
+        max-width: 100px;
+    }
+}
+
+/* Estados activos */
+.menuNormal .menu-item.active {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.menuNormal .menu-item.active::after {
+    width: 100%;
+}
