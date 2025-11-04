@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '../../../assets/img/Logo.png'; // Asegúrate de que esté en esa ruta
+import logo from '../../../assets/img/Logo.png';
 
 const HeaderAdmin = () => {
   return (

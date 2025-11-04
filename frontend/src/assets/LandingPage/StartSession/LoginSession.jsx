@@ -1,5 +1,6 @@
 import './css/ModalSession.css';
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 
 const LoginSession = ({ setShowLogin }) => {
     const [formData, setFormData] = useState({
@@ -73,10 +74,19 @@ const LoginSession = ({ setShowLogin }) => {
 
         return newErrors;
     };
+    const mapRol = (rolFrontend) => {
+        const roles = {
+            administrador: "admin",
+            representante: "representante",
+            estudiante: "estudiante",
+            profesor: "profesor"
+        };
+        return roles[rolFrontend.toLowerCase()] || rolFrontend.toLowerCase();
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formErrors = validateForm();
         if (Object.keys(formErrors).length > 0) {
             setErrors(formErrors);
@@ -86,18 +96,31 @@ const LoginSession = ({ setShowLogin }) => {
         setIsLoading(true);
 
         try {
-            // Simular llamada a API
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Aquí iría tu lógica de autenticación real
-            console.log('Datos de login:', formData);
-            
-            // Éxito - redirigir o mostrar mensaje
-            alert(`¡Bienvenido ${formData.username}!`);
+            const response = await axios.post("http://localhost:8000/api/login/", {
+                email: formData.username,
+                password: formData.password,
+                rol: mapRol(formData.typeU) // ← aquí aplicamos la traducción
+            });
+
+            const { access, refresh, usuario } = response.data;
+
+            // Guardar tokens si los necesitas
+            localStorage.setItem("accessToken", access);
+            localStorage.setItem("refreshToken", refresh);
+
+            // Redirigir según el rol
+            const rol = usuario.rol;
+            if (usuario.rol === "admin") {
+            window.location.href = "/admin";
+            } else if (usuario.rol === "representante") {
+            window.location.href = "/representante";
+            }else {
+                alert("Rol no reconocido");
+            }
             setShowLogin(false);
-            
         } catch (error) {
-            setErrors({ submit: 'Error al iniciar sesión. Intente nuevamente.' });
+            console.error("Error al iniciar sesión:", error);
+            setErrors({ submit: "Credenciales inválidas o error de conexión." });
         } finally {
             setIsLoading(false);
         }
