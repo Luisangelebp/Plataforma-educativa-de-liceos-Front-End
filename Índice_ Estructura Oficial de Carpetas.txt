@@ -1,0 +1,47 @@
+Estructura de Carpetas
+📂 Sistema Integral de Gestión Educativa
+   ├── 📄 Índice_Estructura_Oficial_de_Carpetas.txt   ← guía de referencia
+   │
+   ├── 📂 Documentación General
+   │     ├── 📂 Lineamientos / Reglas de juego
+   │     ├── 📂 Arquitectura / Diseño global
+   │     ├── 📂 Gestión del Proyecto
+   │     └── 📂 Políticas / Normas transversales
+   │
+   ├── 📂 Fases
+   │     ├── 📂 Fase 1
+   │     │     ├── 📂 Sprint 1
+   │     │     ├── 📂 Sprint 2
+   │     │     └── 📂 Sprint 3
+   │     ├── 📂 Fase 2
+   │     │     ├── 📂 Sprint 1
+   │     │     ├── 📂 Sprint 2
+   │     │     └── 📂 Sprint 3
+   │     └── 📂 Fase 3
+   │           ├── 📂 Sprint 1
+   │           ├── 📂 Sprint 2
+   │           └── 📂 Sprint 3
+   │
+   ├── 📂 Sprints
+   │     ├── 📂 Sprint 1
+   │     │     ├── Artefactos / entregables
+   │     │     ├── Notas de revisión
+   │     │     └── Reportes de QA
+   │     ├── 📂 Sprint 2
+   │     │     ├── Artefactos / entregables
+   │     │     ├── Notas de revisión
+   │     │     └── Reportes de QA
+   │     └── 📂 Sprint 3
+   │           ├── Artefactos / entregables
+   │           ├── Notas de revisión
+   │           └── Reportes de QA
+   │
+   ├── 📂 Informes
+   │     ├── 📂 Semanales
+   │     ├── 📂 Por Sprint
+   │     └── 📂 Por Fase
+   │
+   └── 📂 QA / Control de Calidad
+         ├── 📂 Casos de prueba
+         ├── 📂 Resultados de pruebas
+         └── 📂 Reportes de bugs
