@@ -1,0 +1,109 @@
+h1 {
+  font-family: "Chonburi", serif;
+}
+
+h2 {
+  font-family: "Instrument Serif", serif;
+}
+
+h3,
+h4,
+h5,
+p,
+a,
+label,
+input,
+button {
+  font-family: "Playfair Display", serif !important;
+}
+
+.container-fluid {
+  background: linear-gradient(to top, #0236fb, #005cff, #0079ff, #2c92ff, #62aafc);
+  padding: 5% 0 0 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.container-fluid .container-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+}
+.container-fluid .container-header img {
+  width: 20%;
+}
+.container-fluid .container-header h1 {
+  font-size: 2.5rem;
+}
+.container-fluid .container-header h1,
+.container-fluid .container-header h2,
+.container-fluid .container-header h3 {
+  color: white;
+  text-align: center;
+}
+.container-fluid h3 {
+  color: white;
+  text-align: center;
+  font-size: 2.5rem;
+  margin: 10% 0 10% 0;
+}
+.container-fluid .container-form {
+  background-color: white;
+  width: 100%;
+  padding: 5%;
+  border-radius: 10% 10% 0 0;
+}
+.container-fluid .container-form form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.container-fluid .container-form form p {
+  font-weight: bold;
+  margin-bottom: 5%;
+}
+.container-fluid .container-form form .form-group {
+  margin: 4% 0 4% 0;
+}
+.container-fluid .container-form form .pass,
+.container-fluid .container-form form .user {
+  width: 80%;
+  display: flex;
+  border: 2px solid rgb(95, 186, 238);
+  border-radius: 0.5rem;
+}
+.container-fluid .container-form form .pass label,
+.container-fluid .container-form form .user label {
+  width: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.container-fluid .container-form form .pass input,
+.container-fluid .container-form form .user input {
+  width: 90%;
+  border: none;
+}
+.container-fluid .container-form form .pass input:focus,
+.container-fluid .container-form form .user input:focus {
+  border: none;
+  box-shadow: none;
+}
+.container-fluid .container-form form .recordar {
+  font-size: 0.7rem;
+  display: flex;
+  width: 80%;
+  justify-content: space-between;
+}
+.container-fluid .container-form form .recordar a {
+  color: black;
+  text-decoration: none;
+}
+.container-fluid .container-form form button {
+  margin: 4% 0 4% 0;
+  background-color: linear-gradient(to top, #0236fb, #005cff, #0079ff, #2c92ff, #62aafc) !important;
+}/*# sourceMappingURL=login.css.map */
