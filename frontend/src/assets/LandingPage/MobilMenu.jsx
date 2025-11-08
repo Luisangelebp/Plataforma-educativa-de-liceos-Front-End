@@ -1,5 +1,6 @@
 import './css/MobilMenu.css';
 import { useState } from 'react';
+import { Link, Links } from 'react-router-dom';
 
 export default function MobilMenu(elementsMenu) {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -10,23 +11,30 @@ export default function MobilMenu(elementsMenu) {
                 <i className="bi bi-list"></i>
             </div>
             {menuOpen && (
-                <div className="modalMenu" onClick={() => setMenuOpen(false)}>
-                    <ul className="menu">
-                        {elements_Menu.map((element, index) => {
-                            return (
-                                <li key={index}>
-                                    <a
-                                        href={`#${element}`}
-                                        onClick={() => setMenuOpen(false)}
-                                        className="menu-item"
-                                    >
-                                        {element}
-                                    </a>
-                                </li>
-                            );
-                        })}
+                <>
+                    <div
+                        className="overlay"
+                        onClick={() => setMenuOpen(false)}
+                    ></div>
+                    <ul className="modalMenu">
+                        {Array.isArray(elements_Menu)
+                            ? elements_Menu.map((element, index) => {
+                                  return (
+                                      <li key={index}>
+                                          <Link
+                                              to={`#${element}`}
+                                              onClick={() => setMenuOpen(false)}
+                                              className="menu-item"
+                                              reloadDocument={true}
+                                          >
+                                              {element}
+                                          </Link>
+                                      </li>
+                                  );
+                              })
+                            : elements_Menu}
                     </ul>
-                </div>
+                </>
             )}
         </>
     );

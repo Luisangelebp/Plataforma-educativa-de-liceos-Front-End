@@ -1,9 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 .btn {
   background-color: white;
   padding: 1%;
-  border: 1px solid rgb(131, 131, 131);
+  border: 1px solid #005cff;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
@@ -26,25 +25,28 @@ i:hover {
   color: #ff0000;
 }
 
-.modalMenu {
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9999;
+  z-index: 1000;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
 }
-.modalMenu .menu {
+
+.modalMenu {
   position: absolute;
+  z-index: 1001;
   top: 15vh;
   left: 0vw;
   width: 33vw;
   background-color: #fff;
   padding: 20px;
-  border: rgb(131, 131, 131) 1px solid;
+  border: #005cff 1px solid;
   border-radius: 0 5px 5px 0;
   box-shadow: 6px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -60,15 +62,15 @@ i:hover {
     transform: translateX(0);
   }
 }
-.modalMenu .menu li {
+.modalMenu li {
   margin: 10px 0;
-  font-family: "Roboto";
+  font-family: "Chonburi", serif;
 }
-.modalMenu .menu li .menu-item {
+.modalMenu li .menu-item {
   text-decoration: none !important;
   font-weight: bold;
   color: rgb(0, 0, 0);
 }
-.modalMenu .menu li .menu-item:visited {
+.modalMenu li .menu-item:visited {
   color: rgb(0, 0, 0);
 }/*# sourceMappingURL=MobilMenu.css.map */
