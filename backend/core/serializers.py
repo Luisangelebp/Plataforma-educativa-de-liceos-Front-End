@@ -12,15 +12,29 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Usuario.objects.create_user(**validated_data)
 
+from core.models import Usuario
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    rol = serializers.ChoiceField(choices=Usuario.ROLES)
+    rol = serializers.CharField()  # Recibimos el rol tal cual y luego mapeamos
+
+    ROLE_MAP = {
+        'administrador': 'admin',
+        'admin': 'admin',
+        'profesor': 'profesor',
+        'representante': 'representante',
+        'estudiante': 'estudiante',
+    }
 
     def validate(self, data):
         email = data['email']
         password = data['password']
-        rol = data['rol']
+        rol_input = data['rol'].lower()
+        rol = self.ROLE_MAP.get(rol_input)
+
+        if not rol:
+            raise serializers.ValidationError("Rol inválido.")
 
         usuario = authenticate(email=email, password=password)
 
@@ -32,5 +46,18 @@ class LoginSerializer(serializers.Serializer):
 
         if usuario.rol != rol:
             raise serializers.ValidationError("El rol no coincide con el usuario")
+
+        # Validación específica por rol
+        if rol == 'estudiante':
+            # Validar que exista perfil estudiante
+            estudiante = getattr(usuario, 'estudiante_profile', None)
+            if not estudiante:
+                raise serializers.ValidationError("No existe perfil de estudiante asociado.")
+
+            if estudiante.nivel != 'secundaria':
+                raise serializers.ValidationError("Solo estudiantes de secundaria pueden iniciar sesión.")
+
+            if not estudiante.cedula:
+                raise serializers.ValidationError("Estudiante de secundaria debe tener cédula registrada.")
 
         return {'usuario': usuario}

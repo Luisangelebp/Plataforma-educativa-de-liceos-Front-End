@@ -23,14 +23,14 @@ class Estudiante(models.Model):
     cedula = models.CharField(max_length=20, null=True, blank=True)
     direccion = models.TextField()
     foto = models.ImageField(upload_to='estudiantes/', null=True, blank=True)
-    # Campo representante temporalmente deshabilitado hasta crear la app representante
-    # representante = models.ForeignKey(
-    #     'representante.Representante',
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     related_name='estudiantes'
-    # )
+    # Referencia al modelo Representante - usando importación directa
+    representante = models.ForeignKey(
+        'Usuarios.Representante',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='estudiantes'
+    )
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

@@ -13,7 +13,8 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         model = Estudiante
         fields = [
             'id', 'usuario', 'nombre', 'apellido', 'edad', 'grado', 'nivel',
-            'fecha_nacimiento', 'cedula', 'direccion', 'foto', 'email', 'password'
+            'fecha_nacimiento', 'cedula', 'direccion', 'foto', 'email', 'password',
+            'representante'
         ]
         read_only_fields = ['usuario', 'id']
 
@@ -35,6 +36,11 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         email = validated_data.pop('email', None)
         password = validated_data.pop('password', None)
         nivel = validated_data.get('nivel')
+        representante = validated_data.get('representante')
+
+        # Si hay representante, la dirección del estudiante debe ser la misma que la del representante
+        if representante:
+            validated_data['direccion'] = representante.direccion
 
         # Si es secundaria, se espera que el admin proporcione email y password para crear el Usuario
         if nivel == 'secundaria':
