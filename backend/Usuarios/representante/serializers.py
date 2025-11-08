@@ -2,6 +2,7 @@ from rest_framework import serializers
 from core.serializers import UsuarioSerializer
 from core.models import Usuario
 from .models import Representante
+from Usuarios.profesor.models import Profesor
 
 class RegistroRepresentanteSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
@@ -52,11 +53,18 @@ class RegistroRepresentanteSerializer(serializers.ModelSerializer):
         return representante
 
 class RepresentanteListSerializer(serializers.ModelSerializer):
+    # Representación anidada mínima del profesor asignado
+    class ProfesorSimpleSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Profesor
+            fields = ['id', 'nombre', 'apellido', 'grado_asignado']
+
+    profesor_asignado = ProfesorSimpleSerializer(read_only=True)
     class Meta:
         model = Representante
         fields = [
             'id', 'usuario', 'nombre', 'apellido', 'edad', 'fecha_nacimiento',
-            'cedula', 'direccion', 'telefono', 'foto', 'fecha_creacion',
+            'cedula', 'direccion', 'telefono', 'foto', 'profesor_asignado', 'fecha_creacion',
             'fecha_actualizacion'
         ]
 

@@ -5,7 +5,7 @@ from .serializers import RegistroProfesorSerializer, ProfesorListSerializer
 class RegistroProfesorView(generics.CreateAPIView):
     queryset = Profesor.objects.all()
     serializer_class = RegistroProfesorSerializer
-    permission_classes = [permissions.AllowAny]  # para testing; en producción usar IsAdminUser
+    permission_classes = [permissions.IsAdminUser]
 
 class ListProfesoresView(generics.ListAPIView):
     queryset = Profesor.objects.all()

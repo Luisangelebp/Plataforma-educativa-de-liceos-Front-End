@@ -5,7 +5,7 @@ from .serializers import RegistroAdministradorSerializer, AdministradorListSeria
 class RegistroAdministradorView(generics.CreateAPIView):
     queryset = Administrador.objects.all()
     serializer_class = RegistroAdministradorSerializer
-    permission_classes = [permissions.AllowAny]  # para testing; en producción usar IsAdminUser
+    permission_classes = [permissions.IsAdminUser]
 
 class ListAdministradoresView(generics.ListAPIView):
     queryset = Administrador.objects.all()
