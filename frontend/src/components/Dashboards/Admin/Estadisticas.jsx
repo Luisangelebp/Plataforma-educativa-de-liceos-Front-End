@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { useState, useEffect, use } from 'react';
+import './css/estadistica.css';
 export default function Estadisticas() {
     const API_URL = 'http://localhost:8000/api/';
     const [numE, setnumE] = useState(0);
-    // const { numR, setnumR } = useState(0);
+    const [numR, setnumR] = useState(0);
     const [numP, setnumP] = useState(0);
     const [numadmin, setnumadmin] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -11,30 +12,31 @@ export default function Estadisticas() {
     useEffect(() => {
         const fetchEstudiantes = async () => {
             try {
-                const [estudiantes, profesor, admin] = await axios.all([
-                    axios.get(`${API_URL}usuarios/estudiante/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }),
-                    // axios.get(`${API_URL}usuarios/representante/`, {
-                    //     headers: {
-                    //         'Content-Type': 'application/json',
-                    //     },
-                    // }),
-                    axios.get(`${API_URL}usuarios/profesor/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }),
-                    axios.get(`${API_URL}usuarios/administrador/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }),
-                ]);
+                const [estudiantes, representante, profesor, admin] =
+                    await axios.all([
+                        axios.get(`${API_URL}usuarios/estudiante/`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }),
+                        axios.get(`${API_URL}usuarios/representante/`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }),
+                        axios.get(`${API_URL}usuarios/profesor/`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }),
+                        axios.get(`${API_URL}usuarios/administrador/`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }),
+                    ]);
                 setnumE(estudiantes.data.length);
-                // setnumR(representante.data.length);
+                setnumR(representante.data.length);
                 setnumP(profesor.data.length);
                 setnumadmin(admin.data.length);
             } catch (error) {
@@ -49,28 +51,27 @@ export default function Estadisticas() {
     if (loading) {
         return <div>Cargando...</div>;
     }
-    console.log(numE, numP, numadmin);
     return (
         <section className="content">
             <div className="card">
                 <i className="fas fa-user-graduate fa-2x"></i>
                 <p>Total de Represetantes:</p>
-                <span>e</span>
+                <span className="numero">{numR}</span>
             </div>
             <div className="card">
                 <i className="fas fa-user-graduate fa-2x"></i>
                 <p>Total de estudiantes:</p>
-                <span>{numE}</span>
+                <span className="numero">{numE}</span>
             </div>
             <div className="card">
                 <i className="fas fa-chalkboard-teacher fa-2x"></i>
                 <p>Total de profesore:</p>
-                <span>{numP} </span>
+                <span className="numero">{numP} </span>
             </div>
             <div className="card">
                 <i className="fas fa-users fa-2x"></i>
-                <p>Total de representantes:</p>
-                <span>{numadmin} </span>
+                <p>Total de Administradores:</p>
+                <span className="numero">{numadmin} </span>
             </div>
         </section>
     );

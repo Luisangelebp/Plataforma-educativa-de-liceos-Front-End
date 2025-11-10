@@ -1,1 +1,1 @@
-{"version":3,"sources":[],"names":[],"mappings":"","file":"registro.css"}
+{"version":3,"sources":["../scss/registro.scss","registro.css"],"names":[],"mappings":"AACI;EACI,kBAAA;EACA,mBAAA;EACA,gBAAA;ACAR","file":"registro.css"}
