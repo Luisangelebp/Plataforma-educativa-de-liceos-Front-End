@@ -166,31 +166,27 @@ export default function Registo() {
                 </div>
                 {/* Tipo de Usuario Select */}
                 <div className="input-group">
-                    <div className="input-container">
-                        <div className="select-container">
-                            <select
-                                id="typeU"
-                                name="typeU"
-                                value={formData.typeU}
-                                className={formData.typeU ? 'has-value' : ''}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        typeU: e.target.value,
-                                    })
-                                }
-                            >
-                                <option value="">
-                                    -- Seleccione el Tipo de Usuario --
-                                </option>
-                                <option value="Representante">
-                                    Representante
-                                </option>
-                                <option value="Estudiante">Estudiante</option>
-                                <option value="Profesor">Profesor</option>
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
-                        </div>
+                    <div className="select-container">
+                        <select
+                            id="typeU"
+                            name="typeU"
+                            value={formData.typeU}
+                            className={formData.typeU ? 'has-value' : ''}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    typeU: e.target.value,
+                                })
+                            }
+                        >
+                            <option value="">
+                                -- Seleccione el Tipo de Usuario --
+                            </option>
+                            <option value="Representante">Representante</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Profesor">Profesor</option>
+                        </select>
+                        <i className="select-icon fas fa-chevron-down"></i>
                     </div>
                 </div>
                 {/* Foto Input */}

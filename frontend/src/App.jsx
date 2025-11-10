@@ -19,6 +19,7 @@ import { Boletines } from './components/Dashboards/Admin/Boletines.jsx';
 // imports for representante dashboard routes can be added here
 
 import DashboardRepresentante from './components/Dashboards/Representante/DashboardRepresentante.jsx';
+
 function App() {
     return (
         <Router>

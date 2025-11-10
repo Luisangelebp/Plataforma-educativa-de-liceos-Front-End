@@ -1,1 +1,68 @@
-/*# sourceMappingURL=profile.css.map */
+@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+.btn {
+  background-color: white;
+  padding: 1%;
+  border: 1px solid #005cff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.btn:hover {
+  background-color: rgb(216, 216, 216);
+}
+
+.profile-avatar {
+  cursor: pointer;
+}
+
+.overlay-profile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.profile-options {
+  position: absolute;
+  z-index: 1001;
+  top: 15vh;
+  right: 0vw;
+  width: 33vw;
+  background-color: #fff;
+  padding: 20px;
+  border: #005cff 1px solid;
+  border-radius: 0 5px 5px 0;
+  box-shadow: 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  animation: movermenu 0.3s ease-in-out;
+  list-style-type: none;
+  padding: 0;
+}
+@keyframes movermenu {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.profile-options li {
+  margin: 10px 0;
+  font-family: "Chonburi", serif;
+  list-style: none;
+  cursor: pointer;
+}
+.profile-options li .menu-item {
+  text-decoration: none !important;
+  font-weight: bold;
+  color: rgb(0, 0, 0);
+}
+.profile-options li .menu-item:visited {
+  color: rgb(0, 0, 0);
+}/*# sourceMappingURL=profile.css.map */

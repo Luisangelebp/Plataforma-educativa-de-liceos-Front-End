@@ -50,4 +50,8 @@ header .logo {
   cursor: pointer;
   height: 100%;
   width: 15dvh;
+}
+
+i:hover {
+  color: rgb(62, 29, 158) !important;
 }/*# sourceMappingURL=App.css.map */

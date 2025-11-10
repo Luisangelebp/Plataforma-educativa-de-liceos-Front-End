@@ -3,10 +3,7 @@ import { Profile } from '../../profile/Profile.jsx';
 import { Link, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 
-const userAdmin = {
-    name: 'Admin User',
-    avatarUrl: null,
-};
+const userAdmin = window.localStorage.getItem('user');
 
 export function Admin() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -132,7 +129,7 @@ export function Admin() {
                         <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
                     </div>
                 </div>
-                <Profile userImg={userAdmin.avatarUrl}></Profile>
+                <Profile userImg={userAdmin.foto || null}></Profile>
             </header>
             <main className="main">
                 <Outlet />

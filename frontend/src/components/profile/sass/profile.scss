@@ -1,0 +1,64 @@
+@use '../../../sass/constants.scss'as c;
+
+.profile-avatar {
+    cursor: pointer;
+}
+
+.overlay-profile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.profile-options {
+    position: absolute;
+    z-index: 1001;
+    top: 15vh;
+    right: 0vw;
+    width: 33vw;
+    background-color: #fff;
+    padding: 20px;
+    border: c.$borderColor 1px solid;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: movermenu 0.3s ease-in-out;
+
+    @keyframes movermenu {
+        from {
+            transform: translateX(100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+
+    list-style-type: none;
+    padding: 0;
+
+    li {
+        margin: 10px 0;
+        font-family: c.$fontPrimary;
+        list-style: none;
+        cursor: pointer;
+        .menu-item {
+            text-decoration: none !important;
+            font-weight: bold;
+            color: c.$textColor;
+
+            &:visited {
+                color: c.$textColor;
+            }
+        }
+    }
+
+}

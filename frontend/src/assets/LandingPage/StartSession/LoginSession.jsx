@@ -6,7 +6,7 @@ const LoginSession = ({ setShowLogin }) => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
-        typeU: ''
+        typeU: '',
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +28,7 @@ const LoginSession = ({ setShowLogin }) => {
 
         document.addEventListener('mousedown', handleClickOutside);
         document.addEventListener('keydown', handleEscape);
-        
+
         // Prevenir scroll del body cuando el modal está abierto
         document.body.style.overflow = 'hidden';
 
@@ -41,16 +41,16 @@ const LoginSession = ({ setShowLogin }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
-        
+
         // Limpiar error del campo cuando el usuario empiece a escribir
         if (errors[name]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
-                [name]: ''
+                [name]: '',
             }));
         }
     };
@@ -65,7 +65,8 @@ const LoginSession = ({ setShowLogin }) => {
         if (!formData.password) {
             newErrors.password = 'La contraseña es requerida';
         } else if (formData.password.length < 6) {
-            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+            newErrors.password =
+                'La contraseña debe tener al menos 6 caracteres';
         }
 
         if (!formData.typeU) {
@@ -76,10 +77,10 @@ const LoginSession = ({ setShowLogin }) => {
     };
     const mapRol = (rolFrontend) => {
         const roles = {
-            administrador: "admin",
-            representante: "representante",
-            estudiante: "estudiante",
-            profesor: "profesor"
+            administrador: 'admin',
+            representante: 'representante',
+            estudiante: 'estudiante',
+            profesor: 'profesor',
         };
         return roles[rolFrontend.toLowerCase()] || rolFrontend.toLowerCase();
     };
@@ -96,31 +97,37 @@ const LoginSession = ({ setShowLogin }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8000/api/login/", {
-                email: formData.username,
-                password: formData.password,
-                rol: mapRol(formData.typeU) // ← aquí aplicamos la traducción
-            });
+            const response = await axios.post(
+                'http://localhost:8000/api/login/',
+                {
+                    email: formData.username,
+                    password: formData.password,
+                    rol: mapRol(formData.typeU), // ← aquí aplicamos la traducción
+                }
+            );
 
             const { access, refresh, usuario } = response.data;
 
             // Guardar tokens si los necesitas
-            localStorage.setItem("accessToken", access);
-            localStorage.setItem("refreshToken", refresh);
+            localStorage.setItem('accessToken', access);
+            localStorage.setItem('refreshToken', refresh);
+            localStorage.setItem('user', JSON.stringify(usuario));
 
             // Redirigir según el rol
             const rol = usuario.rol;
-            if (usuario.rol === "admin") {
-            window.location.href = "/admin";
-            } else if (usuario.rol === "representante") {
-            window.location.href = "/representante";
-            }else {
-                alert("Rol no reconocido");
+            if (usuario.rol === 'admin') {
+                window.location.href = '/admin';
+            } else if (usuario.rol === 'representante') {
+                window.location.href = '/representante';
+            } else {
+                alert('Rol no reconocido');
             }
             setShowLogin(false);
         } catch (error) {
-            console.error("Error al iniciar sesión:", error);
-            setErrors({ submit: "Credenciales inválidas o error de conexión." });
+            console.error('Error al iniciar sesión:', error);
+            setErrors({
+                submit: 'Credenciales inválidas o error de conexión.',
+            });
         } finally {
             setIsLoading(false);
         }
@@ -136,7 +143,7 @@ const LoginSession = ({ setShowLogin }) => {
             <div className="modal-container" ref={modalRef}>
                 <div className="modal-header">
                     <h2>Iniciar Sesión</h2>
-                    <button 
+                    <button
                         className="close-btn"
                         onClick={() => setShowLogin(false)}
                         aria-label="Cerrar modal"
@@ -147,7 +154,11 @@ const LoginSession = ({ setShowLogin }) => {
 
                 <div className="modal-body">
                     <form onSubmit={handleSubmit} className="login-form">
-                        <div className={`input-group ${errors.username ? 'error' : ''}`}>
+                        <div
+                            className={`input-group ${
+                                errors.username ? 'error' : ''
+                            }`}
+                        >
                             <div className="input-container">
                                 <input
                                     type="text"
@@ -155,16 +166,28 @@ const LoginSession = ({ setShowLogin }) => {
                                     name="username"
                                     value={formData.username}
                                     onChange={handleInputChange}
-                                    className={formData.username ? 'has-value' : ''}
+                                    className={
+                                        formData.username ? 'has-value' : ''
+                                    }
                                     required
                                 />
-                                <label htmlFor="username">Usuario o Email</label>
+                                <label htmlFor="username">
+                                    Usuario o Email
+                                </label>
                                 <i className="input-icon fas fa-user"></i>
                             </div>
-                            {errors.username && <span className="error-message">{errors.username}</span>}
+                            {errors.username && (
+                                <span className="error-message">
+                                    {errors.username}
+                                </span>
+                            )}
                         </div>
 
-                        <div className={`input-group ${errors.password ? 'error' : ''}`}>
+                        <div
+                            className={`input-group ${
+                                errors.password ? 'error' : ''
+                            }`}
+                        >
                             <div className="input-container">
                                 <input
                                     type="password"
@@ -172,33 +195,57 @@ const LoginSession = ({ setShowLogin }) => {
                                     name="password"
                                     value={formData.password}
                                     onChange={handleInputChange}
-                                    className={formData.password ? 'has-value' : ''}
+                                    className={
+                                        formData.password ? 'has-value' : ''
+                                    }
                                     required
                                 />
                                 <label htmlFor="password">Contraseña</label>
                                 <i className="input-icon fas fa-lock"></i>
                             </div>
-                            {errors.password && <span className="error-message">{errors.password}</span>}
+                            {errors.password && (
+                                <span className="error-message">
+                                    {errors.password}
+                                </span>
+                            )}
                         </div>
 
-                        <div className={`input-group ${errors.typeU ? 'error' : ''}`}>
+                        <div
+                            className={`input-group ${
+                                errors.typeU ? 'error' : ''
+                            }`}
+                        >
                             <div className="select-container">
                                 <select
                                     id="typeU"
                                     name="typeU"
                                     value={formData.typeU}
                                     onChange={handleInputChange}
-                                    className={formData.typeU ? 'has-value' : ''}
+                                    className={
+                                        formData.typeU ? 'has-value' : ''
+                                    }
                                 >
-                                    <option value="">-- Seleccione su Tipo de Usuario --</option>
-                                    <option value="Representante">Representante</option>
-                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="">
+                                        -- Seleccione su Tipo de Usuario --
+                                    </option>
+                                    <option value="Representante">
+                                        Representante
+                                    </option>
+                                    <option value="Estudiante">
+                                        Estudiante
+                                    </option>
                                     <option value="Profesor">Profesor</option>
-                                    <option value="Administrador">Administrador</option>
+                                    <option value="Administrador">
+                                        Administrador
+                                    </option>
                                 </select>
                                 <i className="select-icon fas fa-chevron-down"></i>
                             </div>
-                            {errors.typeU && <span className="error-message">{errors.typeU}</span>}
+                            {errors.typeU && (
+                                <span className="error-message">
+                                    {errors.typeU}
+                                </span>
+                            )}
                         </div>
 
                         <div className="form-options">
@@ -207,8 +254,8 @@ const LoginSession = ({ setShowLogin }) => {
                                 <span className="checkmark"></span>
                                 Recordar sesión
                             </label>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="forgot-password"
                                 onClick={handleForgotPassword}
                             >
@@ -223,9 +270,11 @@ const LoginSession = ({ setShowLogin }) => {
                             </div>
                         )}
 
-                        <button 
-                            type="submit" 
-                            className={`submit-btn ${isLoading ? 'loading' : ''}`}
+                        <button
+                            type="submit"
+                            className={`submit-btn ${
+                                isLoading ? 'loading' : ''
+                            }`}
                             disabled={isLoading}
                         >
                             {isLoading ? (
