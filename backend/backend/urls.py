@@ -6,10 +6,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
-    path('api/usuarios/estudiante/', include('Usuarios.estudiante.urls')),
-    path('api/usuarios/profesor/', include('Usuarios.profesor.urls')),
-    path('api/usuarios/representante/', include('Usuarios.representante.urls')),
-    path('api/usuarios/administrador/', include('Usuarios.administrador.urls')),
+    path('usuarios/estudiante/', include('Usuarios.estudiante.urls')),
+    path('usuarios/profesor/', include('Usuarios.profesor.urls')),
+    path('usuarios/representante/', include('Usuarios.representante.urls')),
+    path('usuarios/administrador/', include('Usuarios.administrador.urls')),
 ]
 
 # Servir archivos media en desarrollo

@@ -11,7 +11,7 @@ class RegistroRepresentanteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Representante
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'edad', 'fecha_nacimiento',
+            'id', 'usuario', 'nombre', 'apellido', 'fecha_nacimiento',
             'cedula', 'direccion', 'telefono', 'foto', 'email', 'password'
         ]
         read_only_fields = ['usuario', 'id']
@@ -52,6 +52,7 @@ class RegistroRepresentanteSerializer(serializers.ModelSerializer):
         representante = Representante.objects.create(usuario=usuario, **validated_data)
         return representante
 
+
 class RepresentanteListSerializer(serializers.ModelSerializer):
     # Representación anidada mínima del profesor asignado
     class ProfesorSimpleSerializer(serializers.ModelSerializer):
@@ -60,12 +61,12 @@ class RepresentanteListSerializer(serializers.ModelSerializer):
             fields = ['id', 'nombre', 'apellido', 'grado_asignado']
 
     profesor_asignado = ProfesorSimpleSerializer(read_only=True)
+    edad = serializers.ReadOnlyField()
+
     class Meta:
         model = Representante
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'edad', 'fecha_nacimiento',
-            'cedula', 'direccion', 'telefono', 'foto', 'profesor_asignado', 'fecha_creacion',
-            'fecha_actualizacion'
+            'id', 'usuario', 'nombre', 'apellido', 'fecha_nacimiento', 'edad',
+            'cedula', 'direccion', 'telefono', 'foto', 'profesor_asignado',
+            'fecha_creacion', 'fecha_actualizacion'
         ]
-
-

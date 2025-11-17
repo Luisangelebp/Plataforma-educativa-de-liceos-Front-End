@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.apps import apps
 from core.serializers import UsuarioSerializer
 from core.models import Usuario
 from .models import Estudiante
@@ -12,7 +11,7 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Estudiante
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'edad', 'grado', 'nivel',
+            'id', 'usuario', 'nombre', 'apellido', 'grado', 'nivel',
             'fecha_nacimiento', 'cedula', 'direccion', 'foto', 'email', 'password',
             'representante'
         ]
@@ -70,14 +69,16 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         estudiante = Estudiante.objects.create(**validated_data)
         return estudiante
 
+
 class EstudianteListSerializer(serializers.ModelSerializer):
     # Devuelve el id del representante; en el futuro puedes anidar sus datos
     representante = serializers.IntegerField(source='representante_id', read_only=True)
+    edad = serializers.ReadOnlyField()  # ahora se calcula desde la propiedad del modelo
 
     class Meta:
         model = Estudiante
         fields = [
-            'id', 'nombre', 'apellido', 'edad', 'grado', 'nivel',
-            'fecha_nacimiento', 'cedula', 'direccion', 'foto',
+            'id', 'nombre', 'apellido', 'grado', 'nivel',
+            'fecha_nacimiento', 'edad', 'cedula', 'direccion', 'foto',
             'representante', 'usuario'
         ]
