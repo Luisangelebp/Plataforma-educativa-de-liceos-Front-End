@@ -98,7 +98,7 @@ const LoginSession = ({ setShowLogin }) => {
 
         try {
             const response = await axios.post(
-                'http://localhost:8000/api/login/',
+                'http://localhost:8000/login/',
                 {
                     email: formData.username,
                     password: formData.password,
