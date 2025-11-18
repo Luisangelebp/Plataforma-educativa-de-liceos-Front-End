@@ -70,3 +70,13 @@ class RepresentanteListSerializer(serializers.ModelSerializer):
             'cedula', 'direccion', 'telefono', 'foto', 'profesor_asignado',
             'fecha_creacion', 'fecha_actualizacion'
         ]
+
+
+class RepresentanteUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Representante
+        fields = [
+            'nombre', 'apellido', 'fecha_nacimiento', 'cedula',
+            'direccion', 'telefono', 'foto'
+        ]
+        read_only_fields = ['id', 'usuario']

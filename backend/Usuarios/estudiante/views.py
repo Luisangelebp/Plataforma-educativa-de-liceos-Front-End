@@ -6,7 +6,7 @@ from django.template.loader import get_template
 from weasyprint import HTML
 
 from .models import Estudiante
-from .serializers import RegistroEstudianteSerializer, EstudianteListSerializer
+from .serializers import RegistroEstudianteSerializer, EstudianteListSerializer, EstudianteUpdateSerializer
 
 
 # Registro de estudiantes
@@ -78,3 +78,24 @@ class EstudiantesPDFView(APIView):
         response = HttpResponse(pdf_file, content_type="application/pdf")
         response["Content-Disposition"] = "inline; filename=estudiantes.pdf"
         return response
+
+
+# Actualización y eliminación de estudiantes
+class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Estudiante.objects.all()
+    serializer_class = EstudianteUpdateSerializer
+    permission_classes = [permissions.AllowAny]  # en producción usar IsAdminUser
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        # Si hay representante, actualizar dirección
+        representante = serializer.validated_data.get('representante')
+        if representante:
+            serializer.validated_data['direccion'] = representante.direccion
+        
+        self.perform_update(serializer)
+        instance.refresh_from_db()
+        return Response(EstudianteListSerializer(instance).data)
