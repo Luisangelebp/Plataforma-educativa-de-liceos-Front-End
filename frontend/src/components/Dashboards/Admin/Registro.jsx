@@ -33,33 +33,27 @@ export default function Registo() {
             setRolActive('');
         }
     };
-    const API_URL = 'http://localhost:8000/api/usuarios/';
+    const API_URL = 'https://localhost:8000/api/usuarios';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const typeU = formData.typeU;
         delete formData.typeU;
-        const data = new FormData();
-        for (const key in formData) {
-            data.append(key, formData[key]);
-        }
-        console.log('Submitting form data:', formData);
-        console.log('Tipo de Usuario seleccionado:', typeU);
-        console.log(localStorage.getItem('accessToken'));
         setIsLoading(true);
+        const formDataObj = new FormData();
+
+        for (const key in formData) {
+            formDataObj.append(key, formData[key]);
+        }
         try {
             const response = await axios
-                .post(
-                    `http://localhost:8000/api/usuarios/administrador/registro/`,
-                    data,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem(
-                                'accessToken'
-                            )}`,
-                        },
-                    }
-                )
+                .post(`${API_URL}/${typeU}/registro/`, formData, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            'accessToken'
+                        )}`,
+                    },
+                })
                 .then((response) => {
                     console.log('Usuario registrado con éxito:', response.data);
                     alert('Usuario registrado con éxito');
@@ -67,6 +61,7 @@ export default function Registo() {
                     setRolActive('');
                 });
         } catch (error) {
+            console.error('Error al registrar el usuario:', error);
         } finally {
             setIsLoading(false);
         }
