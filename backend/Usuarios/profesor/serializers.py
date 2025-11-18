@@ -10,7 +10,7 @@ class RegistroProfesorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profesor
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'edad', 'grado_asignado',
+            'id', 'usuario', 'nombre', 'apellido', 'grado_asignado',
             'tipo_profesor', 'fecha_nacimiento', 'cedula', 'direccion',
             'telefono', 'foto', 'email', 'password'
         ]
@@ -52,13 +52,14 @@ class RegistroProfesorSerializer(serializers.ModelSerializer):
         profesor = Profesor.objects.create(usuario=usuario, **validated_data)
         return profesor
 
+
 class ProfesorListSerializer(serializers.ModelSerializer):
+    edad = serializers.ReadOnlyField() 
+    
     class Meta:
         model = Profesor
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'edad', 'grado_asignado',
-            'tipo_profesor', 'fecha_nacimiento', 'cedula', 'direccion',
+            'id', 'usuario', 'nombre', 'apellido', 'grado_asignado',
+            'tipo_profesor', 'fecha_nacimiento', 'edad', 'cedula', 'direccion',
             'telefono', 'foto', 'fecha_creacion', 'fecha_actualizacion'
         ]
-
-

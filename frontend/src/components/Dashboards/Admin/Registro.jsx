@@ -1,13 +1,18 @@
 import './css/Registro.css';
+
 import { useState } from 'react';
 import axios from 'axios';
+
 export default function Registo() {
     const [formData, setFormData] = useState({});
+
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [rolActive, setRolActive] = useState('');
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -21,8 +26,10 @@ export default function Registo() {
             }));
         }
     };
+
     const rolforms = (e) => {
         handleInputChange(e);
+
         if (e.target.value === 'administrador') {
             setRolActive('administrador');
         } else if (e.target.value === 'representante') {
@@ -33,7 +40,8 @@ export default function Registo() {
             setRolActive('');
         }
     };
-    const API_URL = 'https://localhost:8000/api/usuarios';
+
+    const API_URL = 'https://localhost:8000//usuarios';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,18 +53,31 @@ export default function Registo() {
         for (const key in formData) {
             formDataObj.append(key, formData[key]);
         }
+
         try {
             const response = await axios
-                .post(`${API_URL}/${typeU}/registro/`, formData, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            'accessToken'
-                        )}`,
-                    },
-                })
+                .post(
+                    `${API_URL}
+
+                /${typeU}
+
+                /registro/`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer $ {
+                            localStorage.getItem('accessToken'
+                            )
+                        }
+
+                        `,
+                        },
+                    }
+                )
                 .then((response) => {
                     console.log('Usuario registrado con éxito:', response.data);
                     alert('Usuario registrado con éxito');
+
                     setFormData({});
                     setRolActive('');
                 });
@@ -69,11 +90,15 @@ export default function Registo() {
 
     return (
         <div className="registro-main">
-            <h1>Registro de Usuarios</h1>
+            {' '}
+            <h1>Registro de Usuarios</h1>{' '}
             <form className="registro-form container" onSubmit={handleSubmit}>
+                {' '}
                 {/* Tipo de Usuario Select */}
                 <div className="input-group">
+                    {' '}
                     <div className="select-container">
+                        {' '}
                         <select
                             id="typeU"
                             name="typeU"
@@ -81,23 +106,30 @@ export default function Registo() {
                             className={formData.typeU ? 'has-value' : ''}
                             onChange={(e) => rolforms(e)}
                         >
+                            {' '}
                             <option value="">
-                                -- Seleccione el Tipo de Usuario --
-                            </option>
-                            <option value="representante">Representante</option>
+                                {' '}
+                                -- Seleccione el Tipo de Usuario --{' '}
+                            </option>{' '}
+                            <option value="representante">
+                                Representante
+                            </option>{' '}
                             <option value="estudiante" disabled>
-                                Estudiante
-                            </option>
-                            <option value="profesor">Profesor</option>
-                            <option value="administrador">Administrador</option>
-                        </select>
-                        <i className="select-icon fas fa-chevron-down"></i>
-                    </div>
-                </div>
+                                {' '}
+                                Estudiante{' '}
+                            </option>{' '}
+                            <option value="profesor">Profesor</option>{' '}
+                            <option value="administrador">Administrador</option>{' '}
+                        </select>{' '}
+                        <i className="select-icon fas fa-chevron-down"></i>{' '}
+                    </div>{' '}
+                </div>{' '}
                 {/* Nombre Completo Input */}
                 {rolActive !== '' && (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="nombre"
@@ -106,16 +138,18 @@ export default function Registo() {
                                 className={formData.nombre ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="nombre">Nombres:</label>
-                            <i className="input-icon bi bi-person"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="nombre">Nombres:</label>{' '}
+                            <i className="input-icon bi bi-person"></i>{' '}
+                        </div>{' '}
                     </div>
                 )}
                 {/* Apellido Input */}
                 {rolActive !== '' && (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="apellido"
@@ -124,16 +158,18 @@ export default function Registo() {
                                 className={formData.apellido ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="apellido">Apellidos:</label>
-                            <i className="input-icon bi bi-person"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="apellido">Apellidos:</label>{' '}
+                            <i className="input-icon bi bi-person"></i>{' '}
+                        </div>{' '}
                     </div>
                 )}
                 {/* Email Input */}
                 {rolActive !== '' && (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="email"
                                 id="email"
@@ -142,16 +178,18 @@ export default function Registo() {
                                 className={formData.email ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="email">Correo Electrónico:</label>
-                            <i className="input-icon bi bi-envelope-at"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="email">Correo Electrónico:</label>{' '}
+                            <i className="input-icon bi bi-envelope-at"></i>{' '}
+                        </div>{' '}
                     </div>
                 )}
                 {/* Cédula Input */}
                 {rolActive === 'profesor' || rolActive === 'representante' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="cedula"
@@ -160,16 +198,18 @@ export default function Registo() {
                                 className={formData.cedula ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="cedula">Cedula:</label>
-                            <i className="input-icon bi bi-person-vcard"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="cedula">Cedula:</label>{' '}
+                            <i className="input-icon bi bi-person-vcard"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Password Input */}
                 {rolActive !== '' && (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="password"
                                 id="password"
@@ -178,16 +218,18 @@ export default function Registo() {
                                 className={formData.password ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="password">Contraseña:</label>
-                            <i className="input-icon bi bi-lock"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="password">Contraseña:</label>{' '}
+                            <i className="input-icon bi bi-lock"></i>{' '}
+                        </div>{' '}
                     </div>
                 )}
                 {/* Teléfono Input */}
                 {rolActive === 'representante' || rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="telefono"
@@ -196,16 +238,18 @@ export default function Registo() {
                                 className={formData.telefono ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="telefono">Teléfono:</label>
-                            <i className="input-icon bi bi-phone"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="telefono">Teléfono:</label>{' '}
+                            <i className="input-icon bi bi-phone"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Dirección Input */}
                 {rolActive === 'representante' || rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="direccion"
@@ -216,16 +260,18 @@ export default function Registo() {
                                 }
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
-                            <label htmlFor="direccion">Dirección:</label>
-                            <i className="input-icon bi bi-geo-alt"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="direccion">Dirección:</label>{' '}
+                            <i className="input-icon bi bi-geo-alt"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Fecha de Nacimiento Input */}
                 {rolActive === 'representante' || rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="date"
                                 id="fecha_nacimiento"
@@ -236,34 +282,39 @@ export default function Registo() {
                                 }
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
+                            />{' '}
                             <label htmlFor="fecha_nacimiento">
-                                Fecha de Nacimiento:
-                            </label>
-                            <i className="input-icon bi bi-calendar-date"></i>
-                        </div>
+                                {' '}
+                                Fecha de Nacimiento:{' '}
+                            </label>{' '}
+                            <i className="input-icon bi bi-calendar-date"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Foto Input */}
                 {rolActive === 'representante' || rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="file"
                                 id="foto"
                                 name="foto"
                                 className={formData.foto ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
-                            />
-                            <label htmlFor="foto"></label>
-                            <i className="input-icon bi bi-camera"></i>
-                        </div>
+                            />{' '}
+                            <label htmlFor="foto"></label>{' '}
+                            <i className="input-icon bi bi-camera"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Grado Asignado Input */}
                 {rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="grado_asignado"
@@ -274,18 +325,21 @@ export default function Registo() {
                                 }
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
+                            />{' '}
                             <label htmlFor="grado_asignado">
-                                Grado Asignado:
-                            </label>
-                            <i className="input-icon bi bi-book"></i>
-                        </div>
+                                {' '}
+                                Grado Asignado:{' '}
+                            </label>{' '}
+                            <i className="input-icon bi bi-book"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 {/* Tipo de Profesor Input */}
                 {rolActive === 'profesor' ? (
                     <div className="input-group">
+                        {' '}
                         <div className="input-container">
+                            {' '}
                             <input
                                 type="text"
                                 id="tipo_profesor"
@@ -296,18 +350,20 @@ export default function Registo() {
                                 }
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />
+                            />{' '}
                             <label htmlFor="tipo_profesor">
-                                Tipo de Profesor:
-                            </label>
-                            <i className="input-icon bi bi bi-book"></i>
-                        </div>
+                                {' '}
+                                Tipo de Profesor:{' '}
+                            </label>{' '}
+                            <i className="input-icon bi bi bi-book"></i>{' '}
+                        </div>{' '}
                     </div>
                 ) : null}
                 <button className="submit-btn" type="submit">
+                    {' '}
                     {isLoading ? 'Registrando...' : 'Registrar Usuario'}
-                </button>
-            </form>
+                </button>{' '}
+            </form>{' '}
         </div>
     );
 }

@@ -5,11 +5,11 @@ from .serializers import RegistroAdministradorSerializer, AdministradorListSeria
 class RegistroAdministradorView(generics.CreateAPIView):
     queryset = Administrador.objects.all()
     serializer_class = RegistroAdministradorSerializer
-    permission_classes = [permissions.IsAdminUser]
+    authentication_classes = []  
+    permission_classes = [permissions.AllowAny]
+
 
 class ListAdministradoresView(generics.ListAPIView):
     queryset = Administrador.objects.all()
     serializer_class = AdministradorListSerializer
     permission_classes = [permissions.AllowAny]  # sin protección por ahora
-
-
