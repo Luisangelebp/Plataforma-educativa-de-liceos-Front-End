@@ -1,5 +1,19 @@
+.main {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.registro-main {
+  width: 80%;
+  margin-bottom: 15px;
+}
 .registro-main h1 {
   text-align: center;
   margin-bottom: 20px;
   margin-top: 20px;
+  font-family: "Inter", sans-serif;
+}
+.registro-main .input-group {
+  margin-bottom: 15px;
 }/*# sourceMappingURL=registro.css.map */

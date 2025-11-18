@@ -119,6 +119,10 @@ const LoginSession = ({ setShowLogin }) => {
                 window.location.href = '/admin';
             } else if (usuario.rol === 'representante') {
                 window.location.href = '/representante';
+            } else if (usuario.rol === 'estudiante') {
+                window.location.href = '/estudiante';
+            } else if (usuario.rol === 'profesor') {
+                window.location.href = '/profesor';
             } else {
                 alert('Rol no reconocido');
             }

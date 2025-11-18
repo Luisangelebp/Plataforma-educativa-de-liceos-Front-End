@@ -1,1 +1,1 @@
-{"version":3,"sources":["../scss/registro.scss","registro.css"],"names":[],"mappings":"AACI;EACI,kBAAA;EACA,mBAAA;EACA,gBAAA;ACAR","file":"registro.css"}
+{"version":3,"sources":["../scss/registro.scss","registro.css"],"names":[],"mappings":"AAAA;EACI,WAAA;EACA,aAAA;EACA,uBAAA;ACCJ;;ADEA;EAYI,UAAA;EACA,mBAAA;ACVJ;ADFI;EACI,kBAAA;EACA,mBAAA;EACA,gBAAA;EACA,gCAAA;ACIR;ADDI;EACI,mBAAA;ACGR","file":"registro.css"}

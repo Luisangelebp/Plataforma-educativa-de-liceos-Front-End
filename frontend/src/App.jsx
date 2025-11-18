@@ -20,6 +20,14 @@ import { Boletines } from './components/Dashboards/Admin/Boletines.jsx';
 
 import DashboardRepresentante from './components/Dashboards/Representante/DashboardRepresentante.jsx';
 
+// imports for estudiante routes can be added here
+
+import { Estudiante } from './components/Dashboards/Estudiante/Estudiante.jsx';
+
+// imports for profesor routes can be added here
+
+import { Profesor } from './components/Dashboards/Profesor/Profesor.jsx';
+
 function App() {
     return (
         <Router>
@@ -43,6 +51,8 @@ function App() {
                     path="/representante"
                     element={<DashboardRepresentante />}
                 />
+                <Route path="/estudiante" element={<Estudiante />} />
+                <Route path="/profesor" element={<Profesor />} />
             </Routes>
         </Router>
     );

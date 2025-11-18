@@ -36,55 +36,40 @@ export default function Registo() {
             setRolActive('representante');
         } else if (e.target.value === 'profesor') {
             setRolActive('profesor');
+        } else if (e.target.value === 'estudiante') {
+            setRolActive('estudiante');
         } else {
             setRolActive('');
         }
     };
 
-    const API_URL = 'https://localhost:8000//usuarios';
+    const API_URL = 'http://localhost:8000/usuarios';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const typeU = formData.typeU;
-        delete formData.typeU;
         setIsLoading(true);
         const formDataObj = new FormData();
-
+        console.log(formData);
         for (const key in formData) {
-            formDataObj.append(key, formData[key]);
+            if (key !== 'typeU') {
+                formDataObj.append(key, formData[key]);
+            }
         }
 
         try {
             const response = await axios
-                .post(
-                    `${API_URL}
-
-                /${typeU}
-
-                /registro/`,
-                    formData,
-                    {
-                        headers: {
-                            Authorization: `Bearer $ {
-                            localStorage.getItem('accessToken'
-                            )
-                        }
-
-                        `,
-                        },
-                    }
-                )
+                .post(`${API_URL}/${typeU}/registro/`, formDataObj)
                 .then((response) => {
                     console.log('Usuario registrado con éxito:', response.data);
                     alert('Usuario registrado con éxito');
-
-                    setFormData({});
-                    setRolActive('');
                 });
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
         } finally {
             setIsLoading(false);
+            // setFormData({});
+            // setRolActive('');
         }
     };
 
@@ -92,7 +77,11 @@ export default function Registo() {
         <div className="registro-main">
             {' '}
             <h1>Registro de Usuarios</h1>{' '}
-            <form className="registro-form container" onSubmit={handleSubmit}>
+            <form
+                className="registro-form container"
+                onSubmit={handleSubmit}
+                encType="multipart/form-data"
+            >
                 {' '}
                 {/* Tipo de Usuario Select */}
                 <div className="input-group">
@@ -114,16 +103,34 @@ export default function Registo() {
                             <option value="representante">
                                 Representante
                             </option>{' '}
-                            <option value="estudiante" disabled>
-                                {' '}
-                                Estudiante{' '}
-                            </option>{' '}
+                            <option value="estudiante"> Estudiante </option>{' '}
                             <option value="profesor">Profesor</option>{' '}
                             <option value="administrador">Administrador</option>{' '}
                         </select>{' '}
                         <i className="select-icon fas fa-chevron-down"></i>{' '}
                     </div>{' '}
-                </div>{' '}
+                </div>
+                {/* Tipo de Usuario Select */}
+                {rolActive === 'estudiante' && (
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="nivel"
+                                name="nivel"
+                                value={formData.nivel}
+                                className={formData.nivel ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                            >
+                                <option value="">
+                                    -- Seleccione el nivel escolar --
+                                </option>
+                                <option value="primaria">Primaria</option>
+                                <option value="secundaria"> Secundaria </option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                )}
                 {/* Nombre Completo Input */}
                 {rolActive !== '' && (
                     <div className="input-group">
@@ -165,7 +172,7 @@ export default function Registo() {
                     </div>
                 )}
                 {/* Email Input */}
-                {rolActive !== '' && (
+                {rolActive !== '' && formData.nivel === 'secundaria' && (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -185,7 +192,9 @@ export default function Registo() {
                     </div>
                 )}
                 {/* Cédula Input */}
-                {rolActive === 'profesor' || rolActive === 'representante' ? (
+                {rolActive === 'profesor' ||
+                rolActive === 'representante' ||
+                rolActive === 'estudiante' ? (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -205,7 +214,7 @@ export default function Registo() {
                     </div>
                 ) : null}
                 {/* Password Input */}
-                {rolActive !== '' && (
+                {rolActive !== '' && formData.nivel === 'secundaria' && (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -245,7 +254,7 @@ export default function Registo() {
                     </div>
                 ) : null}
                 {/* Dirección Input */}
-                {rolActive === 'representante' || rolActive === 'profesor' ? (
+                {rolActive !== '' && rolActive !== 'administrador' ? (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -266,8 +275,30 @@ export default function Registo() {
                         </div>{' '}
                     </div>
                 ) : null}
+                {/* Grado Input */}
+                {rolActive === 'estudiante' ? (
+                    <div className="input-group">
+                        {' '}
+                        <div className="input-container">
+                            {' '}
+                            <input
+                                type="number"
+                                id="grado"
+                                name="grado"
+                                value={formData.grado}
+                                className={formData.grado ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                                min="1"
+                                max="6"
+                            />{' '}
+                            <label htmlFor="grado">Grado:</label>{' '}
+                            <i className="input-icon bi bi-book"></i>{' '}
+                        </div>{' '}
+                    </div>
+                ) : null}
                 {/* Fecha de Nacimiento Input */}
-                {rolActive === 'representante' || rolActive === 'profesor' ? (
+                {rolActive !== '' && rolActive !== 'administrador' ? (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -292,7 +323,9 @@ export default function Registo() {
                     </div>
                 ) : null}
                 {/* Foto Input */}
-                {rolActive === 'representante' || rolActive === 'profesor' ? (
+                {rolActive === 'representante' ||
+                rolActive === 'profesor' ||
+                rolActive === 'estudiante' ? (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -302,14 +335,30 @@ export default function Registo() {
                                 id="foto"
                                 name="foto"
                                 className={formData.foto ? 'has-value' : ''}
-                                onChange={(e) => handleInputChange(e)}
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        foto: file,
+                                    }));
+
+                                    if (errors[name]) {
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            [name]: '',
+                                        }));
+                                    }
+                                }}
+                                accept="image/*"
+                                required
                             />{' '}
                             <label htmlFor="foto"></label>{' '}
                             <i className="input-icon bi bi-camera"></i>{' '}
                         </div>{' '}
                     </div>
                 ) : null}
-                {/* Grado Asignado Input */}
+                {/* Grado Asignado PROFESOR Input */}
                 {rolActive === 'profesor' ? (
                     <div className="input-group">
                         {' '}
