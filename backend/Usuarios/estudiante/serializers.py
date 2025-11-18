@@ -82,3 +82,13 @@ class EstudianteListSerializer(serializers.ModelSerializer):
             'fecha_nacimiento', 'edad', 'cedula', 'direccion', 'foto',
             'representante', 'usuario'
         ]
+
+
+class EstudianteUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Estudiante
+        fields = [
+            'nombre', 'apellido', 'grado', 'nivel',
+            'fecha_nacimiento', 'cedula', 'direccion', 'foto', 'representante'
+        ]
+        read_only_fields = ['id', 'usuario']
