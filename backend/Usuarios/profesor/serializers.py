@@ -63,3 +63,13 @@ class ProfesorListSerializer(serializers.ModelSerializer):
             'tipo_profesor', 'fecha_nacimiento', 'edad', 'cedula', 'direccion',
             'telefono', 'foto', 'fecha_creacion', 'fecha_actualizacion'
         ]
+
+
+class ProfesorUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profesor
+        fields = [
+            'nombre', 'apellido', 'grado_asignado', 'tipo_profesor',
+            'fecha_nacimiento', 'cedula', 'direccion', 'telefono', 'foto'
+        ]
+        read_only_fields = ['id', 'usuario']

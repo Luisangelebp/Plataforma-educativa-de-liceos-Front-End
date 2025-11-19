@@ -1,0 +1,344 @@
+.listas-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.listas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.listas-container h1 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.btn-add {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-add:hover {
+    background: #0056b3;
+}
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.user-card {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 200px;
+    box-sizing: border-box;
+    overflow: hidden;
+    width: 100%;
+}
+
+.card-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+    background: #f0f0f0;
+}
+
+.card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-info {
+    width: 100%;
+    margin-bottom: 8px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.card-info h3 {
+    margin: 0 0 6px 0;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.card-info p {
+    margin: 3px 0;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.card-info strong {
+    color: #333;
+    font-weight: 500;
+}
+
+.card-actions {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 3px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    flex: 1;
+    max-width: calc(50% - 2.5px);
+    justify-content: center;
+    min-width: 0;
+}
+
+.btn-edit {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.btn-edit i,
+.btn-delete i {
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+}
+
+.modal-body {
+    padding: 15px;
+}
+
+.detail-photo {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.detail-photo img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.detail-row strong {
+    color: #333;
+    min-width: 150px;
+}
+
+.detail-row span {
+    color: #666;
+    text-align: right;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Edit Modal Styles */
+.edit-modal {
+    max-width: 700px;
+}
+
+.edit-form {
+    padding: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #999;
+}
+
+.form-group .error {
+    display: block;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.btn-cancel,
+.btn-save {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+.btn-save {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.btn-save:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .listas-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        max-width: 95%;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .detail-row span {
+        text-align: left;
+    }
+}
