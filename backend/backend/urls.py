@@ -10,6 +10,7 @@ urlpatterns = [
     path('usuarios/profesor/', include('Usuarios.profesor.urls')),
     path('usuarios/representante/', include('Usuarios.representante.urls')),
     path('usuarios/administrador/', include('Usuarios.administrador.urls')),
+    path('horarios/', include('horarios.urls')),
 ]
 
 # Servir archivos media en desarrollo

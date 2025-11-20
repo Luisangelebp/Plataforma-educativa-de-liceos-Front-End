@@ -45,3 +45,42 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} ({self.rol})"
+    
+class GradoSeccion(models.Model):
+    NIVEL_OPCIONES = [
+        ('primaria', 'Primaria'),
+        ('secundaria', 'Secundaria'),
+    ]
+
+    GRADO_OPCIONES_PRIMARIA = [
+        ('1', '1er grado'),
+        ('2', '2do grado'),
+        ('3', '3er grado'),
+        ('4', '4to grado'),
+        ('5', '5to grado'),
+        ('6', '6to grado'),
+    ]
+
+    GRADO_OPCIONES_SECUNDARIA = [
+        ('1', '1er año'),
+        ('2', '2do año'),
+        ('3', '3er año'),
+        ('4', '4to año'),
+        ('5', '5to año'),
+    ]
+
+    SECCION_OPCIONES = [
+        ('A', 'Sección A'),
+        ('B', 'Sección B'),
+        ('C', 'Sección C'),
+    ]
+
+    nivel = models.CharField(max_length=20, choices=NIVEL_OPCIONES)
+    grado = models.CharField(max_length=50)  # aquí puedes usar choices dinámicos según nivel
+    seccion = models.CharField(max_length=5, choices=SECCION_OPCIONES)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.grado} {self.seccion} ({self.nivel})"

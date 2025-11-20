@@ -4,6 +4,13 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UsuarioSerializer, LoginSerializer
 
+# Importar los serializers de cada rol
+from Usuarios.profesor.serializers import ProfesorListSerializer
+from Usuarios.estudiante.serializers import EstudianteListSerializer
+from Usuarios.representante.serializers import RepresentanteListSerializer
+from Usuarios.administrador.serializers import AdministradorListSerializer
+
+
 class RegistroUsuarioView(APIView):
     def get(self, request):
         """
@@ -51,8 +58,27 @@ class LoginUsuarioView(APIView):
         usuario = serializer.validated_data['usuario']
         refresh = RefreshToken.for_user(usuario)
 
+        # Seleccionar el perfil según el rol
+        perfil_data = None
+        if usuario.rol == 'profesor':
+            perfil = getattr(usuario, 'profesor', None)
+            if perfil:
+                perfil_data = ProfesorListSerializer(perfil).data
+        elif usuario.rol == 'estudiante':
+            perfil = getattr(usuario, 'estudiante', None)
+            if perfil:
+                perfil_data = EstudianteListSerializer(perfil).data
+        elif usuario.rol == 'representante':
+            perfil = getattr(usuario, 'representante', None)
+            if perfil:
+                perfil_data = RepresentanteListSerializer(perfil).data
+        elif usuario.rol == 'admin':
+            perfil = getattr(usuario, 'administrador', None)
+            if perfil:
+                perfil_data = AdministradorListSerializer(perfil).data
+
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'usuario': UsuarioSerializer(usuario).data
+            'usuario': perfil_data if perfil_data else UsuarioSerializer(usuario).data
         }, status=status.HTTP_200_OK)
