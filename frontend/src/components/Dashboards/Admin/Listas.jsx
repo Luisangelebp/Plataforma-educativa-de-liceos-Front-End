@@ -6,24 +6,24 @@ import './css/Listas.css';
 const API_URL = 'http://localhost:8000/usuarios/';
 
 // Componente de Ficha/Card
-const UserCard = ({ user, type, onCardClick, onEdit, onDelete }) => {
+const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
         return `http://localhost:8000${foto}`;
     };
-
+    console.log(user.foto);
     return (
         <div className="user-card" onClick={() => onCardClick(user)}>
             <div className="card-photo">
-                <img
-                    src={getPhotoUrl(user.foto)}
-                    alt={`${user.nombre} ${user.apellido}`}
-                    onError={(e) => {
-                        e.target.src =
-                            'https://via.placeholder.com/150?text=Sin+Foto';
-                    }}
-                />
+                {user.foto ? (
+                    <img
+                        src={getPhotoUrl(user.foto)}
+                        alt={`${user.nombre} ${user.apellido}`}
+                    />
+                ) : (
+                    <i className="fas fa-user-circle default-foto-user"></i>
+                )}
             </div>
             <div className="card-info">
                 <h3>
@@ -67,6 +67,18 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete }) => {
                     </>
                 )}
             </div>
+            {type === 'estudiante' && (
+                <button
+                    className="btn-assign"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onAssing(user);
+                    }}
+                >
+                    <i className="fas fa-user-plus"></i> Asignar Representante
+                </button>
+            )}
+
             <div className="card-actions">
                 <button
                     className="btn-edit"
@@ -244,7 +256,6 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-    console.log(user);
     useBodyOverflowLock(isOpen);
 
     useEffect(() => {
@@ -548,6 +559,141 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     );
 };
 
+// Modal para Asignar Representante
+
+const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
+    const navigate = useNavigate();
+    const [representantes, setRepresentantes] = useState([]);
+    const [selectedRep, setSelectedRep] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    useBodyOverflowLock(isOpen);
+
+    useEffect(() => {
+        fetchRepresentantes();
+    }, []);
+
+    const fetchRepresentantes = async () => {
+        try {
+            const response = await axios.get(`${API_URL}representante/`);
+            setRepresentantes(response.data);
+        } catch (error) {
+            console.error('Error al cargar representantes:', error);
+            alert('Error al cargar la lista de representantes');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleAssign = async () => {
+        if (!selectedRep) {
+            alert('Por favor, seleccione un representante');
+            return;
+        }
+
+        try {
+            await axios.patch(`${API_URL}${type}/${user.id}/`, {
+                representante: selectedRep,
+            });
+            alert('Representante asignado con éxito');
+            onAssign();
+            onClose();
+        } catch (error) {
+            console.error('Error al asignar representante:', error);
+            alert('Error al asignar el representante');
+        }
+    };
+
+    const filteredRepresentantes = representantes.filter((rep) => {
+        const fullName = `${rep.nombre} ${rep.apellido}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+    });
+
+    if (!isOpen || !user) return null;
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className="modal-content assign-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="modal-header">
+                    <h2>Asignar Representante</h2>
+                    <button className="close-btn" onClick={onClose}>
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+                <div className="modal-body">
+                    <div className="form-group">
+                        <label>Seleccione un Representante:</label>
+                        <input
+                            type="search"
+                            name="searchRep"
+                            id="searchRep"
+                            placeholder="Buscar por nombre..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="representantes-list">
+                        {filteredRepresentantes.length === 0 ? (
+                            <p>No hay representantes registrados</p>
+                        ) : (
+                            filteredRepresentantes.map((representante) => (
+                                <div
+                                    key={representante.id}
+                                    className={`representante-item ${
+                                        selectedRep === representante.id
+                                            ? 'selected'
+                                            : ''
+                                    }`}
+                                    onClick={() =>
+                                        setSelectedRep(representante.id)
+                                    }
+                                >
+                                    <div className="datos">
+                                        <p>
+                                            Nombre: {representante.nombre}{' '}
+                                            {representante.apellido}
+                                        </p>
+                                        <p>Cedula: {representante.cedula}</p>
+                                    </div>
+                                    <div className="card-photo">
+                                        {representante.foto ? (
+                                            <img
+                                                src={representante.foto}
+                                                alt={`${representante.nombre} ${representante.apellido}`}
+                                            />
+                                        ) : (
+                                            <i className="fas fa-user-circle default-foto-user"></i>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button
+                        type="button"
+                        className="btn-cancel"
+                        onClick={onClose}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        className="btn-assign"
+                        onClick={handleAssign}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Guardando...' : 'Asignar'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Lista de Estudiantes
 export function ListaE() {
     const navigate = useNavigate();
@@ -556,6 +702,7 @@ export function ListaE() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
 
     useEffect(() => {
         fetchEstudiantes();
@@ -581,6 +728,11 @@ export function ListaE() {
     const handleEdit = (user) => {
         setSelectedUser(user);
         setShowEditModal(true);
+    };
+
+    const handleAssign = (user) => {
+        setSelectedUser(user);
+        setShowAssignModal(true);
     };
 
     const handleDelete = async (user) => {
@@ -629,6 +781,7 @@ export function ListaE() {
                             onCardClick={handleCardClick}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
+                            onAssing={handleAssign}
                         />
                     ))
                 )}
@@ -652,6 +805,16 @@ export function ListaE() {
                     setSelectedUser(null);
                 }}
                 onSave={fetchEstudiantes}
+            />
+            <AssignModal
+                user={selectedUser}
+                type="estudiante"
+                isOpen={showAssignModal}
+                onClose={() => {
+                    setShowAssignModal(false);
+                    setSelectedUser(null);
+                }}
+                onAssign={fetchEstudiantes}
             />
         </div>
     );
