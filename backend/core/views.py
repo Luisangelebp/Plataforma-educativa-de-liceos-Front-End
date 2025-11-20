@@ -58,22 +58,22 @@ class LoginUsuarioView(APIView):
         usuario = serializer.validated_data['usuario']
         refresh = RefreshToken.for_user(usuario)
 
-        # Seleccionar el perfil según el rol
+        # Seleccionar el perfil según el rol usando el related_name correcto
         perfil_data = None
         if usuario.rol == 'profesor':
-            perfil = getattr(usuario, 'profesor', None)
+            perfil = getattr(usuario, 'profesor_profile', None)
             if perfil:
                 perfil_data = ProfesorListSerializer(perfil).data
         elif usuario.rol == 'estudiante':
-            perfil = getattr(usuario, 'estudiante', None)
+            perfil = getattr(usuario, 'estudiante_profile', None)
             if perfil:
                 perfil_data = EstudianteListSerializer(perfil).data
         elif usuario.rol == 'representante':
-            perfil = getattr(usuario, 'representante', None)
+            perfil = getattr(usuario, 'representante_profile', None)
             if perfil:
                 perfil_data = RepresentanteListSerializer(perfil).data
         elif usuario.rol == 'admin':
-            perfil = getattr(usuario, 'administrador', None)
+            perfil = getattr(usuario, 'administrador_profile', None)
             if perfil:
                 perfil_data = AdministradorListSerializer(perfil).data
 
