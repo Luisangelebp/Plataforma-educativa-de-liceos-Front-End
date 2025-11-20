@@ -58,7 +58,7 @@ class EstudiantesPDFView(APIView):
             html = "<h1 style='text-align:center;'>No hay estudiantes que coincidan con los filtros.</h1>"
             pdf_file = HTML(string=html).write_pdf()
             response = HttpResponse(pdf_file, content_type="application/pdf")
-            response["Content-Disposition"] = "inline; filename=estudiantes.pdf"
+            response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
             return response
 
         niveles = set(e.nivel for e in estudiantes)
@@ -76,7 +76,7 @@ class EstudiantesPDFView(APIView):
 
         pdf_file = HTML(string=html).write_pdf()
         response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = "inline; filename=estudiantes.pdf"
+        response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
         return response
 
 

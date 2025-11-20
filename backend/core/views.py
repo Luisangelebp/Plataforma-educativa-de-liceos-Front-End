@@ -23,8 +23,12 @@ class RegistroUsuarioView(APIView):
         serializer = UsuarioSerializer(data=request.data)
         if serializer.is_valid():
             usuario = serializer.save()
-            return Response({'mensaje': 'Usuario creado exitosamente', 'id': usuario.id}, status=status.HTTP_201_CREATED)
+            return Response({
+                'mensaje': 'Usuario creado exitosamente',
+                'id': usuario.id
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginUsuarioView(APIView):
     def get(self, request):
@@ -50,11 +54,5 @@ class LoginUsuarioView(APIView):
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'usuario': {
-                'id': usuario.id,
-                'email': usuario.email,
-                'nombre': usuario.nombre,
-                'apellido': usuario.apellido,
-                'rol': usuario.rol
-            }
+            'usuario': UsuarioSerializer(usuario).data
         }, status=status.HTTP_200_OK)
