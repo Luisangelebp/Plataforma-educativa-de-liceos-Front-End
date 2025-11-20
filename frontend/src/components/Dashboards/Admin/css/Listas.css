@@ -1,3 +1,7 @@
+.OverflowHidden {
+    overflow: hidden;
+}
+
 .listas-container {
     padding: 20px;
     max-width: 1400px;
@@ -18,16 +22,17 @@
 }
 
 .btn-add {
-    padding: 8px 16px;
+    padding: 8px 10px;
     background: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-left: 10px;
 }
 
 .btn-add:hover {
@@ -160,7 +165,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1000;   
     padding: 20px;
 }
 
@@ -172,6 +177,7 @@
     max-height: 90vh;
     overflow-y: auto;
     border: 1px solid #ddd;
+    
 }
 
 .modal-header {
@@ -340,5 +346,9 @@
 
     .detail-row span {
         text-align: left;
+    }
+    .btn-add {
+        margin-left: 0;
+        width: 100%;
     }
 }
