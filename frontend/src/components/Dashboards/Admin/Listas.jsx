@@ -16,40 +16,60 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete }) => {
     return (
         <div className="user-card" onClick={() => onCardClick(user)}>
             <div className="card-photo">
-                <img 
-                    src={getPhotoUrl(user.foto)} 
+                <img
+                    src={getPhotoUrl(user.foto)}
                     alt={`${user.nombre} ${user.apellido}`}
                     onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/150?text=Sin+Foto';
+                        e.target.src =
+                            'https://via.placeholder.com/150?text=Sin+Foto';
                     }}
                 />
             </div>
             <div className="card-info">
-                <h3>{user.nombre} {user.apellido}</h3>
+                <h3>
+                    {user.nombre} {user.apellido}
+                </h3>
                 {type === 'estudiante' && (
                     <>
-                        <p><strong>Grado:</strong> {user.grado}</p>
-                        <p><strong>Nivel:</strong> {user.nivel}</p>
-                        <p><strong>Edad:</strong> {user.edad} años</p>
+                        <p>
+                            <strong>Grado:</strong> {user.grado}
+                        </p>
+                        <p>
+                            <strong>Nivel:</strong> {user.nivel}
+                        </p>
+                        <p>
+                            <strong>Edad:</strong> {user.edad} años
+                        </p>
                     </>
                 )}
                 {type === 'profesor' && (
                     <>
-                        <p><strong>Grado Asignado:</strong> {user.grado_asignado}</p>
-                        <p><strong>Tipo:</strong> {user.tipo_profesor}</p>
-                        <p><strong>Edad:</strong> {user.edad} años</p>
+                        <p>
+                            <strong>Grado Asignado:</strong>{' '}
+                            {user.grado_asignado}
+                        </p>
+                        <p>
+                            <strong>Tipo:</strong> {user.tipo_profesor}
+                        </p>
+                        <p>
+                            <strong>Edad:</strong> {user.edad} años
+                        </p>
                     </>
                 )}
                 {type === 'representante' && (
                     <>
-                        <p><strong>Cédula:</strong> {user.cedula}</p>
-                        <p><strong>Edad:</strong> {user.edad} años</p>
+                        <p>
+                            <strong>Cédula:</strong> {user.cedula}
+                        </p>
+                        <p>
+                            <strong>Edad:</strong> {user.edad} años
+                        </p>
                     </>
                 )}
             </div>
             <div className="card-actions">
-                <button 
-                    className="btn-edit" 
+                <button
+                    className="btn-edit"
                     onClick={(e) => {
                         e.stopPropagation();
                         onEdit(user);
@@ -57,8 +77,8 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete }) => {
                 >
                     <i className="fas fa-edit"></i> Editar
                 </button>
-                <button 
-                    className="btn-delete" 
+                <button
+                    className="btn-delete"
                     onClick={(e) => {
                         e.stopPropagation();
                         onDelete(user);
@@ -71,10 +91,24 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete }) => {
     );
 };
 
+// Custom hook to lock body scroll
+const useBodyOverflowLock = (isLocked) => {
+    useEffect(() => {
+        if (isLocked) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isLocked]);
+};
+
 // Modal de Detalle
 const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
+    useBodyOverflowLock(isOpen);
     if (!isOpen || !user) return null;
-
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
@@ -92,22 +126,29 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                 </div>
                 <div className="modal-body">
                     <div className="detail-photo">
-                        <img 
-                            src={getPhotoUrl(user.foto)} 
+                        <img
+                            src={getPhotoUrl(user.foto)}
                             alt={`${user.nombre} ${user.apellido}`}
                             onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/200?text=Sin+Foto';
+                                e.target.src =
+                                    'https://via.placeholder.com/200?text=Sin+Foto';
                             }}
                         />
                     </div>
                     <div className="detail-info">
                         <div className="detail-row">
                             <strong>Nombre:</strong>
-                            <span>{user.nombre} {user.apellido}</span>
+                            <span>
+                                {user.nombre} {user.apellido}
+                            </span>
                         </div>
                         <div className="detail-row">
                             <strong>Fecha de Nacimiento:</strong>
-                            <span>{new Date(user.fecha_nacimiento).toLocaleDateString('es-ES')}</span>
+                            <span>
+                                {new Date(
+                                    user.fecha_nacimiento
+                                ).toLocaleDateString('es-ES')}
+                            </span>
                         </div>
                         <div className="detail-row">
                             <strong>Edad:</strong>
@@ -172,7 +213,10 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                 {user.profesor_asignado && (
                                     <div className="detail-row">
                                         <strong>Profesor Asignado:</strong>
-                                        <span>{user.profesor_asignado.nombre} {user.profesor_asignado.apellido}</span>
+                                        <span>
+                                            {user.profesor_asignado.nombre}{' '}
+                                            {user.profesor_asignado.apellido}
+                                        </span>
                                     </div>
                                 )}
                             </>
@@ -180,7 +224,13 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                     </div>
                 </div>
                 <div className="modal-footer">
-                    <button className="btn-edit" onClick={() => { onClose(); onEdit(user); }}>
+                    <button
+                        className="btn-edit"
+                        onClick={() => {
+                            onClose();
+                            onEdit(user);
+                        }}
+                    >
                         <i className="fas fa-edit"></i> Editar
                     </button>
                 </div>
@@ -194,6 +244,8 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    console.log(user);
+    useBodyOverflowLock(isOpen);
 
     useEffect(() => {
         if (user && isOpen) {
@@ -246,7 +298,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         try {
             const data = new FormData();
             Object.keys(formData).forEach((key) => {
-                if (formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+                if (
+                    formData[key] !== null &&
+                    formData[key] !== undefined &&
+                    formData[key] !== ''
+                ) {
                     data.append(key, formData[key]);
                 }
             });
@@ -273,10 +329,12 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     };
 
     if (!isOpen || !user) return null;
-
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="modal-content edit-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-header">
                     <h2>Editar Usuario</h2>
                     <button className="close-btn" onClick={onClose}>
@@ -293,7 +351,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             onChange={handleInputChange}
                             required
                         />
-                        {errors.nombre && <span className="error">{errors.nombre}</span>}
+                        {errors.nombre && (
+                            <span className="error">{errors.nombre}</span>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Apellido:</label>
@@ -304,7 +364,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             onChange={handleInputChange}
                             required
                         />
-                        {errors.apellido && <span className="error">{errors.apellido}</span>}
+                        {errors.apellido && (
+                            <span className="error">{errors.apellido}</span>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Fecha de Nacimiento:</label>
@@ -315,9 +377,15 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             onChange={handleInputChange}
                             required
                         />
-                        {errors.fecha_nacimiento && <span className="error">{errors.fecha_nacimiento}</span>}
+                        {errors.fecha_nacimiento && (
+                            <span className="error">
+                                {errors.fecha_nacimiento}
+                            </span>
+                        )}
                     </div>
-                    {(type === 'estudiante' || type === 'profesor' || type === 'representante') && (
+                    {(type === 'estudiante' ||
+                        type === 'profesor' ||
+                        type === 'representante') && (
                         <>
                             <div className="form-group">
                                 <label>Cédula:</label>
@@ -327,7 +395,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.cedula || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.cedula && <span className="error">{errors.cedula}</span>}
+                                {errors.cedula && (
+                                    <span className="error">
+                                        {errors.cedula}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Dirección:</label>
@@ -337,7 +409,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.direccion || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.direccion && <span className="error">{errors.direccion}</span>}
+                                {errors.direccion && (
+                                    <span className="error">
+                                        {errors.direccion}
+                                    </span>
+                                )}
                             </div>
                         </>
                     )}
@@ -351,7 +427,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.grado || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.grado && <span className="error">{errors.grado}</span>}
+                                {errors.grado && (
+                                    <span className="error">
+                                        {errors.grado}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Nivel:</label>
@@ -362,9 +442,15 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                 >
                                     <option value="">Seleccione...</option>
                                     <option value="primaria">Primaria</option>
-                                    <option value="secundaria">Secundaria</option>
+                                    <option value="secundaria">
+                                        Secundaria
+                                    </option>
                                 </select>
-                                {errors.nivel && <span className="error">{errors.nivel}</span>}
+                                {errors.nivel && (
+                                    <span className="error">
+                                        {errors.nivel}
+                                    </span>
+                                )}
                             </div>
                         </>
                     )}
@@ -378,7 +464,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.grado_asignado || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.grado_asignado && <span className="error">{errors.grado_asignado}</span>}
+                                {errors.grado_asignado && (
+                                    <span className="error">
+                                        {errors.grado_asignado}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Tipo de Profesor:</label>
@@ -388,7 +478,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.tipo_profesor || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.tipo_profesor && <span className="error">{errors.tipo_profesor}</span>}
+                                {errors.tipo_profesor && (
+                                    <span className="error">
+                                        {errors.tipo_profesor}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Teléfono:</label>
@@ -398,7 +492,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     value={formData.telefono || ''}
                                     onChange={handleInputChange}
                                 />
-                                {errors.telefono && <span className="error">{errors.telefono}</span>}
+                                {errors.telefono && (
+                                    <span className="error">
+                                        {errors.telefono}
+                                    </span>
+                                )}
                             </div>
                         </>
                     )}
@@ -411,7 +509,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                 value={formData.telefono || ''}
                                 onChange={handleInputChange}
                             />
-                            {errors.telefono && <span className="error">{errors.telefono}</span>}
+                            {errors.telefono && (
+                                <span className="error">{errors.telefono}</span>
+                            )}
                         </div>
                     )}
                     <div className="form-group">
@@ -422,13 +522,23 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             accept="image/*"
                             onChange={handleFileChange}
                         />
-                        {errors.foto && <span className="error">{errors.foto}</span>}
+                        {errors.foto && (
+                            <span className="error">{errors.foto}</span>
+                        )}
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn-cancel" onClick={onClose}>
+                        <button
+                            type="button"
+                            className="btn-cancel"
+                            onClick={onClose}
+                        >
                             Cancelar
                         </button>
-                        <button type="submit" className="btn-save" disabled={isLoading}>
+                        <button
+                            type="submit"
+                            className="btn-save"
+                            disabled={isLoading}
+                        >
                             {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                         </button>
                     </div>
@@ -474,7 +584,11 @@ export function ListaE() {
     };
 
     const handleDelete = async (user) => {
-        if (!window.confirm(`¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`)) {
+        if (
+            !window.confirm(
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
+            )
+        ) {
             return;
         }
 
@@ -496,7 +610,10 @@ export function ListaE() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Estudiantes</h1>
-                <button className="btn-add" onClick={() => navigate('/admin/registro')}>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
                     <i className="fas fa-plus"></i> Agregar Estudiante
                 </button>
             </div>
@@ -576,7 +693,11 @@ export function ListaR() {
     };
 
     const handleDelete = async (user) => {
-        if (!window.confirm(`¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`)) {
+        if (
+            !window.confirm(
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
+            )
+        ) {
             return;
         }
 
@@ -598,7 +719,10 @@ export function ListaR() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Representantes</h1>
-                <button className="btn-add" onClick={() => navigate('/admin/registro')}>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
                     <i className="fas fa-plus"></i> Agregar Representante
                 </button>
             </div>
@@ -678,7 +802,11 @@ export function ListaP() {
     };
 
     const handleDelete = async (user) => {
-        if (!window.confirm(`¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`)) {
+        if (
+            !window.confirm(
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
+            )
+        ) {
             return;
         }
 
@@ -700,7 +828,10 @@ export function ListaP() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Profesores</h1>
-                <button className="btn-add" onClick={() => navigate('/admin/registro')}>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
                     <i className="fas fa-plus"></i> Agregar Profesor
                 </button>
             </div>

@@ -35,55 +35,17 @@ export function Profesor() {
                                         Inicio
                                     </Link>
                                 </li>
-                                <details>
-                                    <summary>Usuarios</summary>
-                                    <ul>
-                                        <li>
-                                            <Link
-                                                to="./registro"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Registrar Usuario
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaE"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Estudiantes
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaR"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Representantes
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaP"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Profesores
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </details>
+
+                                <li>
+                                    <Link
+                                        to="./listaE"
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Lista de Estudiantes
+                                    </Link>
+                                </li>
+
                                 <li>
                                     <Link
                                         to="./grados"
@@ -104,11 +66,11 @@ export function Profesor() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="./boletines"
+                                        to="./notas"
                                         className="menu-item"
                                         onClick={() => setMenuOpen(false)}
                                     >
-                                        Boletines
+                                        Carga de Notas
                                     </Link>
                                 </li>
                             </ul>
