@@ -120,27 +120,37 @@
 }
 
 .btn-edit,
+.btn-delete{
+
+    max-width: calc(50% - 2.5px);
+
+}
+
+.btn-edit,
 .btn-delete,
 .btn-assing {
     padding: 3px 6px;
-    border: 1px solid #ddd;
+    border: 3px solid transparent;
     border-radius: 3px;
     cursor: pointer;
-    font-size: 0.65rem;
     display: flex;
     align-items: center;
     gap: 3px;
     white-space: nowrap;
-    flex: 1;
-    max-width: calc(50% - 2.5px);
     justify-content: center;
     min-width: 0;
+    transition: all 0.1s ease;
 }
 
 .btn-assing {
-    background: #17a2b8 !important;
-    color: white;
-    border-color: #17a2b8;
+    background: #80f0ff !important;
+    width: 100%;
+}
+
+.btn-assing:hover,
+.btn-edit:hover,
+.btn-delete:hover{
+    border: 3px solid #a1a1a1;
 }
 
 .btn-edit:hover,
@@ -148,7 +158,6 @@
 .btn-edit {
     background: #28a745;
     color: white;
-    border-color: #28a745;
 }
 
 .btn-delete {
@@ -167,7 +176,7 @@
 .btn-edit i,
 .btn-delete i,
 .btn-assing i {
-    font-size: 0.65rem;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 
@@ -350,6 +359,7 @@
     border: 2px solid gray;
     cursor: pointer;
     margin: 1rem 0;
+    transition: all 0.1s ease;
 }
 
 .representante-item:hover{
@@ -358,6 +368,7 @@
 
 .representante-item.selected{
     border-color: #007bff;
+    border-width: 5px;
 }
 
 .representante-item p{
@@ -370,10 +381,35 @@
     height:max-content;
     border-radius: 100%;
 }
+.foto-repre img{
+    width: 100%;
+    height: 100%;
+    border-radius: 100%;
+}
 .representante-item img{
     width: 100%;
     height: 100%;
     border-radius: 100%;
+}
+
+.carousel-controls{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+.carousel-controls button{
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.carousel-controls button:hover{
+    background-color: #0056b3;
 }
 
 
@@ -404,5 +440,9 @@
     .btn-add {
         margin-left: 0;
         width: 100%;
+    }
+
+    .representante-item p{
+        font-size: 0.8rem;
     }
 }

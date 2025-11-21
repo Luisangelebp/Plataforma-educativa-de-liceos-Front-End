@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
@@ -12,7 +12,6 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
         if (foto.startsWith('http')) return foto;
         return `http://localhost:8000${foto}`;
     };
-    console.log(user.foto);
     return (
         <div className="user-card" onClick={() => onCardClick(user)}>
             <div className="card-photo">
@@ -69,7 +68,7 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
             </div>
             {type === 'estudiante' && (
                 <button
-                    className="btn-assign"
+                    className="btn-assing"
                     onClick={(e) => {
                         e.stopPropagation();
                         onAssing(user);
@@ -119,14 +118,31 @@ const useBodyOverflowLock = (isLocked) => {
 
 // Modal de Detalle
 const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
+    const [representante, setRepresentante] = useState(null);
     useBodyOverflowLock(isOpen);
-    if (!isOpen || !user) return null;
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
         return `http://localhost:8000${foto}`;
     };
 
+    const fetchRepresentantesById = async (id) => {
+        try {
+            const response = await axios.get(`${API_URL}representante/${id}/`);
+            setRepresentante(response.data);
+        } catch (error) {
+            console.error('Error al cargar representante:', error);
+            setRepresentante(null); // Reset on error
+        }
+    };
+
+    useEffect(() => {
+        if (type === 'estudiante' && user?.representante) {
+            fetchRepresentantesById(user.representante);
+        }
+    }, [type, user?.representante]);
+
+    if (!isOpen || !user) return null;
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -188,10 +204,14 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                     <strong>Nivel:</strong>
                                     <span>{user.nivel}</span>
                                 </div>
-                                {user.representante && (
+                                {representante && (
                                     <div className="detail-row">
-                                        <strong>Representante ID:</strong>
-                                        <span>{user.representante}</span>
+                                        <strong>Representante:</strong>
+                                        <span>
+                                            {representante.nombre}{' '}
+                                            {representante.apellido} - C.I:{' '}
+                                            {representante.cedula}
+                                        </span>
                                     </div>
                                 )}
                             </>
@@ -567,6 +587,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
     const [selectedRep, setSelectedRep] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
     useBodyOverflowLock(isOpen);
 
     useEffect(() => {
@@ -604,10 +625,26 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
         }
     };
 
-    const filteredRepresentantes = representantes.filter((rep) => {
-        const fullName = `${rep.nombre} ${rep.apellido}`.toLowerCase();
-        return fullName.includes(searchTerm.toLowerCase());
-    });
+    const filteredRepresentantes = useMemo(() => {
+        return representantes.filter((rep) => {
+            const fullName = `${rep.nombre} ${rep.apellido}`.toLowerCase();
+            return fullName.includes(searchTerm.toLowerCase());
+        });
+    }, [representantes, searchTerm]);
+
+    const ITEMS_PER_PAGE = 5;
+    const [currentPage, setCurrentPage] = useState(0);
+    const totalPages = Math.ceil(
+        filteredRepresentantes.length / ITEMS_PER_PAGE
+    );
+    const paginatedRepresentantes = filteredRepresentantes.slice(
+        currentPage * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE
+    );
+
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [filteredRepresentantes]);
 
     if (!isOpen || !user) return null;
     return (
@@ -638,7 +675,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                         {filteredRepresentantes.length === 0 ? (
                             <p>No hay representantes registrados</p>
                         ) : (
-                            filteredRepresentantes.map((representante) => (
+                            paginatedRepresentantes.map((representante) => (
                                 <div
                                     key={representante.id}
                                     className={`representante-item ${
@@ -652,16 +689,16 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                                 >
                                     <div className="datos">
                                         <p>
-                                            Nombre: {representante.nombre}{' '}
-                                            {representante.apellido}
+                                            Nombre:{' '}
+                                            {`${representante.nombre} ${representante.apellido}`}
                                         </p>
-                                        <p>Cedula: {representante.cedula}</p>
+                                        <p>Cédula: {representante.cedula}</p>
                                     </div>
                                     <div className="card-photo">
                                         {representante.foto ? (
                                             <img
                                                 src={representante.foto}
-                                                alt={`${representante.nombre} ${representante.apellido}`}
+                                                alt={`Foto de ${representante.nombre} ${representante.apellido}`}
                                             />
                                         ) : (
                                             <i className="fas fa-user-circle default-foto-user"></i>
@@ -669,6 +706,35 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                                     </div>
                                 </div>
                             ))
+                        )}
+                        {totalPages > 1 && (
+                            <div className="carousel-controls">
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.max(prev - 1, 0)
+                                        )
+                                    }
+                                    disabled={currentPage === 0}
+                                >
+                                    ← Anterior
+                                </button>
+
+                                <span style={{ margin: '0 1rem' }}>
+                                    Página {currentPage + 1} de {totalPages}
+                                </span>
+
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.min(prev + 1, totalPages - 1)
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages - 1}
+                                >
+                                    Siguiente →
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -682,7 +748,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                     </button>
                     <button
                         type="button"
-                        className="btn-assign"
+                        className="btn-assing"
                         onClick={handleAssign}
                         disabled={isLoading}
                     >
