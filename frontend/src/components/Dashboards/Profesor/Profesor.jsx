@@ -2,10 +2,9 @@ import '../css/dashboards.css';
 import { Profile } from '../../profile/Profile.jsx';
 import { Link, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
-const user = window.localStorage.getItem('user');
-
+const user = JSON.parse(window.localStorage.getItem('user'));
+const API_URL = 'http://localhost:8000/';
 export function Profesor() {
     const [menuOpen, setMenuOpen] = useState(false);
     console.log(user);
@@ -93,7 +92,7 @@ export function Profesor() {
                         <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
                     </div>
                 </div>
-                <Profile userImg={user.foto || null}></Profile>
+                <Profile userImg={`${API_URL}${user.foto}` || null}></Profile>
             </header>
             <main className="main">
                 <Outlet />

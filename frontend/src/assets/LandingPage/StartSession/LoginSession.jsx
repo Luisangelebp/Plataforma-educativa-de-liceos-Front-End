@@ -111,14 +111,14 @@ const LoginSession = ({ setShowLogin }) => {
             localStorage.setItem('user', JSON.stringify(usuario));
 
             // Redirigir según el rol
-            const rol = usuario.rol;
-            if (usuario.rol === 'admin') {
+            const rol = mapRol(formData.typeU);
+            if (rol === 'admin') {
                 window.location.href = '/admin';
-            } else if (usuario.rol === 'representante') {
+            } else if (rol === 'representante') {
                 window.location.href = '/representante';
-            } else if (usuario.rol === 'estudiante') {
+            } else if (rol === 'estudiante') {
                 window.location.href = '/estudiante';
-            } else if (usuario.rol === 'profesor') {
+            } else if (rol === 'profesor') {
                 window.location.href = '/profesor';
             } else {
                 alert('Rol no reconocido');
