@@ -3,6 +3,6 @@ from .views import MateriaViewSet, HorarioViewSet
 
 router = DefaultRouter()
 router.register(r'materias', MateriaViewSet)
-router.register(r'horarios', HorarioViewSet)
+router.register(r'', HorarioViewSet)
 
-urlpatterns = router.urls
+urlpatterns = router.urls   

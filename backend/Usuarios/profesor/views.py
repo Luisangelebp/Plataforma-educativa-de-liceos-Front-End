@@ -8,11 +8,26 @@ class RegistroProfesorView(generics.CreateAPIView):
     serializer_class = RegistroProfesorSerializer
     authentication_classes = []  
     permission_classes = [permissions.AllowAny]
-    
+
+
 class ListProfesoresView(generics.ListAPIView):
-    queryset = Profesor.objects.all()
     serializer_class = ProfesorListSerializer
-    permission_classes = [permissions.AllowAny]  # sin protección por ahora
+    permission_classes = [permissions.AllowAny]  # en producción usar IsAuthenticated
+
+    def get_queryset(self):
+        queryset = Profesor.objects.all()
+        nivel = self.request.GET.get("nivel")
+        grado = self.request.GET.get("grado")
+        seccion = self.request.GET.get("seccion")
+
+        if nivel:
+            queryset = queryset.filter(grado_secciones__nivel__iexact=nivel)
+        if grado:
+            queryset = queryset.filter(grado_secciones__grado=grado)
+        if seccion:
+            queryset = queryset.filter(grado_secciones__seccion=seccion)
+
+        return queryset.distinct()
 
 
 class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -25,7 +40,5 @@ class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        instance.refresh_from_db()
+        # Devolver siempre con el serializer de listado (incluye secciones)
         return Response(ProfesorListSerializer(instance).data)
-
-

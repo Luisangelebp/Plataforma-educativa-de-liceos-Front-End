@@ -21,6 +21,7 @@
         <th>Edad</th>
         {% if mostrar_grado %}<th>Grado</th>{% endif %}
         {% if mostrar_año %}<th>Año</th>{% endif %}
+        <th>Sección</th>
         <th>Nivel</th>
         <th>Cédula</th>
         <th>Representante</th>
@@ -52,6 +53,14 @@
             {% endif %}
           </td>
         {% endif %}
+
+        <td>
+          {% if e.grado_seccion %}
+            {{ e.grado_seccion.seccion }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
 
         <td>
           {% if e.grado_seccion %}

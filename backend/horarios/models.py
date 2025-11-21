@@ -1,6 +1,5 @@
 from django.db import models
 from core.models import GradoSeccion
-from Usuarios.models import Profesor
 
 class Materia(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -28,7 +27,13 @@ class Horario(models.Model):
 
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
     grado_seccion = models.ForeignKey(GradoSeccion, on_delete=models.CASCADE)
-    profesor = models.ForeignKey(Profesor, on_delete=models.SET_NULL, null=True, blank=True)  # opcional
+    # 🔑 Aquí va el formato correcto
+    profesor = models.ForeignKey(
+        "Usuarios.Profesor",   # app_label.ModelName
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
