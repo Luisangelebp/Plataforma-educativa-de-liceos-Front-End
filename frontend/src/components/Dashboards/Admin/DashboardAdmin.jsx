@@ -4,6 +4,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 
 const userAdmin = window.localStorage.getItem('user');
+const API_URL = 'http://localhost:8000/';
 
 export function Admin() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -129,7 +130,9 @@ export function Admin() {
                         <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
                     </div>
                 </div>
-                <Profile userImg={userAdmin.foto || null}></Profile>
+                <Profile
+                    userImg={`${API_URL}${userAdmin.foto}` || null}
+                ></Profile>
             </header>
             <main className="main">
                 <Outlet />

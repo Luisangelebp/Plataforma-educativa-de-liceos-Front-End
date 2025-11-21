@@ -68,8 +68,8 @@ export default function Registo() {
             console.error('Error al registrar el usuario:', error);
         } finally {
             setIsLoading(false);
-            // setFormData({});
-            // setRolActive('');
+            setFormData({});
+            setRolActive('');
         }
     };
 
@@ -172,7 +172,7 @@ export default function Registo() {
                     </div>
                 )}
                 {/* Email Input */}
-                {rolActive !== '' && formData.nivel === 'secundaria' && (
+                {formData.nivel !== 'primaria' && rolActive !== '' && (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -214,7 +214,7 @@ export default function Registo() {
                     </div>
                 ) : null}
                 {/* Password Input */}
-                {rolActive !== '' && formData.nivel === 'secundaria' && (
+                {formData.nivel !== 'primaria' && rolActive !== '' && (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">

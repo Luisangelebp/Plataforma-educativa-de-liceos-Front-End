@@ -92,7 +92,9 @@ export function Profesor() {
                         <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
                     </div>
                 </div>
-                <Profile userImg={`${API_URL}${user.foto}` || null}></Profile>
+                <Profile
+                    userImg={user.foto ? `${API_URL}${user.foto}` : null}
+                ></Profile>
             </header>
             <main className="main">
                 <Outlet />
