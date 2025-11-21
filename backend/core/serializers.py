@@ -49,12 +49,15 @@ class LoginSerializer(serializers.Serializer):
 
         # Validación específica por rol
         if rol == 'estudiante':
-            # Validar que exista perfil estudiante
             estudiante = getattr(usuario, 'estudiante_profile', None)
             if not estudiante:
                 raise serializers.ValidationError("No existe perfil de estudiante asociado.")
 
-            if estudiante.nivel != 'secundaria':
+            # 🔑 Ahora validamos usando grado_seccion.nivel
+            if not estudiante.grado_seccion:
+                raise serializers.ValidationError("El estudiante no tiene sección asignada.")
+
+            if estudiante.grado_seccion.nivel != 'secundaria':
                 raise serializers.ValidationError("Solo estudiantes de secundaria pueden iniciar sesión.")
 
             if not estudiante.cedula:
@@ -66,7 +69,7 @@ class LoginSerializer(serializers.Serializer):
 class GradoSeccionSerializer(serializers.ModelSerializer):
     class Meta:
         model = GradoSeccion
-        fields = '__all__'
+        fields = ['id', 'nivel', 'grado', 'seccion']
 
     def validate(self, data):
         nivel = data.get('nivel')
