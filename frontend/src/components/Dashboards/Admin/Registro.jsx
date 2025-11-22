@@ -15,7 +15,8 @@ export default function Registo() {
 
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            // 👇 si el campo es "grado", lo guardamos como string
+            [name]: name === 'grado' ? value.toString() : value,
         }));
 
         // Limpiar error del campo cuando el usuario empiece a escribir
@@ -25,27 +26,6 @@ export default function Registo() {
                 [name]: '',
             }));
         }
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.username.trim()) {
-            newErrors.username = 'El usuario es requerido';
-        }
-
-        if (!formData.password) {
-            newErrors.password = 'La contraseña es requerida';
-        } else if (formData.password.length < 6) {
-            newErrors.password =
-                'La contraseña debe tener al menos 6 caracteres';
-        }
-
-        if (!formData.typeU) {
-            newErrors.typeU = 'Seleccione un tipo de usuario';
-        }
-
-        return newErrors;
     };
 
     const rolforms = (e) => {
@@ -325,6 +305,75 @@ export default function Registo() {
                             <label htmlFor="grado">Grado:</label>{' '}
                             <i className="input-icon bi bi-book"></i>{' '}
                         </div>{' '}
+                    </div>
+                ) : null}
+                {/* Sección Input */}
+                {rolActive === 'estudiante' ? (
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="seccion"
+                                name="seccion"
+                                value={formData.seccion}
+                                className={formData.seccion ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione la sección --
+                                </option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                ) : null}
+                {/* Sección Input */}
+                {rolActive === 'estudiante' ? (
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="seccion"
+                                name="seccion"
+                                value={formData.seccion}
+                                className={formData.seccion ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione la sección --
+                                </option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                ) : null}
+                {/* Sección Input */}
+                {rolActive === 'estudiante' ? (
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="seccion"
+                                name="seccion"
+                                value={formData.seccion}
+                                className={formData.seccion ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione la sección --
+                                </option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
                     </div>
                 ) : null}
                 {/* Fecha de Nacimiento Input */}

@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from datetime import date
+from core.models import GradoSeccion
+from horarios.models import Materia
 
 OPCIONES_TIPO_PROFESOR = [
     ('titular', 'Titular'),
@@ -16,10 +18,24 @@ class Profesor(models.Model):
     )
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    grado_asignado = models.CharField(max_length=50)
+
+    # 🔑 Puede estar en varias secciones
+    grado_secciones = models.ManyToManyField(
+        GradoSeccion,
+        related_name='profesores',
+        blank=True
+    )
+
+    # 🔑 Puede dictar varias materias, pero no es obligatorio
+    materias = models.ManyToManyField(
+        Materia,
+        related_name='profesores',
+        blank=True
+    )
+
     tipo_profesor = models.CharField(max_length=20, choices=OPCIONES_TIPO_PROFESOR)
     fecha_nacimiento = models.DateField()
-    cedula = models.CharField(max_length=20)
+    cedula = models.CharField(max_length=20, unique=True)
     direccion = models.TextField()
     telefono = models.CharField(max_length=20)
     foto = models.ImageField(upload_to='profesores/', null=True, blank=True)
@@ -29,7 +45,6 @@ class Profesor(models.Model):
 
     @property
     def edad(self):
-        """Calcula la edad a partir de la fecha de nacimiento."""
         if self.fecha_nacimiento:
             today = date.today()
             return today.year - self.fecha_nacimiento.year - (
@@ -38,4 +53,4 @@ class Profesor(models.Model):
         return None
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido} - {self.grado_asignado}"
+        return f"{self.nombre} {self.apellido} - {self.tipo_profesor}"

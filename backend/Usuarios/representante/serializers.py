@@ -2,7 +2,7 @@ from rest_framework import serializers
 from core.serializers import UsuarioSerializer
 from core.models import Usuario
 from .models import Representante
-from Usuarios.profesor.models import Profesor
+from Usuarios.estudiante.models import Estudiante  # importa el modelo de estudiante
 
 class RegistroRepresentanteSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
@@ -18,21 +18,17 @@ class RegistroRepresentanteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         email = data.get('email')
-        
-        # Validar que el email no esté ya registrado
         if Usuario.objects.filter(email=email).exists():
             raise serializers.ValidationError("El email ya está registrado en el sistema.")
-        
         return data
 
     def create(self, validated_data):
         email = validated_data.pop('email')
         password = validated_data.pop('password')
-        
-        # Validar unicidad del email antes de crear para dar error amigable
+
         if Usuario.objects.filter(email=email).exists():
             raise serializers.ValidationError("El email ya está registrado en el sistema.")
-        
+
         datos_usuario = {
             'email': email,
             'nombre': validated_data.get('nombre'),
@@ -40,34 +36,38 @@ class RegistroRepresentanteSerializer(serializers.ModelSerializer):
             'rol': 'representante',
             'password': password
         }
-        
+
         usuario_serializer = UsuarioSerializer(data=datos_usuario)
         usuario_serializer.is_valid(raise_exception=True)
         usuario = usuario_serializer.save()
-        
-        # Asegurar que is_active = True
+
         usuario.is_active = True
         usuario.save()
-        
+
         representante = Representante.objects.create(usuario=usuario, **validated_data)
         return representante
 
 
-class RepresentanteListSerializer(serializers.ModelSerializer):
-    # Representación anidada mínima del profesor asignado
-    class ProfesorSimpleSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Profesor
-            fields = ['id', 'nombre', 'apellido', 'grado_asignado']
+class EstudianteSimpleSerializer(serializers.ModelSerializer):
+    """Serializer simplificado para mostrar estudiantes en el panel del representante."""
+    grado_o_año = serializers.ReadOnlyField()
+    representante_nombre = serializers.ReadOnlyField()
 
-    profesor_asignado = ProfesorSimpleSerializer(read_only=True)
+    class Meta:
+        model = Estudiante
+        fields = ['id', 'nombre', 'apellido', 'cedula_mostrada', 'grado_o_año', 'representante_nombre']
+
+
+class RepresentanteListSerializer(serializers.ModelSerializer):
     edad = serializers.ReadOnlyField()
+    estudiantes = EstudianteSimpleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Representante
         fields = [
             'id', 'usuario', 'nombre', 'apellido', 'fecha_nacimiento', 'edad',
-            'cedula', 'direccion', 'telefono', 'foto', 'profesor_asignado',
+            'cedula', 'direccion', 'telefono', 'foto',
+            'estudiantes',  # ahora devuelve los estudiantes asociados
             'fecha_creacion', 'fecha_actualizacion'
         ]
 

@@ -6,7 +6,11 @@ from django.template.loader import get_template
 from weasyprint import HTML
 
 from .models import Estudiante
-from .serializers import RegistroEstudianteSerializer, EstudianteListSerializer, EstudianteUpdateSerializer
+from .serializers import (
+    RegistroEstudianteSerializer,
+    EstudianteListSerializer,
+    EstudianteUpdateSerializer
+)
 
 
 # Registro de estudiantes
@@ -23,16 +27,33 @@ class ListEstudiantesView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Estudiante.objects.all()
-        grado = self.request.query_params.get("grado")
-        nivel = self.request.query_params.get("nivel")
-        representante_id = self.request.query_params.get("representante_id")
 
-        if grado:
-            queryset = queryset.filter(grado=grado)
+        # Parámetros principales
+        grado_seccion_id = (
+            self.request.query_params.get("grado_seccion_id")
+            or self.request.query_params.get("grado_seccion")  # alias
+        )
+        nivel = self.request.query_params.get("nivel")
+        representante_id = (
+            self.request.query_params.get("representante_id")
+            or self.request.query_params.get("representante")  # alias
+        )
+
+        # (filtrar por grado/sección directos)
+        grado = self.request.query_params.get("grado")
+        seccion = self.request.query_params.get("seccion")
+
+        # Aplicar filtros
+        if grado_seccion_id:
+            queryset = queryset.filter(grado_seccion_id=grado_seccion_id)
         if nivel:
-            queryset = queryset.filter(nivel=nivel)
+            queryset = queryset.filter(grado_seccion__nivel__iexact=nivel)
         if representante_id:
             queryset = queryset.filter(representante_id=representante_id)
+        if grado:
+            queryset = queryset.filter(grado_seccion__grado=grado)
+        if seccion:
+            queryset = queryset.filter(grado_seccion__seccion__iexact=seccion)
 
         return queryset
 
@@ -42,17 +63,28 @@ class EstudiantesPDFView(APIView):
     permission_classes = [permissions.AllowAny]  # en producción usar IsAuthenticated
 
     def get(self, request):
-        grado = request.GET.get("grado")
+        # Parámetros principales
+        grado_seccion_id = request.GET.get("grado_seccion_id") or request.GET.get("grado_seccion")  # alias
         nivel = request.GET.get("nivel")
-        representante_id = request.GET.get("representante_id")
+        representante_id = request.GET.get("representante_id") or request.GET.get("representante")  # alias
+
+        # (filtrar por grado/sección directos)
+        grado = request.GET.get("grado")
+        seccion = request.GET.get("seccion")
 
         estudiantes = Estudiante.objects.all()
-        if grado:
-            estudiantes = estudiantes.filter(grado__iexact=grado)
+
+        # Aplicar filtros de manera consistente (insensible a mayúsculas donde aplica)
+        if grado_seccion_id:
+            estudiantes = estudiantes.filter(grado_seccion_id=grado_seccion_id)
         if nivel:
-            estudiantes = estudiantes.filter(nivel__iexact=nivel)
+            estudiantes = estudiantes.filter(grado_seccion__nivel__iexact=nivel)
         if representante_id:
             estudiantes = estudiantes.filter(representante_id=representante_id)
+        if grado:
+            estudiantes = estudiantes.filter(grado_seccion__grado=grado)
+        if seccion:
+            estudiantes = estudiantes.filter(grado_seccion__seccion__iexact=seccion)
 
         if not estudiantes.exists():
             html = "<h1 style='text-align:center;'>No hay estudiantes que coincidan con los filtros.</h1>"
@@ -61,7 +93,8 @@ class EstudiantesPDFView(APIView):
             response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
             return response
 
-        niveles = set(e.nivel for e in estudiantes)
+        # Determinar si mostrar "Grado" o "Año" según el nivel de las secciones
+        niveles = set(e.grado_seccion.nivel for e in estudiantes if e.grado_seccion)
         mostrar_grado = "primaria" in niveles
         mostrar_año = "secundaria" in niveles
 
@@ -85,17 +118,17 @@ class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteUpdateSerializer
     permission_classes = [permissions.AllowAny]  # en producción usar IsAdminUser
-    
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        
+
         # Si hay representante, actualizar dirección
         representante = serializer.validated_data.get('representante')
         if representante:
             serializer.validated_data['direccion'] = representante.direccion
-        
+
         self.perform_update(serializer)
         instance.refresh_from_db()
         return Response(EstudianteListSerializer(instance).data)

@@ -11,25 +11,16 @@ class Representante(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     fecha_nacimiento = models.DateField()
-    cedula = models.CharField(max_length=20)
+    cedula = models.CharField(max_length=20, unique=True)
     direccion = models.TextField()
     telefono = models.CharField(max_length=20)
     foto = models.ImageField(upload_to='representantes/', null=True, blank=True)
-    profesor_asignado = models.ForeignKey(
-        'Usuarios.Profesor',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='representantes_asignados',
-        verbose_name='Profesor asignado'
-    )
-    
+
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     @property
     def edad(self):
-        """Calcula la edad a partir de la fecha de nacimiento."""
         if self.fecha_nacimiento:
             today = date.today()
             return today.year - self.fecha_nacimiento.year - (

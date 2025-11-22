@@ -21,6 +21,7 @@
         <th>Edad</th>
         {% if mostrar_grado %}<th>Grado</th>{% endif %}
         {% if mostrar_año %}<th>Año</th>{% endif %}
+        <th>Sección</th>
         <th>Nivel</th>
         <th>Cédula</th>
         <th>Representante</th>
@@ -32,13 +33,43 @@
         <td>{{ e.nombre }}</td>
         <td>{{ e.apellido }}</td>
         <td>{{ e.edad }}</td>
+
         {% if mostrar_grado %}
-          <td>{% if e.nivel == "primaria" %}{{ e.grado }}{% else %}—{% endif %}</td>
+          <td>
+            {% if e.grado_seccion and e.grado_seccion.nivel == "primaria" %}
+              {{ e.grado_seccion.grado }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
         {% endif %}
+
         {% if mostrar_año %}
-          <td>{% if e.nivel == "secundaria" %}{{ e.grado }}{% else %}—{% endif %}</td>
+          <td>
+            {% if e.grado_seccion and e.grado_seccion.nivel == "secundaria" %}
+              {{ e.grado_seccion.grado }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
         {% endif %}
-        <td>{{ e.nivel|title }}</td>
+
+        <td>
+          {% if e.grado_seccion %}
+            {{ e.grado_seccion.seccion }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+
+        <td>
+          {% if e.grado_seccion %}
+            {{ e.grado_seccion.nivel|title }}
+          {% else %}
+            Sin asignar
+          {% endif %}
+        </td>
+
         <td>{{ e.cedula_mostrada }}</td>
         <td>{{ e.representante_nombre }}</td>
       </tr>
