@@ -1,8 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UsuarioSerializer, LoginSerializer
+
+from .serializers import UsuarioSerializer, LoginSerializer, GradoSeccionSerializer
+from core.models import GradoSeccion, Usuario
 
 # Importar los serializers de cada rol
 from Usuarios.profesor.serializers import ProfesorListSerializer
@@ -82,3 +84,12 @@ class LoginUsuarioView(APIView):
             'refresh': str(refresh),
             'usuario': perfil_data if perfil_data else UsuarioSerializer(usuario).data
         }, status=status.HTTP_200_OK)
+
+
+class GradoSeccionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para listar, crear, actualizar y eliminar instancias de GradoSeccion.
+    Permite al front consumir las combinaciones de nivel/grado/sección como lista.
+    """
+    queryset = GradoSeccion.objects.all()
+    serializer_class = GradoSeccionSerializer
