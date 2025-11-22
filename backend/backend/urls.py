@@ -31,6 +31,7 @@ def index(request):
                 <ul>
                     <li><a href="/login/">/login/</a></li>
                     <li><a href="/registro/">/registro/</a></li>
+                    <li><a href="/grado-seccion/">/grado-seccion/</a> (lista, detalle <code>/&lt;id&gt;/</code>, crear <code>POST</code>)</li>
                 </ul>
             </div>
 
@@ -65,7 +66,7 @@ def index(request):
 urlpatterns = [
     path('', index),  # 👈 raíz muestra índice
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),
+    path('', include('core.urls')),  # incluye login, registro y grado-seccion
     path('usuarios/estudiante/', include('Usuarios.estudiante.urls')),
     path('usuarios/profesor/', include('Usuarios.profesor.urls')),
     path('usuarios/representante/', include('Usuarios.representante.urls')),
