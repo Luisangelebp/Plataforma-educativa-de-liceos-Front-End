@@ -330,52 +330,6 @@ export default function Registo() {
                         </div>
                     </div>
                 ) : null}
-                {/* Sección Input */}
-                {rolActive === 'estudiante' ? (
-                    <div className="input-group">
-                        <div className="select-container">
-                            <select
-                                id="seccion"
-                                name="seccion"
-                                value={formData.seccion}
-                                className={formData.seccion ? 'has-value' : ''}
-                                onChange={(e) => handleInputChange(e)}
-                                required
-                            >
-                                <option value="">
-                                    -- Seleccione la sección --
-                                </option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                ) : null}
-                {/* Sección Input */}
-                {rolActive === 'estudiante' ? (
-                    <div className="input-group">
-                        <div className="select-container">
-                            <select
-                                id="seccion"
-                                name="seccion"
-                                value={formData.seccion}
-                                className={formData.seccion ? 'has-value' : ''}
-                                onChange={(e) => handleInputChange(e)}
-                                required
-                            >
-                                <option value="">
-                                    -- Seleccione la sección --
-                                </option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                ) : null}
                 {/* Fecha de Nacimiento Input */}
                 {rolActive !== '' && rolActive !== 'administrador' ? (
                     <div className="input-group">
