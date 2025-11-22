@@ -27,6 +27,27 @@ export default function Registo() {
         }
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.username.trim()) {
+            newErrors.username = 'El usuario es requerido';
+        }
+
+        if (!formData.password) {
+            newErrors.password = 'La contraseña es requerida';
+        } else if (formData.password.length < 6) {
+            newErrors.password =
+                'La contraseña debe tener al menos 6 caracteres';
+        }
+
+        if (!formData.typeU) {
+            newErrors.typeU = 'Seleccione un tipo de usuario';
+        }
+
+        return newErrors;
+    };
+
     const rolforms = (e) => {
         handleInputChange(e);
 
@@ -51,6 +72,12 @@ export default function Registo() {
         setIsLoading(true);
         const formDataObj = new FormData();
         console.log(formData);
+        const formErrors = validateForm();
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
         for (const key in formData) {
             if (key !== 'typeU') {
                 formDataObj.append(key, formData[key]);
@@ -66,6 +93,9 @@ export default function Registo() {
                 });
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
+            setErrors({
+                submit: 'Error en datos ingresados o error de conexión.',
+            });
         } finally {
             setIsLoading(false);
             setFormData({});
@@ -84,7 +114,7 @@ export default function Registo() {
             >
                 {' '}
                 {/* Tipo de Usuario Select */}
-                <div className="input-group">
+                <div className="input-group ">
                     {' '}
                     <div className="select-container">
                         {' '}
@@ -110,7 +140,7 @@ export default function Registo() {
                         <i className="select-icon fas fa-chevron-down"></i>{' '}
                     </div>{' '}
                 </div>
-                {/* Tipo de Usuario Select */}
+                {/* Nivel de Estudiante Select */}
                 {rolActive === 'estudiante' && (
                     <div className="input-group">
                         <div className="select-container">
@@ -408,6 +438,12 @@ export default function Registo() {
                         </div>{' '}
                     </div>
                 ) : null}
+                {errors.submit && (
+                    <div className="submit-error">
+                        <i className="fas fa-exclamation-circle"></i>
+                        {errors.submit}
+                    </div>
+                )}
                 <button className="submit-btn" type="submit">
                     {' '}
                     {isLoading ? 'Registrando...' : 'Registrar Usuario'}
