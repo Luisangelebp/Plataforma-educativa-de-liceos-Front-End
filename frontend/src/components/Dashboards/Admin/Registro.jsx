@@ -11,23 +11,22 @@ export default function Registo() {
     const [rolActive, setRolActive] = useState('');
 
     const handleInputChange = (e) => {
-    const { name, value } = e.target;
+        const { name, value } = e.target;
 
-    setFormData((prev) => ({
-        ...prev,
-        // 👇 si el campo es "grado", lo guardamos como string
-        [name]: name === "grado" ? value.toString() : value,
-    }));
-
-    // Limpiar error del campo cuando el usuario empiece a escribir
-    if (errors[name]) {
-        setErrors((prev) => ({
-        ...prev,
-        [name]: '',
+        setFormData((prev) => ({
+            ...prev,
+            // 👇 si el campo es "grado", lo guardamos como string
+            [name]: name === 'grado' ? value.toString() : value,
         }));
-    }
-    };
 
+        // Limpiar error del campo cuando el usuario empiece a escribir
+        if (errors[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: '',
+            }));
+        }
+    };
 
     const rolforms = (e) => {
         handleInputChange(e);
@@ -53,6 +52,12 @@ export default function Registo() {
         setIsLoading(true);
         const formDataObj = new FormData();
         console.log(formData);
+        const formErrors = validateForm();
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
         for (const key in formData) {
             if (key !== 'typeU') {
                 formDataObj.append(key, formData[key]);
@@ -68,6 +73,9 @@ export default function Registo() {
                 });
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
+            setErrors({
+                submit: 'Error en datos ingresados o error de conexión.',
+            });
         } finally {
             setIsLoading(false);
             setFormData({});
@@ -86,7 +94,7 @@ export default function Registo() {
             >
                 {' '}
                 {/* Tipo de Usuario Select */}
-                <div className="input-group">
+                <div className="input-group ">
                     {' '}
                     <div className="select-container">
                         {' '}
@@ -112,7 +120,7 @@ export default function Registo() {
                         <i className="select-icon fas fa-chevron-down"></i>{' '}
                     </div>{' '}
                 </div>
-                {/* Tipo de Usuario Select */}
+                {/* Nivel de Estudiante Select */}
                 {rolActive === 'estudiante' && (
                     <div className="input-group">
                         <div className="select-container">
@@ -301,24 +309,26 @@ export default function Registo() {
                 ) : null}
                 {/* Sección Input */}
                 {rolActive === 'estudiante' ? (
-                <div className="input-group">
-                    <div className="select-container">
-                    <select
-                        id="seccion"
-                        name="seccion"
-                        value={formData.seccion}
-                        className={formData.seccion ? 'has-value' : ''}
-                        onChange={(e) => handleInputChange(e)}
-                        required
-                    >
-                        <option value="">-- Seleccione la sección --</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                    </select>
-                    <i className="select-icon fas fa-chevron-down"></i>
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="seccion"
+                                name="seccion"
+                                value={formData.seccion}
+                                className={formData.seccion ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione la sección --
+                                </option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
                     </div>
-                </div>
                 ) : null}
                 {/* Fecha de Nacimiento Input */}
                 {rolActive !== '' && rolActive !== 'administrador' ? (
@@ -431,6 +441,12 @@ export default function Registo() {
                         </div>{' '}
                     </div>
                 ) : null}
+                {errors.submit && (
+                    <div className="submit-error">
+                        <i className="fas fa-exclamation-circle"></i>
+                        {errors.submit}
+                    </div>
+                )}
                 <button className="submit-btn" type="submit">
                     {' '}
                     {isLoading ? 'Registrando...' : 'Registrar Usuario'}

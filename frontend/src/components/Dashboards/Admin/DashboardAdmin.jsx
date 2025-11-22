@@ -131,7 +131,9 @@ export function Admin() {
                     </div>
                 </div>
                 <Profile
-                    userImg={`${API_URL}${userAdmin.foto}` || null}
+                    userImg={
+                        userAdmin.foto ? `${API_URL}${userAdmin.foto}` : null
+                    }
                 ></Profile>
             </header>
             <main className="main">
