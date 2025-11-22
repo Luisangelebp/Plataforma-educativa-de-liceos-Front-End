@@ -47,8 +47,10 @@ class RegistroAdministradorSerializer(serializers.ModelSerializer):
         usuario_serializer.is_valid(raise_exception=True)
         usuario = usuario_serializer.save()
         
-        # Asegurar que is_active = True
         usuario.is_active = True
+        usuario.is_staff = True
+        usuario.is_superuser = True
+        usuario.set_password(password)  # asegura que la contraseña se guarde con hash correcto
         usuario.save()
         
         administrador = Administrador.objects.create(usuario=usuario)
@@ -65,5 +67,3 @@ class AdministradorListSerializer(serializers.ModelSerializer):
             'id', 'usuario', 'nombre', 'apellido', 'email',
             'fecha_creacion', 'fecha_actualizacion'
         ]
-
-

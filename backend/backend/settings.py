@@ -163,4 +163,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
-AUTHENTICATION_BACKENDS = ['core.backends.EmailBackend']
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # necesario para admin
+    'core.backends.EmailBackend',                 # tu backend custom para login por email
+]
