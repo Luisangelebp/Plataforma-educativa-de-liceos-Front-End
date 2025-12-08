@@ -72,6 +72,24 @@ export function Profesor() {
                                         Carga de Notas
                                     </Link>
                                 </li>
+                                <li>
+                                    <Link
+                                        to="./boletines"
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Boletines
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="./calendario"
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Calendario
+                                    </Link>
+                                </li>
                             </ul>
                         </>
                     )}
