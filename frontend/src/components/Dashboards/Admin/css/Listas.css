@@ -46,100 +46,102 @@
     color: #666;
 }
 
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    padding: 20px 0;
-}
-
-.user-card {
+.table-container {
     background: #fff;
     border-radius: 8px;
-    border: 1px solid #ddd;
-    padding: 12px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.no-data {
     text-align: center;
-    min-height: 200px;
-    box-sizing: border-box;
-    overflow: hidden;
-    width: 100%;
-}
-
-.card-photo {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-bottom: 10px;
-    border: 2px solid #ddd;
-    background: #f0f0f0;
-}
-
-.card-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.card-info {
-    width: 100%;
-    margin-bottom: 8px;
-    flex: 1;
-    overflow: hidden;
-}
-
-.card-info h3 {
-    margin: 0 0 6px 0;
-    color: #333;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.card-info p {
-    margin: 3px 0;
+    padding: 40px;
     color: #666;
-    font-size: 0.8rem;
+    font-size: 1.1rem;
 }
 
-.card-info strong {
-    color: #333;
-    font-weight: 500;
-}
-
-.card-actions {
-    display: flex;
-    gap: 5px;
+.users-table {
     width: 100%;
-    justify-content: center;
-    margin-top: auto;
-    padding-top: 8px;
+    border-collapse: collapse;
 }
 
-.btn-edit,
-.btn-delete{
+.users-table thead {
+    background: #f8f9fa;
+}
 
-    max-width: calc(50% - 2.5px);
+.users-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 0.9rem;
+}
 
+.users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.user-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.user-row:hover {
+    background-color: #f8f9fa;
+}
+
+.user-photo {
+    width: 60px;
+    padding: 8px !important;
+}
+
+.user-photo img,
+.user-photo .default-foto-user {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.user-photo .default-foto-user {
+    font-size: 50px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #333 !important;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .btn-edit,
 .btn-delete,
 .btn-assing {
-    padding: 3px 6px;
-    border: 3px solid transparent;
-    border-radius: 3px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 3px;
-    white-space: nowrap;
     justify-content: center;
-    min-width: 0;
-    transition: all 0.1s ease;
+    gap: 5px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    min-width: 35px;
 }
 
 .btn-assing {
@@ -149,15 +151,14 @@
 
 .btn-assing:hover,
 .btn-edit:hover,
-.btn-delete:hover{
-    border: 3px solid #a1a1a1;
+.btn-delete:hover {
+    border: 2px solid #a1a1a1;
+    transform: scale(1.02);
 }
 
-.btn-edit:hover,
-
 .btn-edit {
-    background: #28a745;
-    color: white;
+    background: #ffc107;
+    color: #333;
 }
 
 .btn-delete {
@@ -166,18 +167,10 @@
     border-color: #dc3545;
 }
 
-.default-foto-user{
-    width:100%;
-    height: 100%;
-    font-size: 80px;
-    color: #666;
-}
-
 .btn-edit i,
 .btn-delete i,
 .btn-assing i {
-    font-size: 1rem;
-    flex-shrink: 0;
+    font-size: 0.9rem;
 }
 
 /* Modal Styles */
@@ -421,8 +414,45 @@
         align-items: flex-start;
     }
 
-    .cards-grid {
-        grid-template-columns: 1fr;
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        min-width: 600px;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .user-photo {
+        width: 50px;
+    }
+
+    .user-photo img,
+    .user-photo .default-foto-user {
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-photo .default-foto-user {
+        font-size: 40px;
+    }
+
+    .user-actions {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .btn-edit,
+    .btn-delete,
+    .btn-assing {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+        min-width: 30px;
     }
 
     .modal-content {
@@ -437,6 +467,7 @@
     .detail-row span {
         text-align: left;
     }
+    
     .btn-add {
         margin-left: 0;
         width: 100%;
@@ -444,5 +475,201 @@
 
     .representante-item p{
         font-size: 0.8rem;
+    }
+}
+
+/* Barra de herramientas (búsqueda, filtros, vista) */
+.listas-toolbar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.filters-container {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.view-toggle {
+    display: flex;
+    gap: 5px;
+    background: white;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.view-btn {
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.view-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.view-btn.active {
+    background: #007bff;
+    color: white;
+}
+
+.results-info {
+    margin-bottom: 15px;
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Grid de Cards */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.user-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
+}
+
+.card-photo {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.card-photo img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #007bff;
+}
+
+.default-foto-user {
+    font-size: 100px;
+    color: #ccc;
+}
+
+.card-info {
+    text-align: center;
+}
+
+.card-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.card-info p {
+    margin: 5px 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.card-info strong {
+    color: #333;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .listas-toolbar {
+        flex-direction: column;
+    }
+    
+    .search-container {
+        width: 100%;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
     }
 }

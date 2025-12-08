@@ -35,6 +35,11 @@ class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProfesorUpdateSerializer
     permission_classes = [permissions.AllowAny]  # en producción usar IsAdminUser
     
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Usar el serializer de listado para incluir las secciones
+        return Response(ProfesorListSerializer(instance).data)
+    
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)

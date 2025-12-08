@@ -29,10 +29,12 @@ class ListEstudiantesView(generics.ListAPIView):
         queryset = Estudiante.objects.all()
 
         # Parámetros principales
-        grado_seccion_id = (
-            self.request.query_params.get("grado_seccion_id")
-            or self.request.query_params.get("grado_seccion")  # alias
-        )
+        # Soportar múltiples grado_seccion_id para profesores con varias secciones
+        grado_seccion_ids = self.request.query_params.getlist("grado_seccion_id")
+        if not grado_seccion_ids:
+            # Alias alternativo
+            grado_seccion_ids = self.request.query_params.getlist("grado_seccion")
+        
         nivel = self.request.query_params.get("nivel")
         representante_id = (
             self.request.query_params.get("representante_id")
@@ -44,8 +46,8 @@ class ListEstudiantesView(generics.ListAPIView):
         seccion = self.request.query_params.get("seccion")
 
         # Aplicar filtros
-        if grado_seccion_id:
-            queryset = queryset.filter(grado_seccion_id=grado_seccion_id)
+        if grado_seccion_ids:
+            queryset = queryset.filter(grado_seccion_id__in=grado_seccion_ids)
         if nivel:
             queryset = queryset.filter(grado_seccion__nivel__iexact=nivel)
         if representante_id:
@@ -64,7 +66,11 @@ class EstudiantesPDFView(APIView):
 
     def get(self, request):
         # Parámetros principales
-        grado_seccion_id = request.GET.get("grado_seccion_id") or request.GET.get("grado_seccion")  # alias
+        # Soportar múltiples grado_seccion_id para profesores con varias secciones
+        grado_seccion_ids = request.GET.getlist("grado_seccion_id")
+        if not grado_seccion_ids:
+            grado_seccion_ids = request.GET.getlist("grado_seccion")
+        
         nivel = request.GET.get("nivel")
         representante_id = request.GET.get("representante_id") or request.GET.get("representante")  # alias
 
@@ -75,8 +81,8 @@ class EstudiantesPDFView(APIView):
         estudiantes = Estudiante.objects.all()
 
         # Aplicar filtros de manera consistente (insensible a mayúsculas donde aplica)
-        if grado_seccion_id:
-            estudiantes = estudiantes.filter(grado_seccion_id=grado_seccion_id)
+        if grado_seccion_ids:
+            estudiantes = estudiantes.filter(grado_seccion_id__in=grado_seccion_ids)
         if nivel:
             estudiantes = estudiantes.filter(grado_seccion__nivel__iexact=nivel)
         if representante_id:

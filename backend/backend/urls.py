@@ -72,6 +72,8 @@ urlpatterns = [
     path('usuarios/representante/', include('Usuarios.representante.urls')),
     path('usuarios/administrador/', include('Usuarios.administrador.urls')),
     path('horarios/', include('horarios.urls')),
+    path('boletines/', include('boletines.urls')),
+    path('calendario/', include('calendario.urls')),
 ]
 
 # Servir archivos media en desarrollo

@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/usuarios/`;
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/usuarios/`;
 
 // Componente de Ficha/Card
 const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        return `${import.meta.env.VITE_API_URL}${foto}`;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        return `${baseUrl}${foto}`;
     };
     return (
         <div className="user-card" onClick={() => onCardClick(user)}>
@@ -31,27 +32,32 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                 {type === 'estudiante' && (
                     <>
                         <p>
-                            <strong>Grado:</strong> {user.grado}
+                            <strong>Grado:</strong> {user.grado_seccion?.grado || user.grado || 'N/A'}
                         </p>
                         <p>
-                            <strong>Nivel:</strong> {user.nivel}
+                            <strong>Sección:</strong> {user.grado_seccion?.seccion || user.seccion || 'N/A'}
                         </p>
                         <p>
-                            <strong>Edad:</strong> {user.edad} años
+                            <strong>Nivel:</strong> {user.grado_seccion?.nivel || user.nivel || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Edad:</strong> {user.edad ? `${user.edad} años` : 'N/A'}
                         </p>
                     </>
                 )}
                 {type === 'profesor' && (
                     <>
                         <p>
-                            <strong>Grado Asignado:</strong>{' '}
-                            {user.grado_asignado}
+                            <strong>Grados Asignados:</strong>{' '}
+                            {user.grado_secciones && user.grado_secciones.length > 0
+                                ? user.grado_secciones.map(gs => `${gs.grado} ${gs.seccion}`).join(', ')
+                                : user.grado_asignado || 'Sin asignar'}
                         </p>
                         <p>
-                            <strong>Tipo:</strong> {user.tipo_profesor}
+                            <strong>Tipo:</strong> {user.tipo_profesor || 'N/A'}
                         </p>
                         <p>
-                            <strong>Edad:</strong> {user.edad} años
+                            <strong>Edad:</strong> {user.edad ? `${user.edad} años` : 'N/A'}
                         </p>
                     </>
                 )}
@@ -102,6 +108,98 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
     );
 };
 
+// Componente de Fila para Tabla
+const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
+    const getPhotoUrl = (foto) => {
+        if (!foto) return '/default-avatar.png';
+        if (foto.startsWith('http')) return foto;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        return `${baseUrl}${foto}`;
+    };
+
+    return (
+        <tr onClick={() => onRowClick(user)} className="user-row">
+            <td className="user-photo">
+                <img
+                    src={getPhotoUrl(user.foto)}
+                    alt={`${user.nombre} ${user.apellido}`}
+                    className="user-avatar"
+                    onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/50';
+                    }}
+                />
+            </td>
+            <td className="user-name">
+                {user.nombre} {user.apellido}
+            </td>
+            {type === 'estudiante' && (
+                <>
+                    <td>{user.cedula || 'N/A'}</td>
+                    <td>{user.grado_seccion?.grado || user.grado || 'N/A'}</td>
+                    <td>{user.grado_seccion?.seccion || user.seccion || 'N/A'}</td>
+                    <td>{user.grado_seccion?.nivel || user.nivel || 'N/A'}</td>
+                    <td>{user.edad ? `${user.edad} años` : 'N/A'}</td>
+                </>
+            )}
+            {type === 'profesor' && (
+                <>
+                    <td>{user.cedula || 'N/A'}</td>
+                    <td>
+                        {user.grado_secciones && user.grado_secciones.length > 0
+                            ? user.grado_secciones.map(gs => `${gs.grado} ${gs.seccion} (${gs.nivel})`).join(', ')
+                            : 'Sin grados asignados'}
+                    </td>
+                    <td>{user.tipo_profesor || 'N/A'}</td>
+                    <td>{user.edad ? `${user.edad} años` : 'N/A'}</td>
+                    <td>{user.telefono || 'N/A'}</td>
+                </>
+            )}
+            {type === 'representante' && (
+                <>
+                    <td>{user.cedula || 'N/A'}</td>
+                    <td>{user.edad ? `${user.edad} años` : 'N/A'}</td>
+                    <td>{user.telefono || 'N/A'}</td>
+                    <td>{user.estudiantes?.length || 0} estudiante(s)</td>
+                </>
+            )}
+            <td className="user-actions" onClick={(e) => e.stopPropagation()}>
+                {type === 'estudiante' && (
+                    <button
+                        className="btn-assing"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAssing(user);
+                        }}
+                        title="Asignar Representante"
+                    >
+                        <i className="fas fa-user-plus"></i>
+                    </button>
+                )}
+                <button
+                    className="btn-edit"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(user);
+                    }}
+                    title="Editar"
+                >
+                    <i className="fas fa-edit"></i>
+                </button>
+                <button
+                    className="btn-delete"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(user);
+                    }}
+                    title="Eliminar"
+                >
+                    <i className="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    );
+};
+
 // Custom hook to lock body scroll
 const useBodyOverflowLock = (isLocked) => {
     useEffect(() => {
@@ -123,7 +221,8 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        return `${import.meta.env.VITE_API_URL}${foto}`;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        return `${baseUrl}${foto}`;
     };
 
     const fetchRepresentantesById = async (id) => {
@@ -764,15 +863,23 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
 export function ListaE() {
     const navigate = useNavigate();
     const [estudiantes, setEstudiantes] = useState([]);
+    const [filteredEstudiantes, setFilteredEstudiantes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState('cards'); // 'cards' o 'table'
+    const [filtroNivel, setFiltroNivel] = useState('');
 
     useEffect(() => {
         fetchEstudiantes();
     }, []);
+
+    useEffect(() => {
+        filterEstudiantes();
+    }, [estudiantes, searchTerm, filtroNivel]);
 
     const fetchEstudiantes = async () => {
         try {
@@ -784,6 +891,32 @@ export function ListaE() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const filterEstudiantes = () => {
+        let filtered = [...estudiantes];
+
+        // Filtro por búsqueda
+        if (searchTerm) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(
+                (est) =>
+                    est.nombre?.toLowerCase().includes(search) ||
+                    est.apellido?.toLowerCase().includes(search) ||
+                    est.cedula?.toLowerCase().includes(search) ||
+                    est.grado_seccion?.grado?.toString().includes(search) ||
+                    est.grado_seccion?.seccion?.toLowerCase().includes(search)
+            );
+        }
+
+        // Filtro por nivel
+        if (filtroNivel) {
+            filtered = filtered.filter(
+                (est) => est.grado_seccion?.nivel === filtroNivel
+            );
+        }
+
+        setFilteredEstudiantes(filtered);
     };
 
     const handleCardClick = (user) => {
@@ -835,23 +968,116 @@ export function ListaE() {
                     <i className="fas fa-plus"></i> Agregar Estudiante
                 </button>
             </div>
-            <div className="cards-grid">
-                {estudiantes.length === 0 ? (
-                    <p>No hay estudiantes registrados</p>
-                ) : (
-                    estudiantes.map((estudiante) => (
-                        <UserCard
-                            key={estudiante.id}
-                            user={estudiante}
-                            type="estudiante"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onAssing={handleAssign}
-                        />
-                    ))
-                )}
+
+            {/* Barra de búsqueda y filtros */}
+            <div className="listas-toolbar">
+                <div className="search-container">
+                    <i className="fas fa-search search-icon"></i>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, apellido, cédula, grado o sección..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
+                <div className="filters-container">
+                    <select
+                        value={filtroNivel}
+                        onChange={(e) => setFiltroNivel(e.target.value)}
+                        className="filter-select"
+                    >
+                        <option value="">Todos los niveles</option>
+                        <option value="primaria">Primaria</option>
+                        <option value="secundaria">Secundaria</option>
+                    </select>
+                </div>
+                <div className="view-toggle">
+                    <button
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        onClick={() => setViewMode('cards')}
+                        title="Vista de tarjetas"
+                    >
+                        <i className="fas fa-th"></i>
+                    </button>
+                    <button
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => setViewMode('table')}
+                        title="Vista de tabla"
+                    >
+                        <i className="fas fa-table"></i>
+                    </button>
+                </div>
             </div>
+
+            {/* Contador de resultados */}
+            <div className="results-info">
+                <span>
+                    Mostrando {filteredEstudiantes.length} de {estudiantes.length} estudiantes
+                </span>
+            </div>
+
+            {/* Vista de Cards */}
+            {viewMode === 'cards' && (
+                <div className="cards-grid">
+                    {loading ? (
+                        <div className="loading">Cargando estudiantes...</div>
+                    ) : filteredEstudiantes.length === 0 ? (
+                        <p className="no-data">No hay estudiantes que coincidan con la búsqueda</p>
+                    ) : (
+                        filteredEstudiantes.map((estudiante) => (
+                            <UserCard
+                                key={estudiante.id}
+                                user={estudiante}
+                                type="estudiante"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                                onAssing={handleAssign}
+                            />
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Vista de Tabla */}
+            {viewMode === 'table' && (
+                <div className="table-container">
+                    {loading ? (
+                        <div className="loading">Cargando estudiantes...</div>
+                    ) : filteredEstudiantes.length === 0 ? (
+                        <p className="no-data">No hay estudiantes que coincidan con la búsqueda</p>
+                    ) : (
+                        <table className="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Grado</th>
+                                    <th>Sección</th>
+                                    <th>Nivel</th>
+                                    <th>Edad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredEstudiantes.map((estudiante) => (
+                                    <UserRow
+                                        key={estudiante.id}
+                                        user={estudiante}
+                                        type="estudiante"
+                                        onRowClick={handleCardClick}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        onAssing={handleAssign}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
             <DetailModal
                 user={selectedUser}
                 type="estudiante"
@@ -890,14 +1116,21 @@ export function ListaE() {
 export function ListaR() {
     const navigate = useNavigate();
     const [representantes, setRepresentantes] = useState([]);
+    const [filteredRepresentantes, setFilteredRepresentantes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState('cards');
 
     useEffect(() => {
         fetchRepresentantes();
     }, []);
+
+    useEffect(() => {
+        filterRepresentantes();
+    }, [representantes, searchTerm]);
 
     const fetchRepresentantes = async () => {
         try {
@@ -909,6 +1142,23 @@ export function ListaR() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const filterRepresentantes = () => {
+        let filtered = [...representantes];
+
+        if (searchTerm) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(
+                (rep) =>
+                    rep.nombre?.toLowerCase().includes(search) ||
+                    rep.apellido?.toLowerCase().includes(search) ||
+                    rep.cedula?.toLowerCase().includes(search) ||
+                    rep.telefono?.toLowerCase().includes(search)
+            );
+        }
+
+        setFilteredRepresentantes(filtered);
     };
 
     const handleCardClick = (user) => {
@@ -940,10 +1190,6 @@ export function ListaR() {
         }
     };
 
-    if (loading) {
-        return <div className="loading">Cargando representantes...</div>;
-    }
-
     return (
         <div className="listas-container">
             <div className="listas-header">
@@ -955,22 +1201,102 @@ export function ListaR() {
                     <i className="fas fa-plus"></i> Agregar Representante
                 </button>
             </div>
-            <div className="cards-grid">
-                {representantes.length === 0 ? (
-                    <p>No hay representantes registrados</p>
-                ) : (
-                    representantes.map((representante) => (
-                        <UserCard
-                            key={representante.id}
-                            user={representante}
-                            type="representante"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    ))
-                )}
+
+            {/* Barra de búsqueda y filtros */}
+            <div className="listas-toolbar">
+                <div className="search-container">
+                    <i className="fas fa-search search-icon"></i>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, apellido, cédula o teléfono..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
+                <div className="view-toggle">
+                    <button
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        onClick={() => setViewMode('cards')}
+                        title="Vista de tarjetas"
+                    >
+                        <i className="fas fa-th"></i>
+                    </button>
+                    <button
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => setViewMode('table')}
+                        title="Vista de tabla"
+                    >
+                        <i className="fas fa-table"></i>
+                    </button>
+                </div>
             </div>
+
+            {/* Contador de resultados */}
+            <div className="results-info">
+                <span>
+                    Mostrando {filteredRepresentantes.length} de {representantes.length} representantes
+                </span>
+            </div>
+
+            {/* Vista de Cards */}
+            {viewMode === 'cards' && (
+                <div className="cards-grid">
+                    {loading ? (
+                        <div className="loading">Cargando representantes...</div>
+                    ) : filteredRepresentantes.length === 0 ? (
+                        <p className="no-data">No hay representantes que coincidan con la búsqueda</p>
+                    ) : (
+                        filteredRepresentantes.map((representante) => (
+                            <UserCard
+                                key={representante.id}
+                                user={representante}
+                                type="representante"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                            />
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Vista de Tabla */}
+            {viewMode === 'table' && (
+                <div className="table-container">
+                    {loading ? (
+                        <div className="loading">Cargando representantes...</div>
+                    ) : filteredRepresentantes.length === 0 ? (
+                        <p className="no-data">No hay representantes que coincidan con la búsqueda</p>
+                    ) : (
+                        <table className="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Edad</th>
+                                    <th>Teléfono</th>
+                                    <th>Estudiantes</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredRepresentantes.map((representante) => (
+                                    <UserRow
+                                        key={representante.id}
+                                        user={representante}
+                                        type="representante"
+                                        onRowClick={handleCardClick}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
             <DetailModal
                 user={selectedUser}
                 type="representante"
@@ -999,14 +1325,22 @@ export function ListaR() {
 export function ListaP() {
     const navigate = useNavigate();
     const [profesores, setProfesores] = useState([]);
+    const [filteredProfesores, setFilteredProfesores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState('cards');
+    const [filtroTipo, setFiltroTipo] = useState('');
 
     useEffect(() => {
         fetchProfesores();
     }, []);
+
+    useEffect(() => {
+        filterProfesores();
+    }, [profesores, searchTerm, filtroTipo]);
 
     const fetchProfesores = async () => {
         try {
@@ -1018,6 +1352,31 @@ export function ListaP() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const filterProfesores = () => {
+        let filtered = [...profesores];
+
+        // Filtro por búsqueda
+        if (searchTerm) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(
+                (prof) =>
+                    prof.nombre?.toLowerCase().includes(search) ||
+                    prof.apellido?.toLowerCase().includes(search) ||
+                    prof.cedula?.toLowerCase().includes(search) ||
+                    prof.tipo_profesor?.toLowerCase().includes(search)
+            );
+        }
+
+        // Filtro por tipo de profesor
+        if (filtroTipo) {
+            filtered = filtered.filter(
+                (prof) => prof.tipo_profesor === filtroTipo
+            );
+        }
+
+        setFilteredProfesores(filtered);
     };
 
     const handleCardClick = (user) => {
@@ -1049,10 +1408,6 @@ export function ListaP() {
         }
     };
 
-    if (loading) {
-        return <div className="loading">Cargando profesores...</div>;
-    }
-
     return (
         <div className="listas-container">
             <div className="listas-header">
@@ -1064,22 +1419,115 @@ export function ListaP() {
                     <i className="fas fa-plus"></i> Agregar Profesor
                 </button>
             </div>
-            <div className="cards-grid">
-                {profesores.length === 0 ? (
-                    <p>No hay profesores registrados</p>
-                ) : (
-                    profesores.map((profesor) => (
-                        <UserCard
-                            key={profesor.id}
-                            user={profesor}
-                            type="profesor"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    ))
-                )}
+
+            {/* Barra de búsqueda y filtros */}
+            <div className="listas-toolbar">
+                <div className="search-container">
+                    <i className="fas fa-search search-icon"></i>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, apellido, cédula o tipo..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
+                <div className="filters-container">
+                    <select
+                        value={filtroTipo}
+                        onChange={(e) => setFiltroTipo(e.target.value)}
+                        className="filter-select"
+                    >
+                        <option value="">Todos los tipos</option>
+                        <option value="titular">Titular</option>
+                        <option value="suplente">Suplente</option>
+                        <option value="especialista">Especialista</option>
+                    </select>
+                </div>
+                <div className="view-toggle">
+                    <button
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        onClick={() => setViewMode('cards')}
+                        title="Vista de tarjetas"
+                    >
+                        <i className="fas fa-th"></i>
+                    </button>
+                    <button
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => setViewMode('table')}
+                        title="Vista de tabla"
+                    >
+                        <i className="fas fa-table"></i>
+                    </button>
+                </div>
             </div>
+
+            {/* Contador de resultados */}
+            <div className="results-info">
+                <span>
+                    Mostrando {filteredProfesores.length} de {profesores.length} profesores
+                </span>
+            </div>
+
+            {/* Vista de Cards */}
+            {viewMode === 'cards' && (
+                <div className="cards-grid">
+                    {loading ? (
+                        <div className="loading">Cargando profesores...</div>
+                    ) : filteredProfesores.length === 0 ? (
+                        <p className="no-data">No hay profesores que coincidan con la búsqueda</p>
+                    ) : (
+                        filteredProfesores.map((profesor) => (
+                            <UserCard
+                                key={profesor.id}
+                                user={profesor}
+                                type="profesor"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                            />
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Vista de Tabla */}
+            {viewMode === 'table' && (
+                <div className="table-container">
+                    {loading ? (
+                        <div className="loading">Cargando profesores...</div>
+                    ) : filteredProfesores.length === 0 ? (
+                        <p className="no-data">No hay profesores que coincidan con la búsqueda</p>
+                    ) : (
+                        <table className="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Grados Asignados</th>
+                                    <th>Tipo</th>
+                                    <th>Edad</th>
+                                    <th>Teléfono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredProfesores.map((profesor) => (
+                                    <UserRow
+                                        key={profesor.id}
+                                        user={profesor}
+                                        type="profesor"
+                                        onRowClick={handleCardClick}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
             <DetailModal
                 user={selectedUser}
                 type="profesor"

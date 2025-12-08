@@ -9,7 +9,7 @@ class RegistroProfesorSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     # Recibir varias secciones en la petición
-    grado_secciones = GradoSeccionSerializer(many=True, write_only=True)
+    grado_secciones = GradoSeccionSerializer(many=True, write_only=True, required=False)
 
     # Devolver las secciones completas en la respuesta
     grado_secciones_detalle = GradoSeccionSerializer(source='grado_secciones', many=True, read_only=True)
@@ -33,7 +33,7 @@ class RegistroProfesorSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         email = validated_data.pop('email')
         password = validated_data.pop('password')
-        secciones_data = validated_data.pop('grado_secciones', [])
+        secciones_data = validated_data.pop('grado_secciones', []) or []
 
         # Crear usuario con rol profesor
         datos_usuario = {

@@ -1,0 +1,819 @@
+.container-boletines {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.container-boletines h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.boletines-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.boletines-table th {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.boletines-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.boletines-table tr:hover {
+    background: #f8f9fa;
+}
+
+.boletin-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-upload,
+.btn-download,
+.btn-edit {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+}
+
+.btn-upload {
+    background: #28a745;
+    color: white;
+}
+
+.btn-upload:hover {
+    background: #218838;
+}
+
+.btn-download {
+    background: #007bff;
+    color: white;
+}
+
+.btn-download:hover {
+    background: #0056b3;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input[type="file"],
+.form-group input[type="text"],
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-cancel,
+.btn-submit {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+}
+
+.btn-submit {
+    background: #007bff;
+    color: white;
+}
+
+.btn-submit:hover {
+    background: #0056b3;
+}
+
+/* Profesor específico */
+.container-boletines-profesor {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.plantillas-section,
+.estudiantes-section {
+    margin-bottom: 30px;
+}
+
+.plantillas-section h2,
+.estudiantes-section h2 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.periodo-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.periodo-selector label {
+    font-weight: 600;
+}
+
+.periodo-selector select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.plantillas-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.plantilla-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    text-align: center;
+    max-width: 350px;
+}
+
+.plantilla-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.plantilla-tipo {
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.btn-download-plantilla-profesor {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-download-plantilla-profesor:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-download-plantilla-profesor i {
+    font-size: 1rem;
+}
+
+.status-completed {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-pending {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.info-text {
+    background: #e7f3ff;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #0056b3;
+}
+
+/* Estudiante/Representante */
+.container-boletines-estudiante,
+.container-boletines-representante {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.boletines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.boletin-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.boletin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+}
+
+.boletin-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.promedio {
+    background: #007bff;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.boletin-info {
+    margin-bottom: 15px;
+}
+
+.boletin-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.boletin-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-view {
+    padding: 8px 16px;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-view:hover {
+    background: #138496;
+}
+
+.estudiantes-boletines {
+    margin-top: 20px;
+}
+
+.estudiante-section {
+    margin-bottom: 30px;
+}
+
+.estudiante-section h2 {
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+}
+
+/* Calendario */
+.container-calendario {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.calendario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.calendario-header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.eventos-list {
+    margin-top: 20px;
+}
+
+.fecha-section {
+    margin-bottom: 30px;
+}
+
+.fecha-section h3 {
+    color: #007bff;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+}
+
+.eventos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.evento-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #007bff;
+}
+
+.evento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.evento-header h4 {
+    margin: 0;
+    color: #333;
+    flex: 1;
+}
+
+.grado-badge {
+    background: #6c757d;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.evento-descripcion {
+    color: #666;
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.evento-horario {
+    margin: 10px 0;
+    color: #555;
+}
+
+.evento-horario i {
+    margin-right: 5px;
+}
+
+.evento-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Estilos para gestión de plantillas */
+.boletines-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.boletines-header h1 {
+    margin: 0;
+}
+
+.plantillas-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-plantilla {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-plantilla:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-plantilla.btn-subir {
+    background: #28a745;
+    color: white;
+}
+
+.btn-plantilla.btn-subir:hover {
+    background: #218838;
+}
+
+.btn-plantilla.btn-actualizar {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-plantilla.btn-actualizar:hover {
+    background: #138496;
+}
+
+.btn-plantilla.btn-gestionar {
+    background: #6f42c1;
+    color: white;
+}
+
+.btn-plantilla.btn-gestionar:hover {
+    background: #5a32a3;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.file-name {
+    margin-top: 10px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.file-name i {
+    color: #2b579a;
+    margin-right: 8px;
+}
+
+.plantillas-download-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-download-plantilla {
+    padding: 15px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.btn-download-plantilla:hover:not(.disabled) {
+    background: #218838;
+    transform: translateX(5px);
+}
+
+.btn-download-plantilla.disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-download-plantilla i {
+    font-size: 1.2rem;
+}
+
+.no-disponible {
+    margin-left: auto;
+    font-size: 0.85rem;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.info-text i {
+    margin-right: 8px;
+}
+
+/* Modal grande para gestionar plantillas */
+.modal-content-large {
+    max-width: 800px;
+    width: 95%;
+}
+
+.plantillas-modal-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.plantilla-modal-card {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.plantilla-modal-card:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
+}
+
+.plantilla-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    gap: 20px;
+    min-width: 0;
+}
+
+.plantilla-info-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    min-width: 0;
+}
+
+.plantilla-info-left i {
+    flex-shrink: 0;
+}
+
+.plantilla-info-left > div {
+    min-width: 0;
+    flex: 1;
+}
+
+.plantilla-info-left h3 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2b579a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plantilla-subtexto {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plantilla-fecha-badge {
+    background: #f0f0f0;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.plantilla-fecha-badge i {
+    font-size: 0.75rem;
+}
+
+.plantilla-modal-acciones {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-modal-accion {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modal-accion i {
+    font-size: 0.95rem;
+}
+
+.btn-modal-accion.btn-descargar {
+    background: #007bff !important;
+    color: white !important;
+}
+
+.btn-modal-accion.btn-descargar:hover {
+    background: #0056b3 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 123, 255, 0.3);
+}
+
+.btn-modal-accion.btn-eliminar {
+    background: #dc3545 !important;
+    color: white !important;
+}
+
+.btn-modal-accion.btn-eliminar:hover {
+    background: #c82333 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(220, 53, 69, 0.3);
+}
+
+.no-plantillas-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.no-plantillas-message p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .boletines-grid,
+    .eventos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .boletines-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .plantillas-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-plantilla {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .plantillas-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
