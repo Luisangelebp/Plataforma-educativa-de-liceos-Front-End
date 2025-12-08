@@ -13,6 +13,7 @@ import {
     ListaR,
 } from './components/Dashboards/Admin/Listas.jsx';
 import { Grados } from './components/Dashboards/Admin/Grados.jsx';
+import { Materias } from './components/Dashboards/Admin/Materias.jsx';
 import { Horarios } from './components/Dashboards/Admin/Horarios.jsx';
 import { Boletines } from './components/Dashboards/Admin/Boletines.jsx';
 
@@ -50,6 +51,8 @@ function App() {
                     <Route path="listaP" element={<ListaP />} />
                     {/*Grados routes can be added here*/}
                     <Route path="grados" element={<Grados />} />
+                    {/*Materias routes can be added here*/}
+                    <Route path="materias" element={<Materias />} />
                     {/*Horarios routes can be added here*/}
                     <Route path="horarios" element={<Horarios />} />
                     {/*Boletines routes can be added here*/}
