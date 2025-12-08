@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
 
-const API_URL = 'http://localhost:8000/usuarios/';
+const API_URL = `${import.meta.env.VITE_API_URL}/usuarios/`;
 
 // Componente de Ficha/Card
 const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        return `http://localhost:8000${foto}`;
+        return `${import.meta.env.VITE_API_URL}${foto}`;
     };
     return (
         <div className="user-card" onClick={() => onCardClick(user)}>
@@ -123,7 +123,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        return `http://localhost:8000${foto}`;
+        return `${import.meta.env.VITE_API_URL}${foto}`;
     };
 
     const fetchRepresentantesById = async (id) => {

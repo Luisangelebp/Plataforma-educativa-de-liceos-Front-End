@@ -19,3 +19,78 @@
     width: 80%;
     margin-bottom: 15px;
 }
+
+.admin-title {
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-add {
+    margin-bottom: 20px;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    margin-left: 0 !important;
+}
+
+.materias {
+    width: 80%;
+
+
+    .registroMaterias-form {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        button {
+            margin-left: 0;
+            font-family: 'Inter', sans-serif;
+        }
+    }
+
+}
+
+.grados {
+    width: 80%;
+}
+
+.list-materias {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .materia-item {
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .materia-info {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-asigH {
+            width: 20%;
+        }
+
+        .btn-delete {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+
+            &:hover {
+                background-color: #ff1a1a;
+            }
+        }
+    }
+}

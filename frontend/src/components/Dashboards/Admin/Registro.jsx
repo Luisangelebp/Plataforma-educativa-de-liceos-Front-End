@@ -44,7 +44,7 @@ export default function Registo() {
         }
     };
 
-    const API_URL = 'http://localhost:8000/usuarios';
+    const API_URL = `${import.meta.env.VITE_API_URL}/usuarios`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -52,11 +52,11 @@ export default function Registo() {
         setIsLoading(true);
         const formDataObj = new FormData();
         console.log(formData);
-        const formErrors = validateForm();
-        if (Object.keys(formErrors).length > 0) {
-            setErrors(formErrors);
-            return;
-        }
+
+        // if (Object.keys(formErrors).length > 0) {
+        //     setErrors(formErrors);
+        //     return;
+        // }
 
         for (const key in formData) {
             if (key !== 'typeU') {

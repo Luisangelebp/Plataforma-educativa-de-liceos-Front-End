@@ -94,11 +94,20 @@ export function Admin() {
                                 </li>
                                 <li>
                                     <Link
+                                        to="./materias"
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Materias
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
                                         to="./horarios"
                                         className="menu-item"
                                         onClick={() => setMenuOpen(false)}
                                     >
-                                        Horarios
+                                        Asignar Horarios
                                     </Link>
                                 </li>
                                 <li>

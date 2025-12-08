@@ -97,11 +97,14 @@ const LoginSession = ({ setShowLogin }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/login/', {
-                email: formData.username,
-                password: formData.password,
-                rol: mapRol(formData.typeU), // ← aquí aplicamos la traducción
-            });
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/login/`,
+                {
+                    email: formData.username,
+                    password: formData.password,
+                    rol: mapRol(formData.typeU), // ← aquí aplicamos la traducción
+                }
+            );
 
             const { access, refresh, usuario } = response.data;
 
