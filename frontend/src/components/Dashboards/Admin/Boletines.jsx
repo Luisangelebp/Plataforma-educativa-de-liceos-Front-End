@@ -3,7 +3,7 @@ import axios from 'axios';
 import './css/Listas.css';
 import './css/Boletines.css';
 
-const API_URL = 'http://localhost:8000/';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
 
 // Función para obtener el token actual
 const getAuthHeaders = () => {
@@ -35,11 +35,21 @@ const axiosInstanceFile = axios.create({
 // Interceptor para archivos
 axiosInstanceFile.interceptors.request.use((config) => {
     const authHeaders = getAuthHeaders();
-    config.headers = {
-        ...config.headers,
-        ...authHeaders,
-        'Content-Type': 'multipart/form-data',
-    };
+    // Si es FormData, NO establecer Content-Type manualmente
+    // El navegador lo establecerá automáticamente con el boundary correcto
+    if (config.data instanceof FormData) {
+        config.headers = {
+            ...config.headers,
+            ...authHeaders,
+            // NO incluir Content-Type - el navegador lo establecerá
+        };
+    } else {
+        config.headers = {
+            ...config.headers,
+            ...authHeaders,
+            'Content-Type': 'application/json',
+        };
+    }
     return config;
 });
 
@@ -207,6 +217,13 @@ export function Boletines() {
             return;
         }
 
+        // Verificar que el token esté presente
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('periodo', plantillaData.periodo);
         formData.append('archivo_word', plantillaData.archivo_word);
@@ -235,7 +252,11 @@ export function Boletines() {
             cargarPlantillas();
         } catch (error) {
             console.error('Error al gestionar plantilla:', error);
-            alert(error.response?.data?.error || 'Error al gestionar la plantilla');
+            if (error.response?.status === 401) {
+                alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+            } else {
+                alert(error.response?.data?.error || 'Error al gestionar la plantilla');
+            }
         }
     };
 
