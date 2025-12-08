@@ -1,4 +1,5 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import HeaderRepresentante from './HeaderRepresentante';
 import SidebarRepresentante from './SidebarRepresentante';
 import ResumenRepresentante from './ResumenRepresentante';
@@ -12,7 +13,7 @@ const DashboardRepresentante = () => {
             <main className="main">
                 <SidebarRepresentante />
                 <section className="content">
-                    <ResumenRepresentante />
+                    <Outlet />
                 </section>
             </main>
         </div>

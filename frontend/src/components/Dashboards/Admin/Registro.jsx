@@ -44,7 +44,7 @@ export default function Registo() {
         }
     };
 
-    const API_URL = `${import.meta.env.VITE_API_URL}/usuarios`;
+    const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/usuarios`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -416,29 +416,27 @@ export default function Registo() {
                         </div>{' '}
                     </div>
                 ) : null}
-                {/* Tipo de Profesor Input */}
+                {/* Tipo de Profesor Select */}
                 {rolActive === 'profesor' ? (
                     <div className="input-group">
-                        {' '}
-                        <div className="input-container">
-                            {' '}
-                            <input
-                                type="text"
+                        <div className="select-container">
+                            <select
                                 id="tipo_profesor"
                                 name="tipo_profesor"
-                                value={formData.tipo_profesor}
-                                className={
-                                    formData.tipo_profesor ? 'has-value' : ''
-                                }
+                                value={formData.tipo_profesor || ''}
+                                className={formData.tipo_profesor ? 'has-value' : ''}
                                 onChange={(e) => handleInputChange(e)}
                                 required
-                            />{' '}
-                            <label htmlFor="tipo_profesor">
-                                {' '}
-                                Tipo de Profesor:{' '}
-                            </label>{' '}
-                            <i className="input-icon bi bi bi-book"></i>{' '}
-                        </div>{' '}
+                            >
+                                <option value="">
+                                    -- Seleccione el tipo de profesor --
+                                </option>
+                                <option value="titular">Titular</option>
+                                <option value="suplente">Suplente</option>
+                                <option value="especialista">Especialista</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
                     </div>
                 ) : null}
                 {errors.submit && (

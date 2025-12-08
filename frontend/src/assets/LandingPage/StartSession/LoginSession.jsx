@@ -97,8 +97,9 @@ const LoginSession = ({ setShowLogin }) => {
         setIsLoading(true);
 
         try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/login/`,
+                `${API_URL}/login/`,
                 {
                     email: formData.username,
                     password: formData.password,
