@@ -47,15 +47,6 @@ export function Profesor() {
 
                                 <li>
                                     <Link
-                                        to="./grados"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Grados
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
                                         to="./horarios"
                                         className="menu-item"
                                         onClick={() => setMenuOpen(false)}

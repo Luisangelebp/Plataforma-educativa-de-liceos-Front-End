@@ -119,6 +119,15 @@ export function Admin() {
                                         Boletines
                                     </Link>
                                 </li>
+                                <li>
+                                    <Link
+                                        to="./calendario"
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Calendario
+                                    </Link>
+                                </li>
                             </ul>
                         </>
                     )}
