@@ -8,11 +8,14 @@ from django.http import FileResponse, Http404
 from django.conf import settings
 from django.db import models
 import os
-
 from .models import PlantillaBoletin, Boletin
 from .serializers import PlantillaBoletinSerializer, BoletinSerializer
 from Usuarios.estudiante.models import Estudiante
 from core.models import GradoSeccion
+import subprocess
+import os
+from django.core.files import File
+
 
 class PlantillaBoletinListCreateView(APIView):
     """
@@ -206,8 +209,32 @@ class BoletinListCreateView(APIView):
         
         serializer = BoletinSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(subido_por=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            boletin = serializer.save(subido_por=request.user)
+
+            # 🔎 Conversión automática Word → PDF si se sube Word
+            if hasattr(boletin, "archivo_word") and boletin.archivo_word:
+                word_path = boletin.archivo_word.path
+                output_dir = os.path.dirname(word_path)
+
+                try:
+                    subprocess.run([
+                        "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, word_path
+                    ], check=True)
+
+                    pdf_path = os.path.splitext(word_path)[0] + ".pdf"
+                    with open(pdf_path, "rb") as f:
+                        boletin.archivo_pdf.save(
+                            os.path.basename(pdf_path),
+                            File(f),
+                            save=True
+                        )
+                except Exception as e:
+                    return Response(
+                        {'error': f'Error al convertir Word a PDF: {str(e)}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+
+            return Response(BoletinSerializer(boletin).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class BoletinDetailView(APIView):
@@ -256,10 +283,34 @@ class BoletinDetailView(APIView):
         boletin = get_object_or_404(Boletin, pk=pk)
         serializer = BoletinSerializer(boletin, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            boletin = serializer.save()
+
+            # 🔎 Conversión automática Word → PDF si se sube Word
+            if hasattr(boletin, "archivo_word") and boletin.archivo_word:
+                word_path = boletin.archivo_word.path
+                output_dir = os.path.dirname(word_path)
+
+                try:
+                    subprocess.run([
+                        "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, word_path
+                    ], check=True)
+
+                    pdf_path = os.path.splitext(word_path)[0] + ".pdf"
+                    with open(pdf_path, "rb") as f:
+                        boletin.archivo_pdf.save(
+                            os.path.basename(pdf_path),
+                            File(f),
+                            save=True
+                        )
+                except Exception as e:
+                    return Response(
+                        {'error': f'Error al convertir Word a PDF: {str(e)}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+
+            return Response(BoletinSerializer(boletin).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk):
         if request.user.rol != 'admin':
             return Response(
