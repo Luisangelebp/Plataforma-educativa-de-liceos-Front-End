@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, use } from 'react';
 import axios from 'axios';
-
+import './css/Horarios.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-function ListaGrados() {
+function ListaGrados({ setShowHorario }) {
     const [grados, setGrados] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,6 +52,14 @@ function ListaGrados() {
                                     <span>Seccion: </span>
                                     {grado.seccion}
                                 </p>
+                                <button
+                                    className="btn-verHorario"
+                                    onClick={() => {
+                                        setShowHorario(grado.id);
+                                    }}
+                                >
+                                    Ver Horario
+                                </button>
                                 <button
                                     className="btn-delete"
                                     onClick={() => {
@@ -104,6 +112,14 @@ function ListaGrados() {
                                     <span>Seccion: </span>
                                     {grado.seccion}
                                 </p>
+                                <button
+                                    className="btn-verHorario"
+                                    onClick={() => {
+                                        setShowHorario(grado.id);
+                                    }}
+                                >
+                                    Ver Horario
+                                </button>
                                 <button
                                     className="btn-delete"
                                     onClick={() => {
@@ -262,8 +278,230 @@ const RegistrarGrado = ({ isOpen, onClose }) => {
         </div>
     );
 };
+
+const VerHorario = ({ isOpen, onClose, grado }) => {
+    const [horario, setHorario] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [materias, setMaterias] = useState([]);
+    const [profesores, setProfesores] = useState([]);
+    useEffect(() => {
+        const fetchHorario = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${API_URL}/horarios/`);
+                if (response.data.length === 0) {
+                    setHorario(null);
+                } else {
+                    setHorario(
+                        response.data.filter((h) => h.grado_seccion === grado)
+                    );
+                }
+            } catch (error) {
+                console.error('Error fetching horario:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchHorario();
+    }, [grado]);
+    useEffect(() => {
+        const fetchMaterias = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(
+                    `${API_URL}/horarios/materias/`
+                );
+                setMaterias(response.data);
+            } catch (error) {
+                console.error('Error fetching materias:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMaterias();
+    }, [horario]);
+    useEffect(() => {
+        const fetchProfesores = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(
+                    `${API_URL}/usuarios/profesor/`
+                );
+                setProfesores(response.data);
+            } catch (error) {
+                console.error('Error fetching profesores:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfesores();
+    }, [horario]);
+
+    const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+    const horas = Array.from({ length: 12 }, (_, i) => {
+        const h = i + 7; // empieza en 7
+        return `${h.toString().padStart(2, '0')}:00`;
+    });
+
+    const handleDelete = async (e) => {
+        e.preventDefault();
+        const claseId = e.target.dataset.id;
+        console.log(claseId);
+        if (confirm(`¿Eliminar la materia ${claseId}?`)) {
+            axios
+                .delete(`${API_URL}/horarios/materias/${materia.id}/`)
+                .then(() => {
+                    alert('Materia eliminada correctamente.');
+                    setMaterias(materias.filter((m) => m.id !== materia.id));
+                })
+                .catch((error) => {
+                    console.error('Error al eliminar la materia:', error);
+                    alert('Error al eliminar la materia.');
+                });
+        }
+    };
+
+    function Calendario() {
+        return (
+            <div className="calendario">
+                {/* Encabezado de días */}
+                <div className="header">
+                    <div className="corner">Horas</div>
+                    {dias.map((dia) => (
+                        <div key={dia} className="dia">
+                            {dia}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Filas de horas */}
+                {horas.map((hora) => (
+                    <div key={hora} className="fila">
+                        <div className="hora">{hora}</div>
+                        {dias.map((dia) => {
+                            const clase = horario.find(
+                                (h) =>
+                                    h.dia_semana === dia &&
+                                    hora >= h.hora_inicio.slice(0, 5) &&
+                                    hora < h.hora_fin.slice(0, 5)
+                            );
+                            return (
+                                <div key={dia + hora} className="celda">
+                                    {clase ? (
+                                        <div className="clase">
+                                            {
+                                                materias.find(
+                                                    (m) =>
+                                                        m.id === clase.materia
+                                                )?.nombre
+                                            }
+                                            <br />
+                                            {clase.hora_inicio.slice(
+                                                0,
+                                                5
+                                            )} - {clase.hora_fin.slice(0, 5)}
+                                            <br />
+                                            Profesor:{' '}
+                                            {
+                                                profesores.find(
+                                                    (p) =>
+                                                        p.id === clase.profesor
+                                                )?.nombre
+                                            }{' '}
+                                            {
+                                                profesores.find(
+                                                    (p) =>
+                                                        p.id === clase.profesor
+                                                )?.apellido
+                                            }{' '}
+                                            {
+                                                profesores.find(
+                                                    (p) =>
+                                                        p.id === clase.profesor
+                                                )?.cedula
+                                            }
+                                            <br />
+                                            <button
+                                                className="btn-delete"
+                                                onClick={() => {
+                                                    if (
+                                                        confirm(
+                                                            `¿Eliminar el horario ${
+                                                                materias.find(
+                                                                    (m) =>
+                                                                        m.id ===
+                                                                        clase.materia
+                                                                )?.nombre
+                                                            }?`
+                                                        )
+                                                    ) {
+                                                        axios
+                                                            .delete(
+                                                                `${API_URL}/horarios/${clase.id}/`
+                                                            )
+                                                            .then(() => {
+                                                                alert(
+                                                                    'Horarios eliminado correctamente.'
+                                                                );
+                                                                setHorario(
+                                                                    horario.filter(
+                                                                        (m) =>
+                                                                            m.id !==
+                                                                            clase.id
+                                                                    )
+                                                                );
+                                                            })
+                                                            .catch((error) => {
+                                                                console.error(
+                                                                    'Error al eliminar la materia:',
+                                                                    error
+                                                                );
+                                                                alert(
+                                                                    'Error al eliminar la materia.'
+                                                                );
+                                                            });
+                                                    }
+                                                }}
+                                            >
+                                                Borrar
+                                            </button>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (!isOpen) return null;
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <h2>Horario</h2>
+                    <button className="close-btn" onClick={onClose}>
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+
+                {loading && <div className="loading">Cargando horario...</div>}
+                {horario.length == 0 && (
+                    <p>No hay horarios registrados para este grado.</p>
+                )}
+                {horario && horario.length > 0 && Calendario()}
+            </div>
+        </div>
+    );
+};
+
 export function Grados() {
     const [showRegistrar, setShowRegistrar] = useState(false);
+    const [showHorario, setShowHorario] = useState(false);
+    const [grado, setGrados] = useState(null);
+
     return (
         <div className="grados">
             <h1 className="admin-title">Grados</h1>
@@ -271,13 +509,28 @@ export function Grados() {
                 <i className="fas fa-plus"></i>
                 Registrar Grado-seccion
             </button>
-            <ListaGrados />
+            <ListaGrados
+                setShowHorario={(id) => {
+                    setShowHorario(true);
+                    setGrados(id);
+                }}
+            />
             <RegistrarGrado
                 isOpen={showRegistrar}
                 onClose={() => {
                     setShowRegistrar(false);
                 }}
             />
+            {showHorario && (
+                <VerHorario
+                    isOpen={showHorario}
+                    onClose={() => {
+                        setShowHorario(false);
+                        setGrados(null);
+                    }}
+                    grado={grado}
+                />
+            )}
         </div>
     );
 }

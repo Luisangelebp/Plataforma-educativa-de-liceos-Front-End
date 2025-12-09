@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -58,7 +58,9 @@ function ListaMaterias({ setShowAsignarHorario, setMateria }) {
 }
 function AsignarHorario({ isOpen, materia, onClose }) {
     const [formData, setFormData] = useState({});
-
+    const [grados, setGrados] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [profesor, setProfesor] = useState([]);
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -67,11 +69,50 @@ function AsignarHorario({ isOpen, materia, onClose }) {
         }));
     };
 
+    useEffect(() => {
+        const fetchGrados = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${API_URL}/grado-seccion/`);
+                setGrados(response.data);
+            } catch (error) {
+                console.error('Error fetching grados:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGrados();
+    }, []);
+    useEffect(() => {
+        const fetchGrados = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(
+                    `${API_URL}/usuarios/profesor/`
+                );
+                setProfesor(response.data);
+            } catch (error) {
+                console.error('Error fetching profesors:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGrados();
+    }, []);
+    const primaria = useMemo(
+        () => grados.filter((grado) => grado.nivel === 'primaria'),
+        [grados]
+    );
+    const secundaria = useMemo(
+        () => grados.filter((grado) => grado.nivel === 'secundaria'),
+        [grados]
+    );
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formDataObj = new FormData();
-
-        for (key in formData) {
+        formData['materia'] = materia;
+        for (const key in formData) {
             formDataObj.append(key, formData[key]);
         }
 
@@ -102,19 +143,142 @@ function AsignarHorario({ isOpen, materia, onClose }) {
                         <div className="input-container"></div>
                     </div>
                     <div className="input-group">
-                        <div className="input-container">
-                            <input
-                                type="text"
-                                name="descripcion"
-                                value={formData.descripcion}
+                        <div className="select-container">
+                            <select
+                                id="dia_semana"
+                                name="dia_semana"
+                                value={formData.dia_semana || ''}
                                 className={
-                                    formData.descripcion ? 'has-value' : ''
+                                    formData.dia_semana ? 'has-value' : ''
                                 }
                                 onChange={(e) => handleInputChange(e)}
                                 required
+                            >
+                                <option value="">
+                                    -- Seleccione el dia de la semana --
+                                </option>
+                                <option value="lunes">Lunes</option>
+                                <option value="martes">Martes</option>
+                                <option value="miercoles">Miercoles</option>
+                                <option value="jueves">Jueves</option>
+                                <option value="viernes">Viernes</option>
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <div className="input-container">
+                            <input
+                                type="time"
+                                name="hora_inicio"
+                                value={formData.hora_inicio}
+                                className={
+                                    formData.hora_inicio ? 'has-value' : ''
+                                }
+                                onChange={(e) => handleInputChange(e)}
+                                min="06:00"
+                                required
                             />
-                            <label>Descripcion:</label>
+                            <label>Hora de Inicio:</label>
                             <i className="input-icon bi bi-card-text"></i>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <div className="input-container">
+                            <input
+                                type="time"
+                                name="hora_fin"
+                                value={formData.hora_fin}
+                                className={formData.hora_fin ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                max="18:00"
+                                required
+                            />
+                            <label>Hora de Cierre:</label>
+                            <i className="input-icon bi bi-card-text"></i>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="grado_seccion"
+                                name="grado_seccion"
+                                value={formData.grado_seccion || ''}
+                                className={
+                                    formData.grado_seccion ? 'has-value' : ''
+                                }
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione el Grado y su seccion --
+                                </option>
+                                <option value="" disabled>
+                                    Primaria
+                                </option>
+
+                                {primaria.length == 0 ? (
+                                    <option value="" disabled>
+                                        No hay grados cargados
+                                    </option>
+                                ) : (
+                                    primaria.map((grado) => (
+                                        <option key={grado.id} value={grado.id}>
+                                            {grado.grado} {grado.seccion}
+                                        </option>
+                                    ))
+                                )}
+
+                                <option value="" disabled>
+                                    Secundaria
+                                </option>
+
+                                {secundaria.length === 0 ? (
+                                    <option value="" disabled>
+                                        No hay grados cargados
+                                    </option>
+                                ) : (
+                                    secundaria.map((grado) => (
+                                        <option key={grado.id} value={grado.id}>
+                                            {grado.grado} {grado.seccion}
+                                        </option>
+                                    ))
+                                )}
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <div className="select-container">
+                            <select
+                                id="profesor"
+                                name="profesor"
+                                value={formData.profesor || ''}
+                                className={formData.profesor ? 'has-value' : ''}
+                                onChange={(e) => handleInputChange(e)}
+                                required
+                            >
+                                <option value="">
+                                    -- Seleccione el Profesor --
+                                </option>
+                                {profesor.length === 0 ? (
+                                    <option value="" disabled>
+                                        No hay profesores cargados
+                                    </option>
+                                ) : (
+                                    profesor.map((profesor) => (
+                                        <option
+                                            key={profesor.id}
+                                            value={profesor.id}
+                                        >
+                                            {profesor.nombre}{' '}
+                                            {profesor.apellido}{' '}
+                                            {profesor.cedula}
+                                        </option>
+                                    ))
+                                )}
+                            </select>
+                            <i className="select-icon fas fa-chevron-down"></i>
                         </div>
                     </div>
                     <button type="submit" className="btn-add">
@@ -138,14 +302,16 @@ export function Horarios() {
                 setShowAsignarHorario={setShowAsignarHorario}
                 setMateria={setmateria}
             />
-            <AsignarHorario
-                isOpen={showAsignarHorario}
-                materia={materia}
-                onClose={() => {
-                    setShowAsignarHorario(false);
-                    setmateria(null);
-                }}
-            />
+            {showAsignarHorario && (
+                <AsignarHorario
+                    isOpen={showAsignarHorario}
+                    materia={materia}
+                    onClose={() => {
+                        setShowAsignarHorario(false);
+                        setmateria(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

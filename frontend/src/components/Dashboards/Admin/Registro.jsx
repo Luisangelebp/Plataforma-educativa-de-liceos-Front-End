@@ -44,7 +44,9 @@ export default function Registo() {
         }
     };
 
-    const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/usuarios`;
+    const API_URL = `${
+        import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    }/usuarios`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -392,7 +394,7 @@ export default function Registo() {
                     </div>
                 ) : null}
                 {/* Grado Asignado PROFESOR Input */}
-                {rolActive === 'profesor' ? (
+                {/* {rolActive === 'profesor' ? (
                     <div className="input-group">
                         {' '}
                         <div className="input-container">
@@ -415,7 +417,7 @@ export default function Registo() {
                             <i className="input-icon bi bi-book"></i>{' '}
                         </div>{' '}
                     </div>
-                ) : null}
+                ) : null} */}
                 {/* Tipo de Profesor Select */}
                 {rolActive === 'profesor' ? (
                     <div className="input-group">
@@ -424,7 +426,9 @@ export default function Registo() {
                                 id="tipo_profesor"
                                 name="tipo_profesor"
                                 value={formData.tipo_profesor || ''}
-                                className={formData.tipo_profesor ? 'has-value' : ''}
+                                className={
+                                    formData.tipo_profesor ? 'has-value' : ''
+                                }
                                 onChange={(e) => handleInputChange(e)}
                                 required
                             >
@@ -433,7 +437,9 @@ export default function Registo() {
                                 </option>
                                 <option value="titular">Titular</option>
                                 <option value="suplente">Suplente</option>
-                                <option value="especialista">Especialista</option>
+                                <option value="especialista">
+                                    Especialista
+                                </option>
                             </select>
                             <i className="select-icon fas fa-chevron-down"></i>
                         </div>

@@ -79,6 +79,21 @@
             width: 20%;
         }
 
+        .btn-verHorario {
+            color: white;
+            background: #007bff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            width: auto;
+
+            &:hover {
+                background-color: #02458d;
+            }
+        }
+
         .btn-delete {
             background-color: #ff4d4d;
             color: white;

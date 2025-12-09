@@ -1,0 +1,53 @@
+.calendario {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 100px repeat(5, 1fr);
+    background: #f0f0f0;
+    font-weight: bold;
+}
+
+.corner {
+    text-align: center;
+    padding: 8px;
+}
+
+.dia {
+    text-align: center;
+    padding: 8px;
+}
+
+.fila {
+    display: grid;
+    grid-template-columns: 100px repeat(5, 1fr);
+    border-top: 1px solid #ddd;
+}
+
+.hora {
+    text-align: center;
+    padding: 4px;
+    background: #fafafa;
+}
+
+.celda {
+    border-left: 1px solid #ddd;
+    min-height: 40px;
+    position: relative;
+}
+
+.clase {
+    background: #4caf50;
+    color: white;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.modal-content {
+    max-width: none !important;
+}
