@@ -1,20 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Profile } from '../../profile/Profile.jsx';
 import logo from '../../../assets/img/Logo.png';
+import SidebarRepresentante from './SidebarRepresentante'; // ajusta la ruta si hace falta
 
-const HeaderRepresentante = () => {
+
+const API_URL = 'http://localhost:8000/';
+
+export default function HeaderRepresentante() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const rawUser = window.localStorage.getItem('user');
+  const user = rawUser ? JSON.parse(rawUser) : {};
+
   return (
     <header className="main-header">
-      <div className="main-title">
-        <img className="logo" src={logo} alt="CENIT" />
-        <h2>CENIT</h2>
-        <p>"Con Excelencia Navegarás Iluminando Tu Futuro"</p>
+      <div className="logo-container">
+        <div className="mobil-menu" onClick={() => setMenuOpen(!menuOpen)}>
+          <i className="bi bi-list"></i>
+        </div>
+
+        {menuOpen && (
+          <>
+            <div className="overlay" onClick={() => setMenuOpen(false)}></div>
+            <ul className="modalMenu">
+              <li>
+                <Link to="/representante" className="menu-item" onClick={() => setMenuOpen(false)}>
+                  Inicio
+                </Link>
+              </li>
+              <details>
+                <summary>Opciones</summary>
+                <ul>
+                  <li>
+                    <Link to="/representante/representados" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      Mis representados
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/representante/boletines" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      Boletines
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/representante/calendario" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      Calendario
+                    </Link>
+                  </li>
+                </ul>
+              </details>
+            </ul>
+          </>
+        )}
+
+        <div className="logo">
+          <img src={logo} alt="CENIT" width={60} />
+        </div>
+
+        <div className="cenit">
+          <h1>CENIT</h1>
+          <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
+        </div>
       </div>
-      <div className="user-info">
-        <span>Representante</span>
-        <button>Cerrar Sesión</button>
+
+      <div className="profile-container">
+        <Profile userImg={user.foto ? `${API_URL}${user.foto}` : null} />
+        <button className="logout-button">Cerrar Sesión</button>
       </div>
     </header>
   );
-};
+}
 
-export default HeaderRepresentante;
