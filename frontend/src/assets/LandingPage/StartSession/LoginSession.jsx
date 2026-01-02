@@ -1,4 +1,3 @@
-import './css/ModalSession.css';
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
@@ -10,6 +9,7 @@ const LoginSession = ({ setShowLogin }) => {
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedRole, setSelectedRole] = useState('');
     const modalRef = useRef(null);
 
     // Cerrar modal al hacer click fuera
@@ -138,167 +138,213 @@ const LoginSession = ({ setShowLogin }) => {
         }
     };
 
-    const handleForgotPassword = () => {
-        // Lógica para recuperar contraseña
-        alert('Función de recuperación de contraseña');
+    const selectRole = (role) => {
+        setSelectedRole(role);
+        setFormData((prev) => ({
+            ...prev,
+            typeU: role === 'estudiante' ? 'Estudiante' : 
+                   role === 'profesor' ? 'Profesor' : 
+                   role === 'representante' ? 'Representante' : '',
+        }));
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-container" ref={modalRef}>
-                <div className="modal-header">
-                    <h2>Iniciar Sesión</h2>
-                    <button
-                        className="close-btn"
-                        onClick={() => setShowLogin(false)}
-                        aria-label="Cerrar modal"
-                    >
-                        <i className="fas fa-times"></i>
-                    </button>
+        <div className="login-screen" onClick={() => setShowLogin(false)}>
+            {/* Figuras decorativas de fondo */}
+            <div className="login-bg-shapes">
+                <div className="shape shape-1"></div>
+                <div className="shape shape-2"></div>
+                <div className="shape shape-3"></div>
+                <div className="shape shape-4"></div>
+                <div className="shape shape-5"></div>
+            </div>
+            <div className="login-card" onClick={(e) => e.stopPropagation()} ref={modalRef}>
+                {/* Panel Izquierdo */}
+                <div className="login-left">
+                    <div className="logo-container">
+                        <div className="logo-icon">
+                            <i className="fas fa-graduation-cap"></i>
+                        </div>
+                        <div className="logo-text">
+                            <h1>
+                                <i className="fas fa-star" style={{marginRight: '10px', fontSize: '1.8rem', verticalAlign: 'middle'}}></i>
+                                CENIT
+                            </h1>
+                            <p>"Con Excelencia Navegaras Iluminando Tu Futuro"</p>
+                        </div>
+                    </div>
+                    
+                    <div className="features-list">
+                        <div className="feature-item">
+                            <div className="feature-icon">
+                                <i className="fas fa-users"></i>
+                            </div>
+                            <div className="feature-text">
+                                <h4>Gestión Completa</h4>
+                                <p>Administra estudiantes, profesores y materias</p>
+                            </div>
+                        </div>
+                        
+                        <div className="feature-item">
+                            <div className="feature-icon">
+                                <i className="fas fa-file-alt"></i>
+                            </div>
+                            <div className="feature-text">
+                                <h4>Boletines Digitales</h4>
+                                <p>Genera y descarga boletines en formato PDF</p>
+                            </div>
+                        </div>
+                        
+                        <div className="feature-item">
+                            <div className="feature-icon">
+                                <i className="fas fa-chart-line"></i>
+                            </div>
+                            <div className="feature-text">
+                                <h4>Reportes y Estadísticas</h4>
+                                <p>Visualiza el rendimiento académico</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="modal-body">
-                    <form onSubmit={handleSubmit} className="login-form">
-                        <div
-                            className={`input-group ${
-                                errors.username ? 'error' : ''
-                            }`}
-                        >
-                            <div className="input-container">
+                {/* Panel Derecho - Formulario */}
+                <div className="login-right">
+                    <form className="login-form" onSubmit={handleSubmit}>
+                        <h2>Iniciar Sesión</h2>
+                        <p>Ingrese sus credenciales para acceder al sistema</p>
+                        
+                        <div className="form-group">
+                            <label htmlFor="username">Usuario</label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-user"></i>
                                 <input
                                     type="text"
                                     id="username"
                                     name="username"
                                     value={formData.username}
                                     onChange={handleInputChange}
-                                    className={
-                                        formData.username ? 'has-value' : ''
-                                    }
+                                    placeholder="Ingrese su usuario"
                                     required
                                 />
-                                <label htmlFor="username">
-                                    Usuario o Email
-                                </label>
-                                <i className="input-icon fas fa-user"></i>
                             </div>
                             {errors.username && (
-                                <span className="error-message">
+                                <span style={{color: 'var(--danger)', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
                                     {errors.username}
                                 </span>
                             )}
                         </div>
-
-                        <div
-                            className={`input-group ${
-                                errors.password ? 'error' : ''
-                            }`}
-                        >
-                            <div className="input-container">
+                        
+                        <div className="form-group">
+                            <label htmlFor="password">Contraseña</label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-lock"></i>
                                 <input
                                     type="password"
                                     id="password"
                                     name="password"
                                     value={formData.password}
                                     onChange={handleInputChange}
-                                    className={
-                                        formData.password ? 'has-value' : ''
-                                    }
+                                    placeholder="Ingrese su contraseña"
                                     required
                                 />
-                                <label htmlFor="password">Contraseña</label>
-                                <i className="input-icon fas fa-lock"></i>
                             </div>
                             {errors.password && (
-                                <span className="error-message">
+                                <span style={{color: 'var(--danger)', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
                                     {errors.password}
                                 </span>
                             )}
                         </div>
-
-                        <div
-                            className={`input-group ${
-                                errors.typeU ? 'error' : ''
-                            }`}
-                        >
-                            <div className="select-container">
+                        
+                        <div className="form-group">
+                            <label htmlFor="typeU">Tipo de Usuario</label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-user-tag"></i>
                                 <select
                                     id="typeU"
                                     name="typeU"
                                     value={formData.typeU}
                                     onChange={handleInputChange}
-                                    className={
-                                        formData.typeU ? 'has-value' : ''
-                                    }
+                                    required
                                 >
-                                    <option value="">
-                                        -- Seleccione su Tipo de Usuario --
-                                    </option>
-                                    <option value="Representante">
-                                        Representante
-                                    </option>
-                                    <option value="Estudiante">
-                                        Estudiante
-                                    </option>
+                                    <option value="">Seleccione un rol</option>
+                                    <option value="Administrador">Administrador</option>
                                     <option value="Profesor">Profesor</option>
-                                    <option value="Administrador">
-                                        Administrador
-                                    </option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Representante">Representante</option>
                                 </select>
-                                <i className="select-icon fas fa-chevron-down"></i>
                             </div>
                             {errors.typeU && (
-                                <span className="error-message">
+                                <span style={{color: 'var(--danger)', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
                                     {errors.typeU}
                                 </span>
                             )}
                         </div>
-
-                        <div className="form-options">
-                            <label className="remember-me">
-                                <input type="checkbox" />
-                                <span className="checkmark"></span>
-                                Recordar sesión
-                            </label>
-                            <button
-                                type="button"
-                                className="forgot-password"
-                                onClick={handleForgotPassword}
-                            >
-                                ¿Olvidaste tu contraseña?
-                            </button>
-                        </div>
-
+                        
                         {errors.submit && (
-                            <div className="submit-error">
+                            <div style={{
+                                background: 'rgba(247, 37, 133, 0.1)',
+                                color: 'var(--danger)',
+                                padding: '12px',
+                                borderRadius: 'var(--border-radius)',
+                                marginBottom: '20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}>
                                 <i className="fas fa-exclamation-circle"></i>
                                 {errors.submit}
                             </div>
                         )}
-
-                        <button
-                            type="submit"
-                            className={`submit-btn ${
-                                isLoading ? 'loading' : ''
-                            }`}
-                            disabled={isLoading}
-                        >
+                        
+                        <button type="submit" className="btn btn-primary" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <i className="fas fa-spinner fa-spin"></i>
-                                    Iniciando sesión...
+                                    Accediendo...
                                 </>
                             ) : (
                                 <>
                                     <i className="fas fa-sign-in-alt"></i>
-                                    Iniciar Sesión
+                                    Acceder al Sistema
                                 </>
                             )}
                         </button>
+                        
+                        <div className="role-selector">
+                            <div 
+                                className={`role-card ${selectedRole === 'estudiante' ? 'active' : ''}`}
+                                onClick={() => selectRole('estudiante')}
+                            >
+                                <div className="role-icon">
+                                    <i className="fas fa-user-graduate"></i>
+                                </div>
+                                <h4>Estudiante</h4>
+                                <p>Consulta de notas</p>
+                            </div>
+                            
+                            <div 
+                                className={`role-card ${selectedRole === 'profesor' ? 'active' : ''}`}
+                                onClick={() => selectRole('profesor')}
+                            >
+                                <div className="role-icon">
+                                    <i className="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <h4>Profesor</h4>
+                                <p>Control académico</p>
+                            </div>
+                            
+                            <div 
+                                className={`role-card ${selectedRole === 'representante' ? 'active' : ''}`}
+                                onClick={() => selectRole('representante')}
+                            >
+                                <div className="role-icon">
+                                    <i className="fas fa-user-friends"></i>
+                                </div>
+                                <h4>Representante</h4>
+                                <p>Gestión de estudiantes</p>
+                            </div>
+                        </div>
                     </form>
-                </div>
-
-                <div className="modal-footer">
-                    <p>Sistema de Gestión Educativa 2025</p>
                 </div>
             </div>
         </div>

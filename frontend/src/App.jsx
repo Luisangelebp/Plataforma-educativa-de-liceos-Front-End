@@ -33,6 +33,9 @@ import { BoletinesEstudiante } from './components/Dashboards/Estudiante/Boletine
 import { Profesor } from './components/Dashboards/Profesor/Profesor.jsx';
 import { BoletinesProfesor } from './components/Dashboards/Profesor/BoletinesProfesor.jsx';
 import { ListaEstudiantesProfesor } from './components/Dashboards/Profesor/ListaEstudiantesProfesor.jsx';
+import { Asistencia } from './components/Dashboards/Profesor/Asistencia.jsx';
+import { HorariosProfesor } from './components/Dashboards/Profesor/HorariosProfesor.jsx';
+import { Calificaciones } from './components/Dashboards/Profesor/Calificaciones.jsx';
 
 // Calendario
 import { Calendario } from './components/Dashboards/Calendario/Calendario.jsx';
@@ -75,6 +78,9 @@ function App() {
                 <Route path="/profesor" element={<Profesor />}>
                     <Route index element={<BoletinesProfesor />} />
                     <Route path="listaE" element={<ListaEstudiantesProfesor />} />
+                    <Route path="horarios" element={<HorariosProfesor />} />
+                    <Route path="calificaciones" element={<Calificaciones />} />
+                    <Route path="asistencia" element={<Asistencia />} />
                     <Route path="boletines" element={<BoletinesProfesor />} />
                     <Route path="calendario" element={<Calendario />} />
                 </Route>
