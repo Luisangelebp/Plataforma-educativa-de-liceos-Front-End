@@ -67,6 +67,7 @@ class GradoSeccion(models.Model):
         ('3', '3er año'),
         ('4', '4to año'),
         ('5', '5to año'),
+        ('6', '6to año'),
     ]
 
     SECCION_OPCIONES = [
@@ -83,4 +84,12 @@ class GradoSeccion(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.grado} {self.seccion} ({self.nivel})"
+        tipo = "Grado" if self.nivel == "primaria" else "Año"
+        # Obtener el texto del grado según el nivel
+        if self.nivel == "primaria":
+            grado_texto = dict(self.GRADO_OPCIONES_PRIMARIA).get(self.grado, self.grado)
+        elif self.nivel == "secundaria":
+            grado_texto = dict(self.GRADO_OPCIONES_SECUNDARIA).get(self.grado, self.grado)
+        else:
+            grado_texto = self.grado
+        return f"{grado_texto} {self.seccion} ({self.nivel})"

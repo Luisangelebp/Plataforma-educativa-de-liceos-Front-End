@@ -1,15 +1,56 @@
 from rest_framework import serializers
 from .models import Materia, Horario
+from Usuarios.profesor.models import Profesor
 
 class MateriaSerializer(serializers.ModelSerializer):
+    profesores = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Profesor.objects.all(),
+        required=False
+    )
+    profesores_detalle = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Materia
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'profesores', 'profesores_detalle']
+
+    def get_profesores_detalle(self, obj):
+        """Retorna información detallada de los profesores asignados"""
+        profesores = obj.profesores.all()
+        return [
+            {
+                'id': prof.id,
+                'nombre': prof.nombre,
+                'apellido': prof.apellido,
+                'tipo_profesor': prof.tipo_profesor
+            }
+            for prof in profesores
+        ]
 
     def validate_nombre(self, value):
-        if Materia.objects.filter(nombre__iexact=value).exists():
-            raise serializers.ValidationError("Ya existe una materia con este nombre.")
+        # Solo validar si es creación, no en actualización
+        if self.instance is None:
+            if Materia.objects.filter(nombre__iexact=value).exists():
+                raise serializers.ValidationError("Ya existe una materia con este nombre.")
+        else:
+            # En actualización, verificar que no haya otra materia con el mismo nombre
+            if Materia.objects.filter(nombre__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("Ya existe una materia con este nombre.")
         return value
+
+    def update(self, instance, validated_data):
+        profesores_data = validated_data.pop('profesores', None)
+        
+        # Actualizar campos básicos
+        instance.nombre = validated_data.get('nombre', instance.nombre)
+        instance.descripcion = validated_data.get('descripcion', instance.descripcion)
+        instance.save()
+        
+        # Actualizar profesores si se proporcionan
+        if profesores_data is not None:
+            instance.profesores.set(profesores_data)
+        
+        return instance
 
 class HorarioSerializer(serializers.ModelSerializer):
     class Meta:
