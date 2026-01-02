@@ -63,6 +63,10 @@ export function Boletines() {
     const [showPlantillaModal, setShowPlantillaModal] = useState(false);
     const [showDescargarPlantillaModal, setShowDescargarPlantillaModal] = useState(false);
     const [showGestionarPlantillasModal, setShowGestionarPlantillasModal] = useState(false);
+    const [showVistaPreviaModal, setShowVistaPreviaModal] = useState(false);
+    const [boletinVistaPrevia, setBoletinVistaPrevia] = useState(null);
+    const [loadingVistaPrevia, setLoadingVistaPrevia] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState(null);
     const [plantillaAction, setPlantillaAction] = useState('subir'); // 'subir' o 'actualizar'
     const [uploadData, setUploadData] = useState({
         estudiante: null,
@@ -293,6 +297,44 @@ export function Boletines() {
         return plantillas.find((p) => p.periodo === periodo && !p.grado_seccion);
     };
 
+    const handleVistaPrevia = async (boletinId) => {
+        setLoadingVistaPrevia(true);
+        setShowVistaPreviaModal(true);
+        setPdfUrl(null);
+        try {
+            const response = await axiosInstance.get(`boletines/${boletinId}/`);
+            setBoletinVistaPrevia(response.data);
+            
+            // Obtener el PDF como blob y crear una URL para el iframe
+            try {
+                const pdfResponse = await axiosInstance.get(
+                    `boletines/${boletinId}/descargar/`,
+                    {
+                        responseType: 'blob',
+                    }
+                );
+                const blob = new Blob([pdfResponse.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                setPdfUrl(url);
+            } catch (pdfError) {
+                console.error('Error al cargar el PDF:', pdfError);
+                // Si falla, intentar usar la URL directa del archivo
+                if (response.data.archivo_pdf) {
+                    const directUrl = response.data.archivo_pdf.startsWith('http') 
+                        ? response.data.archivo_pdf 
+                        : `${API_URL}${response.data.archivo_pdf}`;
+                    setPdfUrl(directUrl);
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar detalles del boletín:', error);
+            alert('Error al cargar la información del boletín');
+            setShowVistaPreviaModal(false);
+        } finally {
+            setLoadingVistaPrevia(false);
+        }
+    };
+
     const handleEliminarPlantilla = async (plantillaId, periodo) => {
         const periodoNombre = lapsoOptions.find(l => l.value === periodo)?.label || 'este periodo';
         
@@ -313,7 +355,7 @@ export function Boletines() {
     return (
         <div className="container-boletines">
             <div className="boletines-header">
-                <h1>Gestión de Boletines</h1>
+            <h1>Gestión de Boletines</h1>
                 <div className="plantillas-buttons">
                     <button
                         className="btn-plantilla btn-subir"
@@ -380,41 +422,143 @@ export function Boletines() {
                                         return (
                                             <td key={lapso.value}>
                                                 {boletin ? (
-                                                    <div className="boletin-actions">
+                                                    <div className="boletin-actions" style={{
+                                                        display: 'flex',
+                                                        gap: '6px',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}>
                                                         <button
-                                                            className="btn-download"
-                                                            onClick={() =>
-                                                                handleDownload(boletin)
-                                                            }
-                                                            title="Descargar"
+                                                            onClick={() => handleVistaPrevia(boletin.id)}
+                                                            title="Vista previa"
+                                                            style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                padding: '0',
+                                                                margin: '0',
+                                                                background: 'var(--primary)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: 'var(--border-radius-sm)',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: 'var(--transition)',
+                                                                flexShrink: 0,
+                                                                lineHeight: '1'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.background = '#0056b3';
+                                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.background = 'var(--primary)';
+                                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                            }}
                                                         >
-                                                            <i className="fas fa-download"></i>
+                                                            <i className="fas fa-eye" style={{
+                                                                fontSize: '0.7rem',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                lineHeight: '1',
+                                                                margin: '0',
+                                                                padding: '0'
+                                                            }}></i>
                                                         </button>
                                                         <button
-                                                            className="btn-upload"
+                                                            onClick={() => handleDownload(boletin)}
+                                                            title="Descargar boletín"
+                                                            style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                padding: '0',
+                                                                margin: '0',
+                                                                background: 'var(--info)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: 'var(--border-radius-sm)',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: 'var(--transition)',
+                                                                flexShrink: 0,
+                                                                lineHeight: '1'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.background = '#3a7bd5';
+                                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.background = 'var(--info)';
+                                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-download" style={{
+                                                                fontSize: '0.7rem',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                lineHeight: '1',
+                                                                margin: '0',
+                                                                padding: '0'
+                                                            }}></i>
+                                                        </button>
+                                                        <button
                                                             onClick={() =>
                                                                 handleUploadClick(
                                                                     estudiante,
                                                                     lapso.value
                                                                 )
                                                             }
-                                                            title="Editar/Reemplazar"
+                                                            title="Editar boletín"
+                                                            style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                padding: '0',
+                                                                margin: '0',
+                                                                background: 'var(--warning)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: 'var(--border-radius-sm)',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: 'var(--transition)',
+                                                                flexShrink: 0,
+                                                                lineHeight: '1'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.background = '#e0a800';
+                                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.background = 'var(--warning)';
+                                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                            }}
                                                         >
-                                                            <i className="fas fa-edit"></i>
+                                                            <i className="fas fa-edit" style={{
+                                                                fontSize: '0.7rem',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                lineHeight: '1',
+                                                                margin: '0',
+                                                                padding: '0'
+                                                            }}></i>
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <button
-                                                        className="btn-upload"
-                                                        onClick={() =>
-                                                            handleUploadClick(
-                                                                estudiante,
-                                                                lapso.value
-                                                            )
-                                                        }
-                                                    >
-                                                        <i className="fas fa-upload"></i> Subir
-                                                    </button>
+                                                    <span style={{
+                                                        color: 'var(--gray)',
+                                                        fontSize: '0.85rem',
+                                                        fontStyle: 'italic'
+                                                    }}>
+                                                        Sin boletín
+                                                    </span>
                                                 )}
                                             </td>
                                         );
@@ -426,51 +570,84 @@ export function Boletines() {
                 </table>
             </div>
 
-            {/* Modal para subir boletín */}
-            {showUploadModal && (
-                <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+            {/* Modal para editar boletín (solo para boletines existentes) */}
+            {showUploadModal && selectedEstudiante && (
+                <div className="modal" onClick={() => setShowUploadModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>
-                                {selectedEstudiante.boletinExistente
-                                    ? 'Actualizar Boletín'
-                                    : 'Subir Boletín'}
-                            </h2>
-                            <button
-                                className="modal-close"
-                                onClick={() => setShowUploadModal(false)}
-                            >
-                                ×
-                            </button>
+                            <h3 className="modal-title">Editar Boletín</h3>
+                            <button className="close-modal" onClick={() => setShowUploadModal(false)}>&times;</button>
                         </div>
-                        <p>
-                            Estudiante: {selectedEstudiante.nombre}{' '}
-                            {selectedEstudiante.apellido}
-                        </p>
-                        <p>
-                            Lapso:{' '}
-                            {lapsoOptions.find((l) => l.value === uploadData.lapso)?.label}
-                        </p>
-                        <div className="form-group">
-                            <label>Archivo PDF:</label>
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={handleFileChange}
-                            />
-                        </div>
-                        <div className="modal-actions">
-                            <button
-                                className="btn-cancel"
-                                onClick={() => setShowUploadModal(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button className="btn-submit" onClick={handleUpload}>
-                                {selectedEstudiante.boletinExistente
-                                    ? 'Actualizar'
-                                    : 'Subir'}
-                            </button>
+                        <div className="modal-body">
+                            <div style={{marginBottom: '20px'}}>
+                                <p style={{marginBottom: '8px', color: 'var(--gray)', fontSize: '0.9rem'}}>
+                                    <strong>Estudiante:</strong> {selectedEstudiante.nombre} {selectedEstudiante.apellido}
+                                </p>
+                                <p style={{margin: 0, color: 'var(--gray)', fontSize: '0.9rem'}}>
+                                    <strong>Lapso:</strong> {lapsoOptions.find((l) => l.value === uploadData.lapso)?.label}
+                                </p>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="archivo_pdf" style={{fontSize: '0.95rem'}}>
+                                    Reemplazar Archivo PDF *
+                                </label>
+                                <div style={{position: 'relative'}}>
+                                    <i className="fas fa-file-pdf" style={{
+                                        position: 'absolute',
+                                        left: '15px',
+                                        top: '15px',
+                                        color: 'var(--gray)',
+                                        fontSize: '0.8rem',
+                                        zIndex: 1
+                                    }}></i>
+                                    <input
+                                        type="file"
+                                        id="archivo_pdf"
+                                        accept=".pdf"
+                                        onChange={handleFileChange}
+                                        required
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 15px 12px 40px',
+                                            border: '2px solid var(--light-gray)',
+                                            borderRadius: 'var(--border-radius)',
+                                            fontSize: '0.95rem',
+                                            transition: 'var(--transition)',
+                                            background: 'white',
+                                            color: 'var(--dark)'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.currentTarget.style.borderColor = 'var(--primary)';
+                                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(67, 97, 238, 0.1)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.currentTarget.style.borderColor = 'var(--light-gray)';
+                                            e.currentTarget.style.boxShadow = 'none';
+                                        }}
+                                    />
+                                </div>
+                                <small style={{display: 'block', marginTop: '8px', color: 'var(--gray)', fontSize: '0.85rem'}}>
+                                    Solo archivos PDF. El archivo actual será reemplazado.
+                                </small>
+                            </div>
+                            <div style={{marginTop: '25px', display: 'flex', justifyContent: 'flex-end', gap: '12px'}}>
+                                <button 
+                                    type="button" 
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowUploadModal(false)}
+                                    style={{width: 'auto', padding: '12px 24px', fontSize: '0.9rem'}}
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleUpload}
+                                    style={{width: 'auto', padding: '12px 30px', fontSize: '0.9rem'}}
+                                >
+                                    Actualizar Boletín
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -485,7 +662,7 @@ export function Boletines() {
                                 {plantillaAction === 'subir'
                                     ? 'Subir Plantilla de Boletín'
                                     : 'Actualizar Plantilla de Boletín'}
-                            </h2>
+                        </h2>
                             <button
                                 className="modal-close"
                                 onClick={() => setShowPlantillaModal(false)}
@@ -628,6 +805,204 @@ export function Boletines() {
                                 </button>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Vista Previa del Boletín */}
+            {showVistaPreviaModal && (
+                <div className="modal-overlay" onClick={() => setShowVistaPreviaModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{
+                        maxWidth: '95%',
+                        width: '95%',
+                        maxHeight: '95vh',
+                        height: '95vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: '0'
+                    }}>
+                        <div className="modal-header" style={{
+                            padding: '12px 18px',
+                            borderBottom: '1px solid var(--light-gray)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexShrink: 0
+                        }}>
+                            <h2 style={{margin: 0, fontSize: '1.1rem', fontWeight: '600', color: 'var(--dark)'}}>
+                                <i className="fas fa-file-pdf" style={{marginRight: '8px', color: '#dc3545', fontSize: '0.9rem'}}></i>
+                                Vista Previa del Boletín
+                                {boletinVistaPrevia && (
+                                    <span style={{
+                                        marginLeft: '12px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: '500',
+                                        color: 'var(--gray)'
+                                    }}>
+                                        - {boletinVistaPrevia.estudiante_nombre} ({boletinVistaPrevia.lapso_display})
+                                    </span>
+                                )}
+                            </h2>
+                            <button
+                                className="modal-close"
+                                onClick={() => {
+                                    if (pdfUrl && pdfUrl.startsWith('blob:')) {
+                                        window.URL.revokeObjectURL(pdfUrl);
+                                    }
+                                    setShowVistaPreviaModal(false);
+                                    setPdfUrl(null);
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '1.2rem',
+                                    color: '#999',
+                                    cursor: 'pointer',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#f0f0f0';
+                                    e.currentTarget.style.color = '#333';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'none';
+                                    e.currentTarget.style.color = '#999';
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="modal-body" style={{
+                            padding: '0',
+                            flex: 1,
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}>
+                            {loadingVistaPrevia ? (
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '40px',
+                                    color: 'var(--gray)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%'
+                                }}>
+                                    <i className="fas fa-spinner fa-spin" style={{fontSize: '2rem', marginBottom: '10px'}}></i>
+                                    <p>Cargando boletín...</p>
+                                </div>
+                            ) : boletinVistaPrevia && pdfUrl ? (
+                                <iframe
+                                    src={pdfUrl}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        border: 'none',
+                                        flex: 1
+                                    }}
+                                    title="Vista previa del boletín"
+                                ></iframe>
+                            ) : boletinVistaPrevia && !pdfUrl ? (
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '40px',
+                                    color: 'var(--gray)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%'
+                                }}>
+                                    <i className="fas fa-spinner fa-spin" style={{fontSize: '2rem', marginBottom: '10px'}}></i>
+                                    <p>Cargando PDF...</p>
+                                </div>
+                            ) : (
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '40px',
+                                    color: 'var(--gray)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%'
+                                }}>
+                                    <i className="fas fa-exclamation-triangle" style={{fontSize: '2rem', marginBottom: '10px', color: 'var(--warning)'}}></i>
+                                    <p>No se encontró el archivo PDF del boletín</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer" style={{
+                            padding: '10px 18px',
+                            borderTop: '1px solid var(--light-gray)',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: '8px',
+                            flexShrink: 0
+                        }}>
+                            <button
+                                onClick={() => {
+                                    if (pdfUrl && pdfUrl.startsWith('blob:')) {
+                                        window.URL.revokeObjectURL(pdfUrl);
+                                    }
+                                    setShowVistaPreviaModal(false);
+                                    setPdfUrl(null);
+                                }}
+                                style={{
+                                    padding: '6px 14px',
+                                    background: '#f0f0f0',
+                                    color: '#333',
+                                    border: 'none',
+                                    borderRadius: 'var(--border-radius)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '600',
+                                    transition: 'var(--transition)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#e0e0e0';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#f0f0f0';
+                                }}
+                            >
+                                Cerrar
+                            </button>
+                            {boletinVistaPrevia && boletinVistaPrevia.archivo_pdf && (
+                                <button
+                                    onClick={() => {
+                                        handleDownload(boletinVistaPrevia);
+                                    }}
+                                    style={{
+                                        padding: '6px 14px',
+                                        background: 'var(--primary)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: 'var(--border-radius)',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        transition: 'var(--transition)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'var(--primary-dark)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'var(--primary)';
+                                    }}
+                                >
+                                    <i className="fas fa-download" style={{fontSize: '0.7rem'}}></i>
+                                    Descargar Boletín
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
