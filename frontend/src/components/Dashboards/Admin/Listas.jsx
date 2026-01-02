@@ -32,7 +32,7 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                 {type === 'estudiante' && (
                     <>
                         <p>
-                            <strong>Grado:</strong> {user.grado_seccion?.grado || user.grado || 'N/A'}
+                            <strong>{user.grado_seccion?.nivel === 'primaria' ? 'Grado' : user.grado_seccion?.nivel === 'secundaria' ? 'Año' : 'Grado/Año'}:</strong> {user.grado_seccion?.grado ? `${user.grado_seccion.grado}° ${user.grado_seccion.nivel === 'primaria' ? 'Grado' : user.grado_seccion.nivel === 'secundaria' ? 'Año' : ''}` : user.grado || 'N/A'}
                         </p>
                         <p>
                             <strong>Sección:</strong> {user.grado_seccion?.seccion || user.seccion || 'N/A'}
@@ -50,7 +50,7 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                         <p>
                             <strong>Grados Asignados:</strong>{' '}
                             {user.grado_secciones && user.grado_secciones.length > 0
-                                ? user.grado_secciones.map(gs => `${gs.grado} ${gs.seccion}`).join(', ')
+                                ? user.grado_secciones.map(gs => `${gs.grado}° ${gs.nivel === 'primaria' ? 'Grado' : 'Año'} ${gs.seccion}`).join(', ')
                                 : user.grado_asignado || 'Sin asignar'}
                         </p>
                         <p>
@@ -375,7 +375,26 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [gradosSecciones, setGradosSecciones] = useState([]);
+    const [materias, setMaterias] = useState([]);
+    const [selectedGradosSecciones, setSelectedGradosSecciones] = useState([]);
+    const [selectedMaterias, setSelectedMaterias] = useState([]);
+    const [loadingGrados, setLoadingGrados] = useState(false);
+    const [loadingMaterias, setLoadingMaterias] = useState(false);
     useBodyOverflowLock(isOpen);
+
+    useEffect(() => {
+        if (type === 'profesor' && isOpen) {
+            cargarGradosSecciones();
+            cargarMaterias();
+        } else {
+            // Limpiar cuando no es profesor o se cierra
+            setGradosSecciones([]);
+            setMaterias([]);
+            setSelectedGradosSecciones([]);
+            setSelectedMaterias([]);
+        }
+    }, [type, isOpen]);
 
     useEffect(() => {
         if (user && isOpen) {
@@ -392,9 +411,127 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 tipo_profesor: user.tipo_profesor || '',
                 representante: user.representante || '',
             });
+            
+            // Si es profesor, cargar asignaciones actuales
+            if (type === 'profesor') {
+                // Manejar grado_secciones - puede venir como array de objetos o array de IDs
+                if (user.grado_secciones && Array.isArray(user.grado_secciones)) {
+                    if (user.grado_secciones.length > 0 && typeof user.grado_secciones[0] === 'object') {
+                        // Ya viene como objetos completos
+                        setSelectedGradosSecciones(user.grado_secciones);
+                    } else {
+                        // Viene como array de IDs, necesitamos cargar los objetos
+                        setSelectedGradosSecciones([]);
+                    }
+                } else {
+                    setSelectedGradosSecciones([]);
+                }
+                
+                // Manejar materias - puede venir como array de objetos o array de IDs
+                if (user.materias && Array.isArray(user.materias)) {
+                    if (user.materias.length > 0 && typeof user.materias[0] === 'object') {
+                        // Ya viene como objetos completos
+                        setSelectedMaterias(user.materias);
+                    } else {
+                        // Viene como array de IDs, necesitamos cargar los objetos
+                        setSelectedMaterias([]);
+                    }
+                } else {
+                    setSelectedMaterias([]);
+                }
+            }
+            
             setErrors({});
         }
-    }, [user, isOpen]);
+    }, [user, isOpen, type]);
+
+    const cargarGradosSecciones = async () => {
+        setLoadingGrados(true);
+        try {
+            const token = localStorage.getItem('accessToken');
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await axios.get(`${baseUrl}/grado-seccion/`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setGradosSecciones(response.data || []);
+            
+            // Si el usuario tiene grado_secciones asignados, marcarlos como seleccionados
+            if (user && user.grado_secciones && Array.isArray(user.grado_secciones)) {
+                if (user.grado_secciones.length > 0) {
+                    if (typeof user.grado_secciones[0] === 'object' && user.grado_secciones[0].id) {
+                        // Ya son objetos con ID
+                        setSelectedGradosSecciones(user.grado_secciones);
+                    } else if (typeof user.grado_secciones[0] === 'number') {
+                        // Son IDs, buscar los objetos correspondientes
+                        const gradosSeleccionados = response.data.filter(gs => 
+                            user.grado_secciones.includes(gs.id)
+                        );
+                        setSelectedGradosSecciones(gradosSeleccionados);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar grados/secciones:', error);
+            setGradosSecciones([]);
+        } finally {
+            setLoadingGrados(false);
+        }
+    };
+
+    const cargarMaterias = async () => {
+        setLoadingMaterias(true);
+        try {
+            const token = localStorage.getItem('accessToken');
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await axios.get(`${baseUrl}/horarios/materias/`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            setMaterias(response.data || []);
+            
+            // Si el usuario tiene materias asignadas, marcarlas como seleccionadas
+            if (user && user.materias && Array.isArray(user.materias)) {
+                if (user.materias.length > 0) {
+                    if (typeof user.materias[0] === 'object' && user.materias[0].id) {
+                        // Ya son objetos con ID
+                        setSelectedMaterias(user.materias);
+                    } else if (typeof user.materias[0] === 'number') {
+                        // Son IDs, buscar los objetos correspondientes
+                        const materiasSeleccionadas = response.data.filter(m => 
+                            user.materias.includes(m.id)
+                        );
+                        setSelectedMaterias(materiasSeleccionadas);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar materias:', error);
+            setMaterias([]);
+        } finally {
+            setLoadingMaterias(false);
+        }
+    };
+
+    const handleGradoSeccionToggle = (gradoSeccion) => {
+        setSelectedGradosSecciones(prev => {
+            const exists = prev.find(gs => gs.id === gradoSeccion.id);
+            if (exists) {
+                return prev.filter(gs => gs.id !== gradoSeccion.id);
+            } else {
+                return [...prev, gradoSeccion];
+            }
+        });
+    };
+
+    const handleMateriaToggle = (materia) => {
+        setSelectedMaterias(prev => {
+            const exists = prev.find(m => m.id === materia.id);
+            if (exists) {
+                return prev.filter(m => m.id !== materia.id);
+            } else {
+                return [...prev, materia];
+            }
+        });
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -426,22 +563,86 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         setErrors({});
 
         try {
-            const data = new FormData();
-            Object.keys(formData).forEach((key) => {
-                if (
-                    formData[key] !== null &&
-                    formData[key] !== undefined &&
-                    formData[key] !== ''
-                ) {
-                    data.append(key, formData[key]);
-                }
-            });
+            let dataToSend;
+            let headers = {};
 
-            await axios.patch(`${API_URL}${type}/${user.id}/`, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Si es profesor y tiene foto o asignaciones, usar FormData, sino JSON
+            if (type === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0 || selectedMaterias.length > 0)) {
+                const formDataObj = new FormData();
+                
+                // Agregar todos los campos del formulario
+                Object.keys(formData).forEach((key) => {
+                    if (key !== 'foto' && formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+                        formDataObj.append(key, formData[key]);
+                    }
+                });
+                
+                // Agregar foto si existe
+                if (formData.foto) {
+                    formDataObj.append('foto', formData.foto);
+                }
+
+                // Agregar grado_secciones como JSON string
+                // Siempre enviar, incluso si está vacío, para que el backend pueda limpiar las asignaciones
+                const gradoSeccionesData = selectedGradosSecciones.map(gs => ({
+                    nivel: gs.nivel,
+                    grado: gs.grado,
+                    seccion: gs.seccion
+                }));
+                formDataObj.append('grado_secciones', JSON.stringify(gradoSeccionesData));
+                
+                // Agregar materias como array de IDs
+                // Si no hay materias seleccionadas, no enviar el campo (el backend lo manejará)
+                selectedMaterias.forEach((materia) => {
+                    formDataObj.append('materias', materia.id);
+                });
+
+                dataToSend = formDataObj;
+                // No establecer Content-Type para FormData, el navegador lo hace automáticamente
+            } else if (type === 'profesor') {
+                // Si es profesor sin foto ni asignaciones, usar JSON
+                dataToSend = { ...formData };
+                delete dataToSend.foto;
+                
+                if (selectedGradosSecciones.length > 0) {
+                    dataToSend.grado_secciones = selectedGradosSecciones.map(gs => ({
+                        nivel: gs.nivel,
+                        grado: gs.grado,
+                        seccion: gs.seccion
+                    }));
+                } else {
+                    dataToSend.grado_secciones = [];
+                }
+                
+                if (selectedMaterias.length > 0) {
+                    dataToSend.materias = selectedMaterias.map(m => m.id);
+                } else {
+                    dataToSend.materias = [];
+                }
+                
+                headers['Content-Type'] = 'application/json';
+            } else {
+                // Para otros tipos de usuario, usar FormData normal
+                const formDataObj = new FormData();
+                Object.keys(formData).forEach((key) => {
+                    if (
+                        formData[key] !== null &&
+                        formData[key] !== undefined &&
+                        formData[key] !== ''
+                    ) {
+                        formDataObj.append(key, formData[key]);
+                    }
+                });
+                dataToSend = formDataObj;
+                headers['Content-Type'] = 'multipart/form-data';
+            }
+
+            await axios.patch(`${API_URL}${type}/${user.id}/`, dataToSend, { headers });
 
             alert('Usuario actualizado con éxito');
             onSave();
@@ -587,27 +788,17 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     {type === 'profesor' && (
                         <>
                             <div className="form-group">
-                                <label>Grado Asignado:</label>
-                                <input
-                                    type="text"
-                                    name="grado_asignado"
-                                    value={formData.grado_asignado || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {errors.grado_asignado && (
-                                    <span className="error">
-                                        {errors.grado_asignado}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
                                 <label>Tipo de Profesor:</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="tipo_profesor"
                                     value={formData.tipo_profesor || ''}
                                     onChange={handleInputChange}
-                                />
+                                >
+                                    <option value="">Seleccione...</option>
+                                    <option value="titular">Titular</option>
+                                    <option value="suplente">Suplente</option>
+                                    <option value="especialista">Especialista</option>
+                                </select>
                                 {errors.tipo_profesor && (
                                     <span className="error">
                                         {errors.tipo_profesor}
@@ -627,6 +818,203 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                         {errors.telefono}
                                     </span>
                                 )}
+                            </div>
+                            <div className="form-group">
+                                <label>Grados y Secciones Asignados:</label>
+                                <div style={{
+                                    border: '2px solid var(--light-gray)',
+                                    borderRadius: 'var(--border-radius)',
+                                    padding: '10px',
+                                    maxHeight: '200px',
+                                    overflowY: 'auto',
+                                    background: 'white',
+                                    marginTop: '8px',
+                                    minHeight: '80px'
+                                }}>
+                                    {loadingGrados ? (
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.9rem', padding: '10px'}}>
+                                            <i className="fas fa-spinner fa-spin"></i>
+                                            <span>Cargando grados...</span>
+                                        </div>
+                                    ) : gradosSecciones.length === 0 ? (
+                                        <p style={{color: 'var(--gray)', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', padding: '10px'}}>
+                                            No hay grados disponibles
+                                        </p>
+                                    ) : (
+                                        <ul style={{
+                                            listStyle: 'none',
+                                            padding: 0,
+                                            margin: 0
+                                        }}>
+                                            {gradosSecciones.map((gs) => {
+                                                const isSelected = selectedGradosSecciones.find(sgs => sgs.id === gs.id);
+                                                return (
+                                                    <li
+                                                        key={gs.id}
+                                                        style={{
+                                                            padding: '10px 12px',
+                                                            marginBottom: '6px',
+                                                            border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
+                                                            borderRadius: 'var(--border-radius)',
+                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
+                                                            cursor: 'pointer',
+                                                            transition: 'var(--transition)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '10px'
+                                                        }}
+                                                        onClick={() => handleGradoSeccionToggle(gs)}
+                                                        onMouseEnter={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.borderColor = 'var(--primary)';
+                                                                e.currentTarget.style.background = 'rgba(67, 97, 238, 0.05)';
+                                                            }
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.borderColor = 'var(--light-gray)';
+                                                                e.currentTarget.style.background = 'white';
+                                                            }
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={!!isSelected}
+                                                            onChange={() => handleGradoSeccionToggle(gs)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            style={{
+                                                                width: '18px',
+                                                                height: '18px',
+                                                                cursor: 'pointer',
+                                                                accentColor: 'var(--primary)',
+                                                                flexShrink: 0
+                                                            }}
+                                                        />
+                                                        <span style={{
+                                                            flex: 1,
+                                                            fontSize: '0.9rem',
+                                                            color: 'var(--dark)',
+                                                            fontWeight: isSelected ? '600' : '400'
+                                                        }}>
+                                                            {gs.grado}° {gs.nivel === 'primaria' ? 'Grado' : 'Año'} {gs.seccion}
+                                                        </span>
+                                                        {isSelected && (
+                                                            <i className="fas fa-check-circle" style={{
+                                                                color: 'var(--primary)',
+                                                                fontSize: '1rem'
+                                                            }}></i>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Materias Asignadas:</label>
+                                <div style={{
+                                    border: '2px solid var(--light-gray)',
+                                    borderRadius: 'var(--border-radius)',
+                                    padding: '10px',
+                                    maxHeight: '200px',
+                                    overflowY: 'auto',
+                                    background: 'white',
+                                    marginTop: '8px',
+                                    minHeight: '80px'
+                                }}>
+                                    {loadingMaterias ? (
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.9rem', padding: '10px'}}>
+                                            <i className="fas fa-spinner fa-spin"></i>
+                                            <span>Cargando materias...</span>
+                                        </div>
+                                    ) : materias.length === 0 ? (
+                                        <p style={{color: 'var(--gray)', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', padding: '10px'}}>
+                                            No hay materias disponibles
+                                        </p>
+                                    ) : (
+                                        <ul style={{
+                                            listStyle: 'none',
+                                            padding: 0,
+                                            margin: 0
+                                        }}>
+                                            {materias.map((materia) => {
+                                                const isSelected = selectedMaterias.find(sm => sm.id === materia.id);
+                                                return (
+                                                    <li
+                                                        key={materia.id}
+                                                        style={{
+                                                            padding: '10px 12px',
+                                                            marginBottom: '6px',
+                                                            border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
+                                                            borderRadius: 'var(--border-radius)',
+                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
+                                                            cursor: 'pointer',
+                                                            transition: 'var(--transition)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '10px'
+                                                        }}
+                                                        onClick={() => handleMateriaToggle(materia)}
+                                                        onMouseEnter={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.borderColor = 'var(--primary)';
+                                                                e.currentTarget.style.background = 'rgba(67, 97, 238, 0.05)';
+                                                            }
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.borderColor = 'var(--light-gray)';
+                                                                e.currentTarget.style.background = 'white';
+                                                            }
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={!!isSelected}
+                                                            onChange={() => handleMateriaToggle(materia)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            style={{
+                                                                width: '18px',
+                                                                height: '18px',
+                                                                cursor: 'pointer',
+                                                                accentColor: 'var(--primary)',
+                                                                flexShrink: 0
+                                                            }}
+                                                        />
+                                                        <span style={{
+                                                            flex: 1,
+                                                            fontSize: '0.9rem',
+                                                            color: 'var(--dark)',
+                                                            fontWeight: isSelected ? '600' : '400'
+                                                        }}>
+                                                            {materia.nombre}
+                                                        </span>
+                                                        {materia.descripcion && (
+                                                            <span style={{
+                                                                fontSize: '0.8rem',
+                                                                color: 'var(--gray)',
+                                                                fontStyle: 'italic',
+                                                                maxWidth: '200px',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                {materia.descripcion}
+                                                            </span>
+                                                        )}
+                                                        {isSelected && (
+                                                            <i className="fas fa-check-circle" style={{
+                                                                color: 'var(--primary)',
+                                                                fontSize: '1rem'
+                                                            }}></i>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
+                                </div>
                             </div>
                         </>
                     )}
@@ -870,7 +1258,7 @@ export function ListaE() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('cards'); // 'cards' o 'table'
+    const [viewMode, setViewMode] = useState('table'); // 'cards' o 'table'
     const [filtroNivel, setFiltroNivel] = useState('');
 
     useEffect(() => {
@@ -1122,7 +1510,7 @@ export function ListaR() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('cards');
+    const [viewMode, setViewMode] = useState('table');
 
     useEffect(() => {
         fetchRepresentantes();
@@ -1331,7 +1719,7 @@ export function ListaP() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('cards');
+    const [viewMode, setViewMode] = useState('table');
     const [filtroTipo, setFiltroTipo] = useState('');
 
     useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function ListaMaterias({ setShowAsignarHorario, setMateria }) {
@@ -10,8 +11,12 @@ function ListaMaterias({ setShowAsignarHorario, setMateria }) {
         const fetchMaterias = async () => {
             setLoading(true);
             try {
+                const token = localStorage.getItem('accessToken');
                 const response = await axios.get(
-                    `${API_URL}/horarios/materias/`
+                    `${API_URL}/horarios/materias/`,
+                    {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {}
+                    }
                 );
                 setMaterias(response.data);
             } catch (error) {
@@ -24,43 +29,158 @@ function ListaMaterias({ setShowAsignarHorario, setMateria }) {
     }, []);
 
     if (loading) {
-        return <div className="loading">Cargando materias...</div>;
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '50px',
+                color: 'var(--gray)'
+            }}>
+                Cargando materias...
+            </div>
+        );
     }
 
     return (
-        <div className="list-materias">
-            {materias.length == 0 ? (
-                <p>No hay materias registradas.</p>
+        <>
+            {materias.length === 0 ? (
+                <div className="section-card" style={{textAlign: 'center', padding: '40px'}}>
+                    <p style={{color: 'var(--gray)', fontSize: '1rem'}}>No hay materias registradas.</p>
+                </div>
             ) : (
-                materias.map((materia) => (
-                    <div key={materia.id} className="materia-item">
-                        <div className="materia-info">
-                            <h3>{materia.nombre}</h3>
-                            <p>
-                                <span>Descripcion: </span>
-                                {materia.descripcion}
-                            </p>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                }}>
+                    {materias.map((materia) => (
+                        <div 
+                            key={materia.id} 
+                            style={{
+                                background: 'white',
+                                border: '1px solid var(--light-gray)',
+                                borderRadius: 'var(--border-radius)',
+                                padding: '20px',
+                                transition: 'var(--transition)',
+                                position: 'relative'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.boxShadow = 'var(--box-shadow)';
+                                e.currentTarget.style.transform = 'translateY(-3px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                marginBottom: '15px'
+                            }}>
+                                <div style={{flex: 1}}>
+                                    <h3 style={{
+                                        fontSize: '1.2rem',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        marginBottom: '8px'
+                                    }}>
+                                        {materia.nombre}
+                                    </h3>
+                                    <p style={{
+                                        color: 'var(--gray)',
+                                        fontSize: '0.9rem',
+                                        margin: 0,
+                                        lineHeight: '1.5'
+                                    }}>
+                                        {materia.descripcion || 'Sin descripción'}
+                                    </p>
+                                </div>
+                                <div style={{
+                                    width: '45px',
+                                    height: '45px',
+                                    borderRadius: '12px',
+                                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    flexShrink: 0,
+                                    marginLeft: '15px',
+                                    lineHeight: '1'
+                                }}>
+                                    <i className="fas fa-book" style={{
+                                        fontSize: '0.85rem',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        lineHeight: '1',
+                                        margin: '0',
+                                        padding: '0'
+                                    }}></i>
+                                </div>
                         </div>
                         <button
-                            className="btn-add btn-asigH"
                             onClick={() => {
                                 setShowAsignarHorario(true);
                                 setMateria(materia.id);
                             }}
-                        >
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 16px',
+                                    fontSize: '0.85rem',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 'var(--border-radius-sm)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    transition: 'var(--transition)',
+                                    lineHeight: '1',
+                                    fontWeight: '500'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--primary-dark)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(67, 97, 238, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'var(--primary)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <i className="fas fa-clock" style={{
+                                    fontSize: '0.75rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    lineHeight: '1',
+                                    margin: '0',
+                                    padding: '0'
+                                }}></i>
                             Asignar Horario
                         </button>
                     </div>
-                ))
+                    ))}
+                </div>
             )}
-        </div>
+        </>
     );
 }
+
 function AsignarHorario({ isOpen, materia, onClose }) {
     const [formData, setFormData] = useState({});
     const [grados, setGrados] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [profesor, setProfesor] = useState([]);
+    const [profesores, setProfesores] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -73,7 +193,10 @@ function AsignarHorario({ isOpen, materia, onClose }) {
         const fetchGrados = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${API_URL}/grado-seccion/`);
+                const token = localStorage.getItem('accessToken');
+                const response = await axios.get(`${API_URL}/grado-seccion/`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
                 setGrados(response.data);
             } catch (error) {
                 console.error('Error fetching grados:', error);
@@ -83,22 +206,28 @@ function AsignarHorario({ isOpen, materia, onClose }) {
         };
         fetchGrados();
     }, []);
+
     useEffect(() => {
-        const fetchGrados = async () => {
+        const fetchProfesores = async () => {
             setLoading(true);
             try {
+                const token = localStorage.getItem('accessToken');
                 const response = await axios.get(
-                    `${API_URL}/usuarios/profesor/`
+                    `${API_URL}/usuarios/profesor/`,
+                    {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {}
+                    }
                 );
-                setProfesor(response.data);
+                setProfesores(response.data);
             } catch (error) {
-                console.error('Error fetching profesors:', error);
+                console.error('Error fetching profesores:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchGrados();
+        fetchProfesores();
     }, []);
+
     const primaria = useMemo(
         () => grados.filter((grado) => grado.nivel === 'primaria'),
         [grados]
@@ -110,181 +239,190 @@ function AsignarHorario({ isOpen, materia, onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const formDataObj = new FormData();
-        formData['materia'] = materia;
-        for (const key in formData) {
-            formDataObj.append(key, formData[key]);
-        }
-
+        setIsSubmitting(true);
+        const token = localStorage.getItem('accessToken');
+        
         try {
-            await axios.post(`${API_URL}/horarios/`, formDataObj);
+            const formDataObj = new FormData();
+            formDataObj.append('materia', materia);
+            formDataObj.append('dia_semana', formData.dia_semana);
+            formDataObj.append('hora_inicio', formData.hora_inicio);
+            formDataObj.append('hora_fin', formData.hora_fin);
+            formDataObj.append('grado_seccion', formData.grado_seccion);
+            formDataObj.append('profesor', formData.profesor);
+
+            await axios.post(`${API_URL}/horarios/`, formDataObj, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            alert('Horario asignado correctamente.');
             onClose();
-            window.location.reload(); // Recargar la página para actualizar la lista
+            window.location.reload();
         } catch (error) {
             console.error('Error al registrar horario:', error);
+            alert('Error al registrar el horario.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     if (!isOpen) return null;
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div
-                className="modal-content edit-modal"
-                onClick={(e) => e.stopPropagation()}
-            >
+        <div className="modal" onClick={onClose}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Registrar Nuevp Horario</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
-                    </button>
+                    <h3 className="modal-title">Asignar Horario</h3>
+                    <button className="close-modal" onClick={onClose}>&times;</button>
                 </div>
-                <form className="registroMaterias-form" onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <div className="input-container"></div>
-                    </div>
-                    <div className="input-group">
-                        <div className="select-container">
-                            <select
-                                id="dia_semana"
-                                name="dia_semana"
-                                value={formData.dia_semana || ''}
-                                className={
-                                    formData.dia_semana ? 'has-value' : ''
-                                }
-                                onChange={(e) => handleInputChange(e)}
-                                required
-                            >
-                                <option value="">
-                                    -- Seleccione el dia de la semana --
-                                </option>
-                                <option value="lunes">Lunes</option>
-                                <option value="martes">Martes</option>
-                                <option value="miercoles">Miercoles</option>
-                                <option value="jueves">Jueves</option>
-                                <option value="viernes">Viernes</option>
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
+                <div className="modal-body">
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="dia_semana" style={{fontSize: '0.95rem'}}>
+                                Día de la Semana *
+                            </label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-calendar-day" style={{fontSize: '0.8rem'}}></i>
+                                <select
+                                    id="dia_semana"
+                                    name="dia_semana"
+                                    value={formData.dia_semana || ''}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Seleccione el día</option>
+                                    <option value="lunes">Lunes</option>
+                                    <option value="martes">Martes</option>
+                                    <option value="miercoles">Miércoles</option>
+                                    <option value="jueves">Jueves</option>
+                                    <option value="viernes">Viernes</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label htmlFor="hora_inicio" style={{fontSize: '0.95rem'}}>
+                                    Hora de Inicio *
+                                </label>
+                                <div className="input-with-icon">
+                                    <i className="fas fa-clock" style={{fontSize: '0.8rem'}}></i>
+                                    <input
+                                        type="time"
+                                        id="hora_inicio"
+                                        name="hora_inicio"
+                                        value={formData.hora_inicio || ''}
+                                        onChange={handleInputChange}
+                                        min="06:00"
+                                        required
+                                    />
+                </div>
                     </div>
-                    <div className="input-group">
-                        <div className="input-container">
+
+                            <div className="form-group">
+                                <label htmlFor="hora_fin" style={{fontSize: '0.95rem'}}>
+                                    Hora de Fin *
+                                </label>
+                                <div className="input-with-icon">
+                                    <i className="fas fa-clock" style={{fontSize: '0.8rem'}}></i>
                             <input
-                                type="time"
-                                name="hora_inicio"
-                                value={formData.hora_inicio}
-                                className={
-                                    formData.hora_inicio ? 'has-value' : ''
-                                }
-                                onChange={(e) => handleInputChange(e)}
-                                min="06:00"
+                                        type="time"
+                                        id="hora_fin"
+                                        name="hora_fin"
+                                        value={formData.hora_fin || ''}
+                                        onChange={handleInputChange}
+                                        max="18:00"
                                 required
                             />
-                            <label>Hora de Inicio:</label>
-                            <i className="input-icon bi bi-card-text"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="grado_seccion" style={{fontSize: '0.95rem'}}>
+                                Grado y Sección *
+                            </label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-graduation-cap" style={{fontSize: '0.8rem'}}></i>
+                                <select
+                                    id="grado_seccion"
+                                    name="grado_seccion"
+                                    value={formData.grado_seccion || ''}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Seleccione el grado y sección</option>
+                                    <optgroup label="Primaria">
+                                        {primaria.length === 0 ? (
+                                            <option value="" disabled>No hay grados cargados</option>
+                                        ) : (
+                                            primaria.map((grado) => (
+                                                <option key={grado.id} value={grado.id}>
+                                                    {grado.grado}° Grado {grado.seccion}
+                                                </option>
+                                            ))
+                                        )}
+                                    </optgroup>
+                                    <optgroup label="Secundaria">
+                                        {secundaria.length === 0 ? (
+                                            <option value="" disabled>No hay años cargados</option>
+                                        ) : (
+                                            secundaria.map((grado) => (
+                                                <option key={grado.id} value={grado.id}>
+                                                    {grado.grado}° Año {grado.seccion}
+                                                </option>
+                                            ))
+                                        )}
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="profesor" style={{fontSize: '0.95rem'}}>
+                                Profesor *
+                            </label>
+                            <div className="input-with-icon">
+                                <i className="fas fa-chalkboard-teacher" style={{fontSize: '0.8rem'}}></i>
+                                <select
+                                    id="profesor"
+                                    name="profesor"
+                                    value={formData.profesor || ''}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Seleccione el profesor</option>
+                                    {profesores.length === 0 ? (
+                                        <option value="" disabled>No hay profesores cargados</option>
+                                    ) : (
+                                        profesores.map((profesor) => (
+                                            <option key={profesor.id} value={profesor.id}>
+                                                {profesor.nombre} {profesor.apellido} - {profesor.cedula}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
                         </div>
                     </div>
-                    <div className="input-group">
-                        <div className="input-container">
-                            <input
-                                type="time"
-                                name="hora_fin"
-                                value={formData.hora_fin}
-                                className={formData.hora_fin ? 'has-value' : ''}
-                                onChange={(e) => handleInputChange(e)}
-                                max="18:00"
-                                required
-                            />
-                            <label>Hora de Cierre:</label>
-                            <i className="input-icon bi bi-card-text"></i>
-                        </div>
-                    </div>
-                    <div className="input-group">
-                        <div className="select-container">
-                            <select
-                                id="grado_seccion"
-                                name="grado_seccion"
-                                value={formData.grado_seccion || ''}
-                                className={
-                                    formData.grado_seccion ? 'has-value' : ''
-                                }
-                                onChange={(e) => handleInputChange(e)}
-                                required
+
+                        <div style={{marginTop: '25px', display: 'flex', justifyContent: 'flex-end', gap: '12px'}}>
+                            <button 
+                                type="button" 
+                                className="btn btn-secondary"
+                                onClick={onClose}
+                                style={{width: 'auto', padding: '12px 24px', fontSize: '0.9rem'}}
                             >
-                                <option value="">
-                                    -- Seleccione el Grado y su seccion --
-                                </option>
-                                <option value="" disabled>
-                                    Primaria
-                                </option>
-
-                                {primaria.length == 0 ? (
-                                    <option value="" disabled>
-                                        No hay grados cargados
-                                    </option>
-                                ) : (
-                                    primaria.map((grado) => (
-                                        <option key={grado.id} value={grado.id}>
-                                            {grado.grado} {grado.seccion}
-                                        </option>
-                                    ))
-                                )}
-
-                                <option value="" disabled>
-                                    Secundaria
-                                </option>
-
-                                {secundaria.length === 0 ? (
-                                    <option value="" disabled>
-                                        No hay grados cargados
-                                    </option>
-                                ) : (
-                                    secundaria.map((grado) => (
-                                        <option key={grado.id} value={grado.id}>
-                                            {grado.grado} {grado.seccion}
-                                        </option>
-                                    ))
-                                )}
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                    <div className="input-group">
-                        <div className="select-container">
-                            <select
-                                id="profesor"
-                                name="profesor"
-                                value={formData.profesor || ''}
-                                className={formData.profesor ? 'has-value' : ''}
-                                onChange={(e) => handleInputChange(e)}
-                                required
+                                Cancelar
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="btn btn-primary"
+                                disabled={isSubmitting}
+                                style={{width: 'auto', padding: '12px 30px', fontSize: '0.9rem'}}
                             >
-                                <option value="">
-                                    -- Seleccione el Profesor --
-                                </option>
-                                {profesor.length === 0 ? (
-                                    <option value="" disabled>
-                                        No hay profesores cargados
-                                    </option>
-                                ) : (
-                                    profesor.map((profesor) => (
-                                        <option
-                                            key={profesor.id}
-                                            value={profesor.id}
-                                        >
-                                            {profesor.nombre}{' '}
-                                            {profesor.apellido}{' '}
-                                            {profesor.cedula}
-                                        </option>
-                                    ))
-                                )}
-                            </select>
-                            <i className="select-icon fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                    <button type="submit" className="btn-add">
-                        Registrar
+                                {isSubmitting ? 'Asignando...' : 'Asignar Horario'}
                     </button>
+                        </div>
                 </form>
+                </div>
             </div>
         </div>
     );
@@ -295,23 +433,29 @@ export function Horarios() {
     const [materia, setmateria] = useState(null);
 
     return (
-        <div>
-            <h1 className="admin-title">Asignar Horarios</h1>
+        <>
+            <div className="header">
+                <div className="page-title">
+                    <h1>Asignar Horarios</h1>
+                    <p>Gestiona los horarios de las materias del sistema</p>
+                </div>
+            </div>
 
             <ListaMaterias
                 setShowAsignarHorario={setShowAsignarHorario}
                 setMateria={setmateria}
             />
+            
             {showAsignarHorario && (
-                <AsignarHorario
-                    isOpen={showAsignarHorario}
-                    materia={materia}
-                    onClose={() => {
-                        setShowAsignarHorario(false);
-                        setmateria(null);
-                    }}
-                />
+            <AsignarHorario
+                isOpen={showAsignarHorario}
+                materia={materia}
+                onClose={() => {
+                    setShowAsignarHorario(false);
+                    setmateria(null);
+                }}
+            />
             )}
-        </div>
+        </>
     );
 }
