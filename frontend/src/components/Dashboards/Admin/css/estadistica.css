@@ -70,7 +70,7 @@
   border-top: 6px solid orange;
 }
 .content > *:nth-child(5) {
-  border-top: 6px solid purple;
+  border-top: 6px solid #4895ef;
 }
 .content > *:nth-child(6) {
   border-top: 6px solid teal;

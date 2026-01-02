@@ -361,14 +361,157 @@
 }
 
 .estudiante-section {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.estudiante-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #007bff;
 }
 
 .estudiante-section h2 {
     color: #333;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #007bff;
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.estudiante-section h2 i {
+    color: #007bff;
+}
+
+.boletines-count {
+    background: #007bff;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.boletines-representante-header {
+    margin-bottom: 30px;
+}
+
+.boletines-representante-header h1 {
+    color: #333;
+    font-size: 2rem;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.boletines-representante-header h1 i {
+    color: #007bff;
+}
+
+.boletines-representante-header p {
+    color: #666;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.container-boletines-representante .boletin-card {
+    transition: all 0.3s;
+    border-left: 4px solid #007bff;
+}
+
+.container-boletines-representante .boletin-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.container-boletines-representante .boletin-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+}
+
+.container-boletines-representante .boletin-header h3 i {
+    color: #007bff;
+}
+
+.container-boletines-representante .boletin-info p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.container-boletines-representante .boletin-info p i {
+    color: #007bff;
+    width: 20px;
+}
+
+.container-boletines-representante .boletin-actions {
+    margin-top: 15px;
+}
+
+.container-boletines-representante .btn-view,
+.container-boletines-representante .btn-download {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.container-boletines-representante .btn-view:hover,
+.container-boletines-representante .btn-download:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.container-boletines-representante .loading-container,
+.container-boletines-representante .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    gap: 15px;
+}
+
+.container-boletines-representante .loading-container i {
+    font-size: 3rem;
+    color: #007bff;
+}
+
+.container-boletines-representante .empty-state i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.container-boletines-representante .empty-state p {
+    color: #666;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.container-boletines-representante .empty-state small {
+    color: #999;
+    font-size: 0.9rem;
 }
 
 /* Calendario */
