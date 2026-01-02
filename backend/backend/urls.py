@@ -74,6 +74,7 @@ urlpatterns = [
     path('horarios/', include('horarios.urls')),
     path('boletines/', include('boletines.urls')),
     path('calendario/', include('calendario.urls')),
+    path('calificaciones/', include('calificaciones.urls')),
 ]
 
 # Servir archivos media en desarrollo
