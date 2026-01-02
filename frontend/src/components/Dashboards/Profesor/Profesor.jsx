@@ -1,113 +1,137 @@
-import '../css/dashboards.css';
-import { Profile } from '../../profile/Profile.jsx';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-const user = JSON.parse(window.localStorage.getItem('user'));
-const API_URL = 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export function Profesor() {
-    const [menuOpen, setMenuOpen] = useState(false);
-    console.log(user);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                setUser(JSON.parse(userStr));
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        navigate('/');
+    };
+
+    const getUserInitials = () => {
+        if (!user) return 'P';
+        const nombre = user.nombre || user.nombres || '';
+        const apellido = user.apellido || user.apellidos || '';
+        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'P';
+    };
+
+    const getUserName = () => {
+        if (!user) return 'Profesor';
+        return user.nombre || user.nombres || 'Profesor';
+    };
+
     return (
-        <>
-            <header>
-                <div className="logo-container">
-                    <div
-                        className="mobil-menu"
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <i className="bi bi-list"></i>
-                    </div>
-                    {menuOpen && (
-                        <>
-                            <div
-                                className="overlay"
-                                onClick={() => setMenuOpen(false)}
-                            ></div>
-                            <ul className="modalMenu">
-                                <li>
-                                    <Link
-                                        to=""
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Inicio
-                                    </Link>
-                                </li>
-
-                                <li>
-                                    <Link
-                                        to="./listaE"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Lista de Estudiantes
-                                    </Link>
-                                </li>
-
-                                <li>
-                                    <Link
-                                        to="./horarios"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Horarios
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./notas"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Carga de Notas
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./boletines"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Boletines
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./calendario"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Calendario
-                                    </Link>
-                                </li>
-                            </ul>
-                        </>
-                    )}
-                    <div className="logo">
-                        <svg
-                            viewBox="0 0 100 100"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <use
-                                href="../../logo.svg"
-                                width={100}
-                                height={100}
-                            />
-                        </svg>
-                    </div>
-                    <div className="cenit">
-                        <h1>CENIT</h1>
-                        <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
+        <div className="dashboard">
+            {/* Sidebar */}
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    <div className="user-profile">
+                        <div className="user-avatar">
+                            {getUserInitials()}
+                        </div>
+                        <div className="user-info">
+                            <h4>{getUserName()}</h4>
+                            <p>Profesor</p>
+                        </div>
                     </div>
                 </div>
-                <Profile
-                    userImg={user.foto ? `${API_URL}${user.foto}` : null}
-                ></Profile>
-            </header>
-            <main className="main">
+                
+                <nav className="nav-menu">
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor"
+                            className={`nav-link ${location.pathname === '/profesor' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-home"></i>
+                            <span className="nav-text">Inicio</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/listaE"
+                            className={`nav-link ${location.pathname === '/profesor/listaE' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-users"></i>
+                            <span className="nav-text">Lista de Estudiantes</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/horarios"
+                            className={`nav-link ${location.pathname === '/profesor/horarios' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-clock"></i>
+                            <span className="nav-text">Horarios</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/calificaciones"
+                            className={`nav-link ${location.pathname === '/profesor/calificaciones' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-graduation-cap"></i>
+                            <span className="nav-text">Calificaciones</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/asistencia"
+                            className={`nav-link ${location.pathname === '/profesor/asistencia' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-clipboard-check"></i>
+                            <span className="nav-text">Control Asistencia</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/boletines"
+                            className={`nav-link ${location.pathname === '/profesor/boletines' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-file-pdf"></i>
+                            <span className="nav-text">Boletines</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/profesor/calendario"
+                            className={`nav-link ${location.pathname === '/profesor/calendario' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-calendar-alt"></i>
+                            <span className="nav-text">Calendario</span>
+                        </Link>
+                    </div>
+                </nav>
+                
+                <div className="sidebar-footer">
+                    <button className="logout-btn" onClick={handleLogout}>
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span className="nav-text">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+            
+            {/* Contenido Principal */}
+            <div className="main-content">
                 <Outlet />
-            </main>
-        </>
+            </div>
+        </div>
     );
 }

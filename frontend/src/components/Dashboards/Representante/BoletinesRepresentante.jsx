@@ -97,50 +97,100 @@ export function BoletinesRepresentante() {
         return acc;
     }, {});
 
+    const getColorPromedio = (promedio) => {
+        if (!promedio) return '#6c757d';
+        const prom = parseFloat(promedio);
+        if (prom >= 16) return '#28a745';
+        if (prom >= 13) return '#ffc107';
+        if (prom >= 10) return '#fd7e14';
+        return '#dc3545';
+    };
+
     return (
         <div className="container-boletines-representante">
-            <h1>Boletines de Mis Estudiantes</h1>
+            <div className="boletines-representante-header">
+                <h1>
+                    <i className="fas fa-file-pdf"></i>
+                    Boletines de Mis Estudiantes
+                </h1>
+                <p>Consulta y descarga los boletines académicos de tus representados</p>
+            </div>
 
             {loading ? (
-                <p>Cargando...</p>
+                <div className="loading-container">
+                    <i className="fas fa-spinner fa-spin"></i>
+                    <p>Cargando boletines...</p>
+                </div>
             ) : Object.keys(boletinesPorEstudiante).length === 0 ? (
-                <p>No hay boletines disponibles</p>
+                <div className="empty-state">
+                    <i className="fas fa-file-pdf"></i>
+                    <p>No hay boletines disponibles</p>
+                    <small>Los boletines aparecerán aquí una vez que sean emitidos por el administrador</small>
+                </div>
             ) : (
                 <div className="estudiantes-boletines">
                     {Object.values(boletinesPorEstudiante).map((grupo, idx) => (
                         <div key={idx} className="estudiante-section">
-                            <h2>{grupo.estudiante}</h2>
+                            <div className="estudiante-section-header">
+                                <h2>
+                                    <i className="fas fa-user-graduate"></i>
+                                    {grupo.estudiante}
+                                </h2>
+                                <span className="boletines-count">
+                                    {grupo.boletines.length} boletín{grupo.boletines.length !== 1 ? 'es' : ''}
+                                </span>
+                            </div>
                             <div className="boletines-grid">
                                 {grupo.boletines.map((boletin) => (
                                     <div key={boletin.id} className="boletin-card">
                                         <div className="boletin-header">
-                                            <h3>{boletin.lapso_display}</h3>
+                                            <h3>
+                                                <i className="fas fa-file-pdf"></i>
+                                                {boletin.lapso_display}
+                                            </h3>
                                             {boletin.promedio_general && (
-                                                <span className="promedio">
-                                                    Promedio: {boletin.promedio_general}
+                                                <span
+                                                    className="promedio"
+                                                    style={{ backgroundColor: getColorPromedio(boletin.promedio_general) }}
+                                                >
+                                                    {parseFloat(boletin.promedio_general).toFixed(2)}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="boletin-info">
                                             <p>
+                                                <i className="fas fa-calendar-check"></i>
                                                 <strong>Fecha de emisión:</strong>{' '}
-                                                {new Date(
-                                                    boletin.fecha_emision
-                                                ).toLocaleDateString()}
+                                                {new Date(boletin.fecha_emision).toLocaleDateString('es-ES', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
                                             </p>
+                                            {boletin.promedio_general && (
+                                                <p>
+                                                    <i className="fas fa-chart-line"></i>
+                                                    <strong>Promedio General:</strong>{' '}
+                                                    <span style={{ color: getColorPromedio(boletin.promedio_general) }}>
+                                                        {parseFloat(boletin.promedio_general).toFixed(2)}
+                                                    </span>
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="boletin-actions">
                                             <button
                                                 className="btn-view"
                                                 onClick={() => handleView(boletin)}
                                             >
-                                                <i className="fas fa-eye"></i> Ver
+                                                <i className="fas fa-eye"></i>
+                                                Ver
                                             </button>
                                             <button
                                                 className="btn-download"
                                                 onClick={() => handleDownload(boletin)}
                                             >
-                                                <i className="fas fa-download"></i> Descargar
+                                                <i className="fas fa-download"></i>
+                                                Descargar
                                             </button>
                                         </div>
                                     </div>

@@ -1,0 +1,490 @@
+/* Estilos para el componente de Boletines del Estudiante */
+
+.container-boletines-estudiante {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.boletines-estudiante-header {
+    margin-bottom: 30px;
+}
+
+.boletines-estudiante-header h1 {
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 2rem;
+    margin: 0;
+}
+
+.boletines-estudiante-header h1 i {
+    color: #007bff;
+}
+
+/* Tabs */
+.tabs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-button {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    position: relative;
+    top: 2px;
+}
+
+.tab-button:hover {
+    color: #007bff;
+    background: rgba(0, 123, 255, 0.05);
+}
+
+.tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
+.tab-button i {
+    font-size: 1.1rem;
+}
+
+/* Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 20px;
+}
+
+.loading-container i {
+    font-size: 3rem;
+    color: #007bff;
+}
+
+.loading-container p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Sección de Calificaciones */
+.calificaciones-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.lapso-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.lapso-selector label {
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lapso-selector label i {
+    color: #007bff;
+}
+
+.lapso-selector select {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.lapso-selector select:hover {
+    border-color: #007bff;
+}
+
+.lapso-selector select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Grid de Calificaciones */
+.calificaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.calificacion-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    border-left: 4px solid #007bff;
+}
+
+.calificacion-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.calificacion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.calificacion-header h3 {
+    margin: 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+}
+
+.calificacion-header h3 i {
+    color: #007bff;
+}
+
+.promedio-badge {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: center;
+}
+
+.calificacion-info {
+    margin-bottom: 20px;
+}
+
+.calificacion-info p {
+    margin: 10px 0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.calificacion-info p i {
+    color: #007bff;
+    width: 20px;
+}
+
+.enviado-badge {
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.enviado-badge i {
+    color: white;
+}
+
+/* Notas Container */
+.notas-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.notas-container h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.notas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.nota-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.nota-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.nota-value {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.promedio-final {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    border: 2px solid #007bff;
+    margin-top: 10px;
+}
+
+.promedio-label {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.promedio-value {
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+/* Sección de Boletines */
+.boletines-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.boletines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.boletin-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    border-left: 4px solid #007bff;
+}
+
+.boletin-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.boletin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.boletin-header h3 {
+    margin: 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+}
+
+.boletin-header h3 i {
+    color: #007bff;
+}
+
+.boletin-header .promedio {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: center;
+}
+
+.boletin-info {
+    margin-bottom: 20px;
+}
+
+.boletin-info p {
+    margin: 10px 0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.boletin-info p i {
+    color: #007bff;
+    width: 20px;
+}
+
+.boletin-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-view,
+.btn-download {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-view {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #138496;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+}
+
+.btn-download {
+    background: #007bff;
+    color: white;
+}
+
+.btn-download:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-view i,
+.btn-download i {
+    font-size: 1rem;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    gap: 15px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #666;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.empty-state small {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container-boletines-estudiante {
+        padding: 15px;
+    }
+
+    .boletines-estudiante-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .tabs-container {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .tab-button {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        top: 0;
+        justify-content: flex-start;
+    }
+
+    .tab-button.active {
+        border-left-color: #007bff;
+        border-bottom-color: transparent;
+    }
+
+    .calificaciones-grid,
+    .boletines-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lapso-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lapso-selector select {
+        width: 100%;
+    }
+}

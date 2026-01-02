@@ -1,90 +1,90 @@
-import '../css/dashboards.css';
-import { Profile } from '../../profile/Profile.jsx';
-import { Link, Outlet } from 'react-router-dom';
-import { useState } from 'react';
-
-const userAdmin = window.localStorage.getItem('user');
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export function Estudiante() {
-    const [menuOpen, setMenuOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                setUser(JSON.parse(userStr));
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        navigate('/');
+    };
+
+    const getUserInitials = () => {
+        if (!user) return 'E';
+        const nombre = user.nombre || user.nombres || '';
+        const apellido = user.apellido || user.apellidos || '';
+        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'E';
+    };
+
+    const getUserName = () => {
+        if (!user) return 'Estudiante';
+        return user.nombre || user.nombres || 'Estudiante';
+    };
+
     return (
-        <>
-            <header>
-                <div className="logo-container">
-                    <div
-                        className="mobil-menu"
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <i className="bi bi-list"></i>
-                    </div>
-                    {menuOpen && (
-                        <>
-                            <div
-                                className="overlay"
-                                onClick={() => setMenuOpen(false)}
-                            ></div>
-                            <ul className="modalMenu">
-                                <li>
-                                    <Link
-                                        to=""
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Inicio
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./horarios"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Horarios
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./boletines"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Boletines
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./calendario"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Calendario
-                                    </Link>
-                                </li>
-                            </ul>
-                        </>
-                    )}
-                    <div className="logo">
-                        <svg
-                            viewBox="0 0 100 100"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <use
-                                href="../../logo.svg"
-                                width={100}
-                                height={100}
-                            />
-                        </svg>
-                    </div>
-                    <div className="cenit">
-                        <h1>CENIT</h1>
-                        <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
+        <div className="dashboard">
+            {/* Sidebar */}
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    <div className="user-profile">
+                        <div className="user-avatar">
+                            {getUserInitials()}
+                        </div>
+                        <div className="user-info">
+                            <h4>{getUserName()}</h4>
+                            <p>Estudiante</p>
+                        </div>
                     </div>
                 </div>
-                <Profile userImg={userAdmin.foto || null}></Profile>
-            </header>
-            <main className="main">
+                
+                <nav className="nav-menu">
+                    <div className="nav-item">
+                        <Link
+                            to="/estudiante"
+                            className={`nav-link ${location.pathname === '/estudiante' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-home"></i>
+                            <span className="nav-text">Inicio</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/estudiante/boletines"
+                            className={`nav-link ${location.pathname === '/estudiante/boletines' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-file-pdf"></i>
+                            <span className="nav-text">Boletines</span>
+                        </Link>
+                    </div>
+                </nav>
+                
+                <div className="sidebar-footer">
+                    <button className="logout-btn" onClick={handleLogout}>
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span className="nav-text">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+            
+            {/* Contenido Principal */}
+            <div className="main-content">
                 <Outlet />
-            </main>
-        </>
+            </div>
+        </div>
     );
 }

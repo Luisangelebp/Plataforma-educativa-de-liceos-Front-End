@@ -1,0 +1,428 @@
+/* Estilos para el Resumen del Representante */
+
+.resumen-representante {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.resumen-header {
+    margin-bottom: 40px;
+}
+
+.resumen-header h1 {
+    color: #333;
+    font-size: 2.2rem;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.resumen-header h1 i {
+    color: #007bff;
+}
+
+.resumen-header p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 20px;
+}
+
+.loading-container i {
+    font-size: 3rem;
+    color: #007bff;
+}
+
+.loading-container p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Cards de Resumen */
+.resumen-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.resumen-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.resumen-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+}
+
+.resumen-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-estudiantes::before {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.card-boletines::before {
+    background: linear-gradient(90deg, #dc3545, #c82333);
+}
+
+.card-calendario::before {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.card-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.card-estudiantes .card-icon {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.card-boletines .card-icon {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.card-calendario .card-icon {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: white;
+}
+
+.card-content {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.card-content h3 {
+    color: #333;
+    font-size: 1.2rem;
+    margin: 0 0 15px 0;
+    font-weight: 600;
+}
+
+.card-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #007bff;
+    margin: 0;
+    line-height: 1;
+}
+
+.card-estudiantes .card-number {
+    color: #28a745;
+}
+
+.card-boletines .card-number {
+    color: #dc3545;
+}
+
+.card-label {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 10px 0 0 0;
+}
+
+.card-button {
+    width: 100%;
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.card-estudiantes .card-button {
+    background: #28a745;
+}
+
+.card-estudiantes .card-button:hover {
+    background: #218838;
+}
+
+.card-boletines .card-button {
+    background: #dc3545;
+}
+
+.card-boletines .card-button:hover {
+    background: #c82333;
+}
+
+.card-calendario .card-button {
+    background: #ffc107;
+    color: #333;
+}
+
+.card-calendario .card-button:hover {
+    background: #e0a800;
+}
+
+.card-button:hover {
+    transform: translateX(5px);
+}
+
+.card-button i {
+    font-size: 0.9rem;
+}
+
+/* Accesos Rápidos */
+.accesos-rapidos {
+    margin-bottom: 40px;
+}
+
+.accesos-rapidos h2 {
+    color: #333;
+    font-size: 1.8rem;
+    margin: 0 0 25px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.accesos-rapidos h2 i {
+    color: #ffc107;
+}
+
+.accesos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.acceso-item {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+    border-left: 4px solid #007bff;
+}
+
+.acceso-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-left-color: #0056b3;
+}
+
+.acceso-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.acceso-content {
+    flex: 1;
+}
+
+.acceso-content h4 {
+    color: #333;
+    font-size: 1.2rem;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.acceso-content p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.acceso-arrow {
+    color: #999;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.acceso-item:hover .acceso-arrow {
+    color: #007bff;
+    transform: translateX(5px);
+}
+
+/* Boletines Recientes */
+.boletines-recientes {
+    margin-top: 40px;
+}
+
+.boletines-recientes h2 {
+    color: #333;
+    font-size: 1.8rem;
+    margin: 0 0 25px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.boletines-recientes h2 i {
+    color: #17a2b8;
+}
+
+.boletines-recientes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.boletin-reciente-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    border-left: 4px solid #17a2b8;
+}
+
+.boletin-reciente-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.boletin-reciente-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.boletin-reciente-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.boletin-reciente-header h4 i {
+    color: #17a2b8;
+}
+
+.promedio-badge {
+    background: #17a2b8;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.boletin-reciente-info {
+    margin-bottom: 15px;
+}
+
+.boletin-reciente-info p {
+    margin: 8px 0;
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.boletin-reciente-info p i {
+    color: #17a2b8;
+    width: 18px;
+}
+
+.btn-ver-boletin {
+    width: 100%;
+    padding: 10px 16px;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-ver-boletin:hover {
+    background: #138496;
+    transform: translateX(5px);
+}
+
+.btn-ver-boletin i {
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .resumen-representante {
+        padding: 20px;
+    }
+
+    .resumen-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .resumen-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .accesos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .boletines-recientes-grid {
+        grid-template-columns: 1fr;
+    }
+}
