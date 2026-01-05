@@ -237,6 +237,8 @@ export function Materias() {
                                     marginTop: '15px',
                                     justifyContent: 'flex-end'
                                 }}>
+                                    {/* Botón de asignar profesores oculto - se asigna desde la lista de profesores */}
+                                    {/* 
                                     <button
                                         onClick={() => handleAsignarProfesores(materia)}
                                         title="Asignar profesores"
@@ -276,6 +278,7 @@ export function Materias() {
                                             padding: '0'
                                         }}></i>
                                     </button>
+                                    */}
                                     <button
                                         onClick={() => handleEdit(materia)}
                                         title="Editar materia"
@@ -586,7 +589,8 @@ export function Materias() {
                 materia={materiaEditando}
             />
 
-            {/* Modal para asignar profesores */}
+            {/* Modal para asignar profesores - OCULTO - se asigna desde la lista de profesores */}
+            {/* 
             {showAsignarProfesores && materiaAsignando && (
                 <div className="modal" onClick={() => setShowAsignarProfesores(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{maxWidth: '600px'}}>
@@ -732,8 +736,9 @@ export function Materias() {
                             )}
                         </div>
                     </div>
-                </div>
+        </div>
             )}
+            */}
         </>
     );
 }

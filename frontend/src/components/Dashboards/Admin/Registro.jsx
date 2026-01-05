@@ -114,7 +114,7 @@ export default function Registo() {
     useEffect(() => {
         if (openModal === 'profesor') {
             cargarGradosSecciones();
-            cargarMaterias();
+            // cargarMaterias(); // Ocultado: las materias se asignan desde la lista de profesores
         } else {
             // Limpiar cuando se cierra el modal o cambia de tipo
             setGradosSecciones([]);
@@ -156,6 +156,19 @@ export default function Registo() {
         }
     };
 
+    // Función para calcular la edad basada en la fecha de nacimiento
+    const calcularEdad = (fechaNacimiento) => {
+        if (!fechaNacimiento) return null;
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimiento);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+        return edad;
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
@@ -168,6 +181,14 @@ export default function Registo() {
             if (name === 'nivel') {
                 newData.grado = '';
                 newData.seccion = '';
+            }
+            // Si cambia la fecha de nacimiento y es estudiante, calcular edad
+            if (name === 'fecha_nacimiento' && openModal === 'estudiante') {
+                const edad = calcularEdad(value);
+                if (edad !== null && edad < 12) {
+                    // Si es menor de 12, limpiar la cédula
+                    newData.cedula = '';
+                }
             }
             return newData;
         });
@@ -227,9 +248,15 @@ export default function Registo() {
 
         try {
             let dataToSend;
+            const token = localStorage.getItem('accessToken');
             let headers = {};
+            
+            // Agregar token de autenticación a los headers
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
 
-            if (typeU === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0 || selectedMaterias.length > 0)) {
+            if (typeU === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0)) {
         const formDataObj = new FormData();
                 
                 for (const key in formData) {
@@ -251,11 +278,7 @@ export default function Registo() {
                     formDataObj.append('grado_secciones', JSON.stringify(gradoSeccionesData));
                 }
                 
-                if (selectedMaterias.length > 0) {
-                    selectedMaterias.forEach((materia) => {
-                        formDataObj.append('materias', materia.id);
-                    });
-                }
+                // Materias se asignan desde la lista de profesores, no desde el registro
 
                 dataToSend = formDataObj;
             } else if (typeU === 'profesor') {
@@ -271,17 +294,23 @@ export default function Registo() {
                     }));
                 }
                 
-                if (selectedMaterias.length > 0) {
-                    dataToSend.materias = selectedMaterias.map(m => m.id);
-                }
+                // Materias se asignan desde la lista de profesores, no desde el registro
                 
                 headers['Content-Type'] = 'application/json';
             } else {
                 const formDataObj = new FormData();
-        for (const key in formData) {
-            if (key !== 'typeU') {
-                formDataObj.append(key, formData[key]);
-            }
+                for (const key in formData) {
+                    if (key !== 'typeU') {
+                        // Para estudiantes menores de 12 años, no enviar cédula
+                        if (typeU === 'estudiante' && key === 'cedula') {
+                            const edad = formData.fecha_nacimiento ? calcularEdad(formData.fecha_nacimiento) : null;
+                            if (edad !== null && edad < 12) {
+                                // No agregar cédula si es menor de 12 años
+                                continue;
+                            }
+                        }
+                        formDataObj.append(key, formData[key]);
+                    }
                 }
                 dataToSend = formDataObj;
         }
@@ -293,8 +322,35 @@ export default function Registo() {
             closeModal();
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
+            console.error('Error completo:', error.response?.data);
+            
+            // Mostrar mensaje de error más detallado
+            let errorMessage = 'Error en datos ingresados o error de conexión.';
+            
+            if (error.response?.data) {
+                // Si hay errores de validación del backend
+                if (error.response.data.error) {
+                    errorMessage = error.response.data.error;
+                } else if (error.response.data.detail) {
+                    errorMessage = error.response.data.detail;
+                } else if (typeof error.response.data === 'object') {
+                    // Si hay múltiples errores de validación
+                    const errorMessages = Object.entries(error.response.data)
+                        .map(([key, value]) => {
+                            if (Array.isArray(value)) {
+                                return `${key}: ${value.join(', ')}`;
+                            }
+                            return `${key}: ${value}`;
+                        })
+                        .join('; ');
+                    errorMessage = errorMessages || errorMessage;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
             setErrors({
-                submit: error.response?.data?.error || error.response?.data?.detail || 'Error en datos ingresados o error de conexión.',
+                submit: errorMessage,
             });
         } finally {
             setIsLoading(false);
@@ -464,33 +520,72 @@ export default function Registo() {
                     )}
                     {(openModal === 'profesor' || openModal === 'representante' || openModal === 'estudiante') && (
                         <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="cedula" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-id-card" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
-                                Cédula *
-                            </label>
-                            <input
-                                type="text"
-                                id="cedula"
-                                name="cedula"
-                                value={formData.cedula || ''}
-                                onChange={(e) => handleInputChange(e)}
-                                placeholder="V-12345678"
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '8px 10px',
-                                    border: '2px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    fontSize: '0.9rem',
-                                    background: 'white',
-                                    color: 'var(--dark)'
-                                }}
-                            />
+                            {/* Para estudiantes, solo mostrar cédula si tiene 12 años o más */}
+                            {!(openModal === 'estudiante' && formData.fecha_nacimiento && calcularEdad(formData.fecha_nacimiento) < 12) && (
+                                <>
+                                    <label htmlFor="cedula" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
+                                        <i className="fas fa-id-card" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                                        Cédula {openModal === 'estudiante' && formData.nivel === 'primaria' ? '(si tiene 12 años o más)' : ''} *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="cedula"
+                                        name="cedula"
+                                        value={formData.cedula || ''}
+                                        onChange={(e) => handleInputChange(e)}
+                                        placeholder="V-12345678"
+                                        required={openModal !== 'estudiante' || !formData.fecha_nacimiento || calcularEdad(formData.fecha_nacimiento) >= 12}
+                                        style={{
+                                            width: '100%',
+                                            padding: '8px 10px',
+                                            border: '2px solid var(--light-gray)',
+                                            borderRadius: 'var(--border-radius)',
+                                            fontSize: '0.9rem',
+                                            background: 'white',
+                                            color: 'var(--dark)'
+                                        }}
+                                    />
+                                </>
+                            )}
                     </div>
                 )}
                 </div>
 
-                {/* Tercera fila: Teléfono y Dirección */}
+                {/* Tercera fila: Fecha de Nacimiento (Representante, Profesor y Estudiante) */}
+                {(openModal === 'representante' || openModal === 'profesor' || openModal === 'estudiante') && (
+                    <div className="form-group" style={{margin: 0}}>
+                        <label htmlFor="fecha_nacimiento" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
+                            <i className="fas fa-calendar-alt" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                            Fecha de Nacimiento *
+                        </label>
+                        <input
+                            type="date"
+                            id="fecha_nacimiento"
+                            name="fecha_nacimiento"
+                            value={formData.fecha_nacimiento || ''}
+                            onChange={(e) => handleInputChange(e)}
+                            required
+                            max={new Date().toISOString().split('T')[0]} // No permitir fechas futuras
+                            style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                border: '2px solid var(--light-gray)',
+                                borderRadius: 'var(--border-radius)',
+                                fontSize: '0.9rem',
+                                background: 'white',
+                                color: 'var(--dark)'
+                            }}
+                        />
+                        {openModal === 'estudiante' && formData.fecha_nacimiento && (
+                            <small style={{display: 'block', marginTop: '4px', color: 'var(--gray)', fontSize: '0.75rem'}}>
+                                Edad: {calcularEdad(formData.fecha_nacimiento)} años
+                                {calcularEdad(formData.fecha_nacimiento) < 12 && ' (No requiere cédula)'}
+                            </small>
+                        )}
+                    </div>
+                )}
+
+                {/* Cuarta fila: Teléfono y Dirección */}
                 {(openModal === 'representante' || openModal === 'profesor' || (openModal !== '' && openModal !== 'administrador')) && (
                     <div style={{display: 'grid', gridTemplateColumns: (openModal === 'representante' || openModal === 'profesor') && openModal !== 'administrador' ? '1fr 1fr' : '1fr', gap: '12px'}}>
                         {(openModal === 'representante' || openModal === 'profesor') && (
@@ -597,7 +692,6 @@ export default function Registo() {
                                         <option value="3">3° Año</option>
                                         <option value="4">4° Año</option>
                                         <option value="5">5° Año</option>
-                                        <option value="6">6° Año</option>
                                     </>
                                 ) : null}
                             </select>
@@ -663,6 +757,8 @@ export default function Registo() {
                             </select>
                         </div>
 
+                        {/* Sección de grados/secciones oculta - se asignan desde la lista de profesores */}
+                        {/* 
                         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
                             <div className="form-group" style={{margin: 0}}>
                                 <label style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
@@ -732,7 +828,11 @@ export default function Registo() {
                                     Opcional: Seleccione los grados donde el profesor estará asignado
                                 </small>
                             </div>
+                        </div>
+                        */}
 
+                            {/* Sección de materias oculta - las materias se asignan desde la lista de profesores */}
+                            {/* 
                             <div className="form-group" style={{margin: 0}}>
                                 <label style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
                                     <i className="fas fa-book" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
@@ -801,7 +901,7 @@ export default function Registo() {
                                     Opcional: Seleccione las materias que el profesor dictará
                                 </small>
                             </div>
-                    </div>
+                            */}
                     </>
                 )}
 

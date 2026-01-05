@@ -125,7 +125,7 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                     alt={`${user.nombre} ${user.apellido}`}
                     className="user-avatar"
                     onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/50';
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNSAyNUMzMC41MjI4IDI1IDM1IDI5LjQ3NzIgMzUgMzVDMzUgNDAuNTIyOCAzMC41MjI4IDQ1IDI1IDQ1QzE5LjQ3NzIgNDUgMTUgNDAuNTIyOCAxNSAzNUMxNSAyOS40NzcyIDE5LjQ3NzIgMjUgMjUgMjVaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik0yNSAxNEMyNy43NjE0IDE0IDMwIDE2LjIzODYgMzAgMTlDMzAgMjEuNzYxNCAyNy43NjE0IDI0IDI1IDI0QzIyLjIzODYgMjQgMjAgMjEuNzYxNCAyMCAxOUMyMCAxNi4yMzg2IDIyLjIzODYgMTQgMjUgMTRaIiBmaWxsPSIjQ0NDQ0NDIi8+Cjwvc3ZnPgo=';
                     }}
                 />
             </td>
@@ -145,8 +145,14 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                 <>
                     <td>{user.cedula || 'N/A'}</td>
                     <td>
-                        {user.grado_secciones && user.grado_secciones.length > 0
-                            ? user.grado_secciones.map(gs => `${gs.grado} ${gs.seccion} (${gs.nivel})`).join(', ')
+                        {user.grado_secciones && Array.isArray(user.grado_secciones) && user.grado_secciones.length > 0
+                            ? user.grado_secciones.map((gs, idx) => {
+                                // Manejar tanto objetos como valores primitivos
+                                const grado = typeof gs === 'object' && gs !== null ? gs.grado : gs;
+                                const seccion = typeof gs === 'object' && gs !== null ? gs.seccion : '';
+                                const nivel = typeof gs === 'object' && gs !== null ? gs.nivel : '';
+                                return `${grado || ''} ${seccion || ''} (${nivel || ''})`.trim();
+                            }).filter(Boolean).join(', ') || 'Sin grados asignados'
                             : 'Sin grados asignados'}
                     </td>
                     <td>{user.tipo_profesor || 'N/A'}</td>
@@ -318,9 +324,21 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                         {type === 'profesor' && (
                             <>
                                 <div className="detail-row">
-                                    <strong>Grado Asignado:</strong>
-                                    <span>{user.grado_asignado}</span>
+                                    <strong>Grados Asignados:</strong>
+                                    <span>
+                                        {user.grado_secciones && user.grado_secciones.length > 0
+                                            ? user.grado_secciones.map(gs => `${gs.grado}° ${gs.nivel === 'primaria' ? 'Grado' : 'Año'} ${gs.seccion}`).join(', ')
+                                            : 'Sin asignar'}
+                                    </span>
                                 </div>
+                                {user.materias && user.materias.length > 0 && (
+                                    <div className="detail-row">
+                                        <strong>Materias:</strong>
+                                        <span>
+                                            {user.materias.map(m => typeof m === 'object' ? m.nombre : m).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="detail-row">
                                     <strong>Tipo de Profesor:</strong>
                                     <span>{user.tipo_profesor}</span>
@@ -405,8 +423,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 cedula: user.cedula || '',
                 direccion: user.direccion || '',
                 telefono: user.telefono || '',
-                grado: user.grado || '',
-                nivel: user.nivel || '',
+                grado: user.grado_seccion?.grado || user.grado || '',
+                seccion: user.grado_seccion?.seccion || user.seccion || '',
+                nivel: user.grado_seccion?.nivel || user.nivel || '',
                 grado_asignado: user.grado_asignado || '',
                 tipo_profesor: user.tipo_profesor || '',
                 representante: user.representante || '',
@@ -571,13 +590,14 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            // Si es profesor y tiene foto o asignaciones, usar FormData, sino JSON
+            // Si es profesor y tiene foto, grados o materias, usar FormData (materias como JSON string)
             if (type === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0 || selectedMaterias.length > 0)) {
                 const formDataObj = new FormData();
                 
-                // Agregar todos los campos del formulario
+                // Agregar todos los campos del formulario (excluyendo campos especiales)
                 Object.keys(formData).forEach((key) => {
-                    if (key !== 'foto' && formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+                    // Excluir campos que se manejan por separado
+                    if (key !== 'foto' && key !== 'materias' && key !== 'grado_secciones' && key !== 'grado_asignado' && formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
                         formDataObj.append(key, formData[key]);
                     }
                 });
@@ -596,18 +616,24 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 }));
                 formDataObj.append('grado_secciones', JSON.stringify(gradoSeccionesData));
                 
-                // Agregar materias como array de IDs
-                // Si no hay materias seleccionadas, no enviar el campo (el backend lo manejará)
-                selectedMaterias.forEach((materia) => {
-                    formDataObj.append('materias', materia.id);
-                });
+                // Agregar materias como JSON string (similar a cómo funciona en Materias.jsx)
+                // Siempre enviar, incluso si está vacío, para que el backend pueda limpiar las asignaciones
+                const materiasIds = selectedMaterias.map(m => {
+                    const id = typeof m === 'object' ? m.id : m;
+                    return id != null ? Number(id) : null;
+                }).filter(id => id !== null && id !== undefined && !isNaN(id));
+                formDataObj.append('materias', JSON.stringify(materiasIds));
 
                 dataToSend = formDataObj;
                 // No establecer Content-Type para FormData, el navegador lo hace automáticamente
             } else if (type === 'profesor') {
                 // Si es profesor sin foto ni asignaciones, usar JSON
                 dataToSend = { ...formData };
+                // Limpiar campos que no deben enviarse
                 delete dataToSend.foto;
+                delete dataToSend.materias; // Eliminar si existe en formData
+                delete dataToSend.grado_secciones; // Eliminar si existe en formData
+                delete dataToSend.grado_asignado; // Eliminar si existe en formData
                 
                 if (selectedGradosSecciones.length > 0) {
                     dataToSend.grado_secciones = selectedGradosSecciones.map(gs => ({
@@ -619,29 +645,44 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     dataToSend.grado_secciones = [];
                 }
                 
+                // Enviar materias como array de números enteros solo si hay materias seleccionadas
                 if (selectedMaterias.length > 0) {
-                    dataToSend.materias = selectedMaterias.map(m => m.id);
-                } else {
-                    dataToSend.materias = [];
+                    dataToSend.materias = selectedMaterias.map(m => {
+                        // Asegurar que extraemos solo el ID y lo convertimos a número
+                        const id = typeof m === 'object' ? m.id : m;
+                        return id != null ? Number(id) : null;
+                    }).filter(id => id !== null && id !== undefined && !isNaN(id));
                 }
+                // Si no hay materias, no enviar el campo (el backend lo manejará correctamente)
                 
                 headers['Content-Type'] = 'application/json';
             } else {
                 // Para otros tipos de usuario, usar FormData normal
                 const formDataObj = new FormData();
-                Object.keys(formData).forEach((key) => {
-                    if (
-                        formData[key] !== null &&
-                        formData[key] !== undefined &&
-                        formData[key] !== ''
-                    ) {
+            Object.keys(formData).forEach((key) => {
+                if (
+                    formData[key] !== null &&
+                    formData[key] !== undefined &&
+                    formData[key] !== ''
+                ) {
                         formDataObj.append(key, formData[key]);
-                    }
-                });
+                }
+            });
                 dataToSend = formDataObj;
                 headers['Content-Type'] = 'multipart/form-data';
             }
 
+            console.log('Enviando datos:', dataToSend);
+            console.log('Headers:', headers);
+            if (dataToSend instanceof FormData) {
+                console.log('Es FormData');
+                for (let pair of dataToSend.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+            } else {
+                console.log('Es JSON:', JSON.stringify(dataToSend, null, 2));
+            }
+            
             await axios.patch(`${API_URL}${type}/${user.id}/`, dataToSend, { headers });
 
             alert('Usuario actualizado con éxito');
@@ -649,8 +690,23 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
             onClose();
         } catch (error) {
             console.error('Error al actualizar:', error);
+            console.error('Error completo:', error.response?.data);
             if (error.response?.data) {
                 setErrors(error.response.data);
+                // Mostrar mensaje de error más detallado
+                let errorMessage = 'Error al actualizar el usuario';
+                if (typeof error.response.data === 'object') {
+                    const errorMessages = Object.entries(error.response.data)
+                        .map(([key, value]) => {
+                            if (Array.isArray(value)) {
+                                return `${key}: ${value.join(', ')}`;
+                            }
+                            return `${key}: ${value}`;
+                        })
+                        .join('; ');
+                    errorMessage = errorMessages || errorMessage;
+                }
+                alert(errorMessage);
             } else {
                 alert('Error al actualizar el usuario');
             }
@@ -751,20 +807,6 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     {type === 'estudiante' && (
                         <>
                             <div className="form-group">
-                                <label>Grado:</label>
-                                <input
-                                    type="text"
-                                    name="grado"
-                                    value={formData.grado || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {errors.grado && (
-                                    <span className="error">
-                                        {errors.grado}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
                                 <label>Nivel:</label>
                                 <select
                                     name="nivel"
@@ -780,6 +822,64 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                 {errors.nivel && (
                                     <span className="error">
                                         {errors.nivel}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="form-group">
+                                <label>{formData.nivel === 'primaria' ? 'Grado:' : formData.nivel === 'secundaria' ? 'Año:' : 'Grado/Año:'}</label>
+                                <select
+                                    name="grado"
+                                    value={formData.grado || ''}
+                                    onChange={handleInputChange}
+                                    disabled={!formData.nivel}
+                                >
+                                    <option value="">
+                                        {formData.nivel === 'primaria' 
+                                            ? 'Seleccione el grado'
+                                            : formData.nivel === 'secundaria'
+                                            ? 'Seleccione el año'
+                                            : 'Seleccione primero el nivel'}
+                                    </option>
+                                    {formData.nivel === 'primaria' ? (
+                                        <>
+                                            <option value="1">1° Grado</option>
+                                            <option value="2">2° Grado</option>
+                                            <option value="3">3° Grado</option>
+                                            <option value="4">4° Grado</option>
+                                            <option value="5">5° Grado</option>
+                                            <option value="6">6° Grado</option>
+                                        </>
+                                    ) : formData.nivel === 'secundaria' ? (
+                                        <>
+                                            <option value="1">1° Año</option>
+                                            <option value="2">2° Año</option>
+                                            <option value="3">3° Año</option>
+                                            <option value="4">4° Año</option>
+                                            <option value="5">5° Año</option>
+                                        </>
+                                    ) : null}
+                                </select>
+                                {errors.grado && (
+                                    <span className="error">
+                                        {errors.grado}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="form-group">
+                                <label>Sección:</label>
+                                <select
+                                    name="seccion"
+                                    value={formData.seccion || ''}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Seleccione...</option>
+                                    <option value="A">Sección A</option>
+                                    <option value="B">Sección B</option>
+                                    <option value="C">Sección C</option>
+                                </select>
+                                {errors.seccion && (
+                                    <span className="error">
+                                        {errors.seccion}
                                     </span>
                                 )}
                             </div>
@@ -819,6 +919,8 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     </span>
                                 )}
                             </div>
+                            {/* Secciones de grados y materias ocultas - se asignan desde otros módulos */}
+                            {/* 
                             <div className="form-group">
                                 <label>Grados y Secciones Asignados:</label>
                                 <div style={{
@@ -1016,6 +1118,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     )}
                                 </div>
                             </div>
+                            */}
                         </>
                     )}
                     {type === 'representante' && (
@@ -1407,25 +1510,25 @@ export function ListaE() {
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-                <div className="cards-grid">
+            <div className="cards-grid">
                     {loading ? (
                         <div className="loading">Cargando estudiantes...</div>
                     ) : filteredEstudiantes.length === 0 ? (
                         <p className="no-data">No hay estudiantes que coincidan con la búsqueda</p>
-                    ) : (
+                ) : (
                         filteredEstudiantes.map((estudiante) => (
-                            <UserCard
-                                key={estudiante.id}
-                                user={estudiante}
-                                type="estudiante"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAssing={handleAssign}
-                            />
-                        ))
-                    )}
-                </div>
+                        <UserCard
+                            key={estudiante.id}
+                            user={estudiante}
+                            type="estudiante"
+                            onCardClick={handleCardClick}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onAssing={handleAssign}
+                        />
+                    ))
+                )}
+            </div>
             )}
 
             {/* Vista de Tabla */}
@@ -1442,7 +1545,7 @@ export function ListaE() {
                                     <th>Foto</th>
                                     <th>Nombre</th>
                                     <th>Cédula</th>
-                                    <th>Grado</th>
+                                    <th>Grado/Año</th>
                                     <th>Sección</th>
                                     <th>Nivel</th>
                                     <th>Edad</th>
@@ -1629,24 +1732,24 @@ export function ListaR() {
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-                <div className="cards-grid">
+            <div className="cards-grid">
                     {loading ? (
                         <div className="loading">Cargando representantes...</div>
                     ) : filteredRepresentantes.length === 0 ? (
                         <p className="no-data">No hay representantes que coincidan con la búsqueda</p>
-                    ) : (
+                ) : (
                         filteredRepresentantes.map((representante) => (
-                            <UserCard
-                                key={representante.id}
-                                user={representante}
-                                type="representante"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))
-                    )}
-                </div>
+                        <UserCard
+                            key={representante.id}
+                            user={representante}
+                            type="representante"
+                            onCardClick={handleCardClick}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
+                    ))
+                )}
+            </div>
             )}
 
             {/* Vista de Tabla */}
@@ -1733,6 +1836,19 @@ export function ListaP() {
     const fetchProfesores = async () => {
         try {
             const response = await axios.get(`${API_URL}profesor/`);
+            console.log('Profesores recibidos:', response.data);
+            // Log detallado para verificar estructura de grado_secciones
+            if (response.data && response.data.length > 0) {
+                response.data.forEach((prof, index) => {
+                    console.log(`Profesor ${index + 1} (${prof.nombre} ${prof.apellido}):`, {
+                        id: prof.id,
+                        grado_secciones: prof.grado_secciones,
+                        tipo_grado_secciones: typeof prof.grado_secciones,
+                        es_array: Array.isArray(prof.grado_secciones),
+                        longitud: prof.grado_secciones?.length
+                    });
+                });
+            }
             setProfesores(response.data);
         } catch (error) {
             console.error('Error al cargar profesores:', error);
@@ -1859,24 +1975,24 @@ export function ListaP() {
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-                <div className="cards-grid">
+            <div className="cards-grid">
                     {loading ? (
                         <div className="loading">Cargando profesores...</div>
                     ) : filteredProfesores.length === 0 ? (
                         <p className="no-data">No hay profesores que coincidan con la búsqueda</p>
-                    ) : (
+                ) : (
                         filteredProfesores.map((profesor) => (
-                            <UserCard
-                                key={profesor.id}
-                                user={profesor}
-                                type="profesor"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))
-                    )}
-                </div>
+                        <UserCard
+                            key={profesor.id}
+                            user={profesor}
+                            type="profesor"
+                            onCardClick={handleCardClick}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
+                    ))
+                )}
+            </div>
             )}
 
             {/* Vista de Tabla */}
