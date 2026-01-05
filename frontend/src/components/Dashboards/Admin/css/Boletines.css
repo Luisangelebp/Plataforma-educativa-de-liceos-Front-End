@@ -124,7 +124,9 @@
     color: #555;
 }
 
-.form-group input[type="file"],
+    /* Esta seccion fue comentada por un error con el login */
+
+/* .form-group input[type="file"],
 .form-group input[type="text"],
 .form-group select {
     width: 100%;
@@ -132,7 +134,7 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
-}
+} */
 
 .modal-actions {
     display: flex;

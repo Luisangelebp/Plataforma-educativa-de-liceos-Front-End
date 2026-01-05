@@ -8,8 +8,8 @@ const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
     if (!isOpen) return null;
 
     return (
-        <div 
-            className="modal-overlay" 
+        <div
+            className="modal-overlay"
             onClick={onClose}
             style={{
                 position: 'fixed',
@@ -22,10 +22,10 @@ const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 zIndex: 1000,
-                padding: '20px'
+                padding: '20px',
             }}
         >
-            <div 
+            <div
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
@@ -39,27 +39,34 @@ const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
                     position: 'relative',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
                 }}
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '15px 20px',
-                    borderBottom: '2px solid #f0f0f0',
-                    flexShrink: 0
-                }}>
-                    <h2 style={{
-                        margin: 0,
-                        fontSize: '1.3rem',
-                        fontWeight: '600',
-                        color: '#333',
+                <div
+                    style={{
                         display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        gap: '10px'
-                    }}>
-                        <i className={`fas ${roleIcon}`} style={{color: '#007bff'}}></i>
+                        padding: '15px 20px',
+                        borderBottom: '2px solid #f0f0f0',
+                        flexShrink: 0,
+                    }}
+                >
+                    <h2
+                        style={{
+                            margin: 0,
+                            fontSize: '1.3rem',
+                            fontWeight: '600',
+                            color: '#333',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                        }}
+                    >
+                        <i
+                            className={`fas ${roleIcon}`}
+                            style={{ color: '#007bff' }}
+                        ></i>
                         {title}
                     </h2>
                     <button
@@ -73,7 +80,7 @@ const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
                             cursor: 'pointer',
                             padding: '5px 10px',
                             borderRadius: '6px',
-                            transition: 'all 0.3s'
+                            transition: 'all 0.3s',
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = '#f0f0f0';
@@ -87,11 +94,13 @@ const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
                         ×
                     </button>
                 </div>
-                <div style={{
-                    padding: '20px',
-                    flex: 1,
-                    overflowY: 'auto'
-                }}>
+                <div
+                    style={{
+                        padding: '20px',
+                        flex: 1,
+                        overflowY: 'auto',
+                    }}
+                >
                     {children}
                 </div>
             </div>
@@ -129,7 +138,7 @@ export default function Registo() {
         try {
             const token = localStorage.getItem('accessToken');
             const response = await axios.get(`${API_URL_BASE}/grado-seccion/`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             setGradosSecciones(response.data || []);
         } catch (error) {
@@ -144,9 +153,12 @@ export default function Registo() {
         setLoadingMaterias(true);
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`${API_URL_BASE}/horarios/materias/`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
-            });
+            const response = await axios.get(
+                `${API_URL_BASE}/horarios/materias/`,
+                {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                }
+            );
             setMaterias(response.data || []);
         } catch (error) {
             console.error('Error al cargar materias:', error);
@@ -161,8 +173,8 @@ export default function Registo() {
 
         setFormData((prev) => {
             const newData = {
-            ...prev,
-            [name]: name === 'grado' ? value.toString() : value,
+                ...prev,
+                [name]: name === 'grado' ? value.toString() : value,
             };
             // Si cambia el nivel, limpiar el grado seleccionado
             if (name === 'nivel') {
@@ -181,10 +193,10 @@ export default function Registo() {
     };
 
     const handleGradoSeccionToggle = (gradoSeccion) => {
-        setSelectedGradosSecciones(prev => {
-            const exists = prev.find(gs => gs.id === gradoSeccion.id);
+        setSelectedGradosSecciones((prev) => {
+            const exists = prev.find((gs) => gs.id === gradoSeccion.id);
             if (exists) {
-                return prev.filter(gs => gs.id !== gradoSeccion.id);
+                return prev.filter((gs) => gs.id !== gradoSeccion.id);
             } else {
                 return [...prev, gradoSeccion];
             }
@@ -192,11 +204,11 @@ export default function Registo() {
     };
 
     const handleMateriaToggle = (materia) => {
-        setSelectedMaterias(prev => {
-            const exists = prev.find(m => m.id === materia.id);
+        setSelectedMaterias((prev) => {
+            const exists = prev.find((m) => m.id === materia.id);
             if (exists) {
-                return prev.filter(m => m.id !== materia.id);
-        } else {
+                return prev.filter((m) => m.id !== materia.id);
+            } else {
                 return [...prev, materia];
             }
         });
@@ -218,7 +230,9 @@ export default function Registo() {
         setSelectedMaterias([]);
     }, []);
 
-    const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/usuarios`;
+    const API_URL = `${
+        import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    }/usuarios`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -229,28 +243,38 @@ export default function Registo() {
             let dataToSend;
             let headers = {};
 
-            if (typeU === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0 || selectedMaterias.length > 0)) {
-        const formDataObj = new FormData();
-                
+            if (
+                typeU === 'profesor' &&
+                (formData.foto ||
+                    selectedGradosSecciones.length > 0 ||
+                    selectedMaterias.length > 0)
+            ) {
+                const formDataObj = new FormData();
+
                 for (const key in formData) {
                     if (key !== 'typeU' && key !== 'foto') {
                         formDataObj.append(key, formData[key]);
                     }
                 }
-                
+
                 if (formData.foto) {
                     formDataObj.append('foto', formData.foto);
                 }
 
                 if (selectedGradosSecciones.length > 0) {
-                    const gradoSeccionesData = selectedGradosSecciones.map(gs => ({
-                        nivel: gs.nivel,
-                        grado: gs.grado,
-                        seccion: gs.seccion
-                    }));
-                    formDataObj.append('grado_secciones', JSON.stringify(gradoSeccionesData));
+                    const gradoSeccionesData = selectedGradosSecciones.map(
+                        (gs) => ({
+                            nivel: gs.nivel,
+                            grado: gs.grado,
+                            seccion: gs.seccion,
+                        })
+                    );
+                    formDataObj.append(
+                        'grado_secciones',
+                        JSON.stringify(gradoSeccionesData)
+                    );
                 }
-                
+
                 if (selectedMaterias.length > 0) {
                     selectedMaterias.forEach((materia) => {
                         formDataObj.append('materias', materia.id);
@@ -262,39 +286,48 @@ export default function Registo() {
                 dataToSend = { ...formData };
                 delete dataToSend.typeU;
                 delete dataToSend.foto;
-                
+
                 if (selectedGradosSecciones.length > 0) {
-                    dataToSend.grado_secciones = selectedGradosSecciones.map(gs => ({
-                        nivel: gs.nivel,
-                        grado: gs.grado,
-                        seccion: gs.seccion
-                    }));
+                    dataToSend.grado_secciones = selectedGradosSecciones.map(
+                        (gs) => ({
+                            nivel: gs.nivel,
+                            grado: gs.grado,
+                            seccion: gs.seccion,
+                        })
+                    );
                 }
-                
+
                 if (selectedMaterias.length > 0) {
-                    dataToSend.materias = selectedMaterias.map(m => m.id);
+                    dataToSend.materias = selectedMaterias.map((m) => m.id);
                 }
-                
+
                 headers['Content-Type'] = 'application/json';
             } else {
                 const formDataObj = new FormData();
-        for (const key in formData) {
-            if (key !== 'typeU') {
-                formDataObj.append(key, formData[key]);
-            }
+                for (const key in formData) {
+                    if (key !== 'typeU') {
+                        formDataObj.append(key, formData[key]);
+                    }
                 }
                 dataToSend = formDataObj;
-        }
+            }
 
-            const response = await axios.post(`${API_URL}/${typeU}/registro/`, dataToSend, { headers });
-                    console.log('Usuario registrado con éxito:', response.data);
-                    alert('Usuario registrado con éxito');
-            
+            const response = await axios.post(
+                `${API_URL}/${typeU}/registro/`,
+                dataToSend,
+                { headers }
+            );
+            console.log('Usuario registrado con éxito:', response.data);
+            alert('Usuario registrado con éxito');
+
             closeModal();
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
             setErrors({
-                submit: error.response?.data?.error || error.response?.data?.detail || 'Error en datos ingresados o error de conexión.',
+                submit:
+                    error.response?.data?.error ||
+                    error.response?.data?.detail ||
+                    'Error en datos ingresados o error de conexión.',
             });
         } finally {
             setIsLoading(false);
@@ -302,38 +335,81 @@ export default function Registo() {
     };
 
     const getRoleIcon = (role) => {
-        switch(role) {
-            case 'estudiante': return 'fa-user-graduate';
-            case 'profesor': return 'fa-chalkboard-teacher';
-            case 'representante': return 'fa-user-friends';
-            case 'administrador': return 'fa-user-cog';
-            default: return 'fa-user';
+        switch (role) {
+            case 'estudiante':
+                return 'fa-user-graduate';
+            case 'profesor':
+                return 'fa-chalkboard-teacher';
+            case 'representante':
+                return 'fa-user-friends';
+            case 'administrador':
+                return 'fa-user-cog';
+            default:
+                return 'fa-user';
         }
     };
 
     const getRoleName = (role) => {
-        switch(role) {
-            case 'estudiante': return 'Estudiante';
-            case 'profesor': return 'Profesor';
-            case 'representante': return 'Representante';
-            case 'administrador': return 'Administrador';
-            default: return 'Usuario';
+        switch (role) {
+            case 'estudiante':
+                return 'Estudiante';
+            case 'profesor':
+                return 'Profesor';
+            case 'representante':
+                return 'Representante';
+            case 'administrador':
+                return 'Administrador';
+            default:
+                return 'Usuario';
         }
     };
-
 
     // Renderizar el formulario según el tipo de usuario
     const renderForm = () => {
         if (!openModal) return null;
 
-    return (
-            <form onSubmit={handleSubmit} encType="multipart/form-data" style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+        return (
+            <form
+                onSubmit={handleSubmit}
+                encType="multipart/form-data"
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                }}
+            >
                 {/* Primera fila: Nivel (solo estudiante) y Nombres/Apellidos */}
-                <div style={{display: 'grid', gridTemplateColumns: openModal === 'estudiante' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '12px'}}>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            openModal === 'estudiante'
+                                ? '1fr 1fr 1fr 1fr'
+                                : '1fr 1fr 1fr',
+                        gap: '12px',
+                    }}
+                >
                     {openModal === 'estudiante' && (
-                        <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="nivel" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-layer-group" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label
+                                htmlFor="nivel"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginBottom: '6px',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                <i
+                                    className="fas fa-layer-group"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--primary)',
+                                    }}
+                                ></i>
                                 Nivel *
                             </label>
                             <select
@@ -349,28 +425,45 @@ export default function Registo() {
                                     borderRadius: 'var(--border-radius)',
                                     fontSize: '0.9rem',
                                     background: 'white',
-                                    color: 'var(--dark)'
+                                    color: 'var(--dark)',
                                 }}
                             >
                                 <option value="">Seleccione</option>
                                 <option value="primaria">Primaria</option>
                                 <option value="secundaria">Secundaria</option>
                             </select>
-                    </div>
-                )}
-                    <div className="form-group" style={{margin: 0}}>
-                        <label htmlFor="nombre" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                            <i className="fas fa-user" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                        </div>
+                    )}
+                    <div className="form-group" style={{ margin: 0 }}>
+                        <label
+                            htmlFor="nombre"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                color: 'var(--dark)',
+                                fontSize: '0.85rem',
+                            }}
+                        >
+                            <i
+                                className="fas fa-user"
+                                style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--primary)',
+                                }}
+                            ></i>
                             Nombres *
                         </label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                name="nombre"
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
                             value={formData.nombre || ''}
-                                onChange={(e) => handleInputChange(e)}
+                            onChange={(e) => handleInputChange(e)}
                             placeholder="Nombres"
-                                required
+                            required
                             style={{
                                 width: '100%',
                                 padding: '8px 10px',
@@ -378,23 +471,40 @@ export default function Registo() {
                                 borderRadius: 'var(--border-radius)',
                                 fontSize: '0.9rem',
                                 background: 'white',
-                                color: 'var(--dark)'
+                                color: 'var(--dark)',
                             }}
                         />
                     </div>
-                    <div className="form-group" style={{margin: 0}}>
-                        <label htmlFor="apellido" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                            <i className="fas fa-user" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                    <div className="form-group" style={{ margin: 0 }}>
+                        <label
+                            htmlFor="apellido"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                color: 'var(--dark)',
+                                fontSize: '0.85rem',
+                            }}
+                        >
+                            <i
+                                className="fas fa-user"
+                                style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--primary)',
+                                }}
+                            ></i>
                             Apellidos *
                         </label>
-                            <input
-                                type="text"
-                                id="apellido"
-                                name="apellido"
+                        <input
+                            type="text"
+                            id="apellido"
+                            name="apellido"
                             value={formData.apellido || ''}
-                                onChange={(e) => handleInputChange(e)}
+                            onChange={(e) => handleInputChange(e)}
                             placeholder="Apellidos"
-                                required
+                            required
                             style={{
                                 width: '100%',
                                 padding: '8px 10px',
@@ -402,25 +512,92 @@ export default function Registo() {
                                 borderRadius: 'var(--border-radius)',
                                 fontSize: '0.9rem',
                                 background: 'white',
-                                color: 'var(--dark)'
+                                color: 'var(--dark)',
                             }}
                         />
                     </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                        <label
+                            htmlFor="fecha_nacimiento"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                color: 'var(--dark)',
+                                fontSize: '0.85rem',
+                            }}
+                        >
+                            <i
+                                className="fas fa-user"
+                                style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--primary)',
+                                }}
+                            ></i>
+                            Fecha de Nacimiento *
+                        </label>
+                        <input
+                            type="date"
+                            id="fecha_nacimiento"
+                            name="fecha_nacimiento"
+                            value={formData.fecha_nacimiento || ''}
+                            onChange={(e) => handleInputChange(e)}
+                            placeholder="Fecha de Nacimiento"
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                border: '2px solid var(--light-gray)',
+                                borderRadius: 'var(--border-radius)',
+                                fontSize: '0.9rem',
+                                background: 'white',
+                                color: 'var(--dark)',
+                            }}
+                        />
                     </div>
+                </div>
 
                 {/* Segunda fila: Email, Password, Cédula */}
-                <div style={{display: 'grid', gridTemplateColumns: formData.nivel !== 'primaria' && openModal !== '' ? '1fr 1fr 1fr' : '1fr', gap: '12px'}}>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            formData.nivel !== 'primaria' && openModal !== ''
+                                ? '1fr 1fr 1fr'
+                                : '1fr',
+                        gap: '12px',
+                    }}
+                >
                     {formData.nivel !== 'primaria' && openModal !== '' && (
                         <>
-                            <div className="form-group" style={{margin: 0}}>
-                                <label htmlFor="email" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-envelope" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    htmlFor="email"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-envelope"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Email *
                                 </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
                                     value={formData.email || ''}
                                     onChange={(e) => handleInputChange(e)}
                                     placeholder="ejemplo@correo.com"
@@ -432,13 +609,30 @@ export default function Registo() {
                                         borderRadius: 'var(--border-radius)',
                                         fontSize: '0.9rem',
                                         background: 'white',
-                                        color: 'var(--dark)'
+                                        color: 'var(--dark)',
                                     }}
                                 />
                             </div>
-                            <div className="form-group" style={{margin: 0}}>
-                                <label htmlFor="password" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-lock" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    htmlFor="password"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-lock"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Contraseña *
                                 </label>
                                 <input
@@ -446,9 +640,9 @@ export default function Registo() {
                                     id="password"
                                     name="password"
                                     value={formData.password || ''}
-                                onChange={(e) => handleInputChange(e)}
+                                    onChange={(e) => handleInputChange(e)}
                                     placeholder="Mín. 8 caracteres"
-                                required
+                                    required
                                     style={{
                                         width: '100%',
                                         padding: '8px 10px',
@@ -456,16 +650,35 @@ export default function Registo() {
                                         borderRadius: 'var(--border-radius)',
                                         fontSize: '0.9rem',
                                         background: 'white',
-                                        color: 'var(--dark)'
+                                        color: 'var(--dark)',
                                     }}
                                 />
-                    </div>
+                            </div>
                         </>
                     )}
-                    {(openModal === 'profesor' || openModal === 'representante' || openModal === 'estudiante') && (
-                        <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="cedula" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-id-card" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                    {(openModal === 'profesor' ||
+                        openModal === 'representante' ||
+                        openModal === 'estudiante') && (
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label
+                                htmlFor="cedula"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginBottom: '6px',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                <i
+                                    className="fas fa-id-card"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--primary)',
+                                    }}
+                                ></i>
                                 Cédula *
                             </label>
                             <input
@@ -483,30 +696,61 @@ export default function Registo() {
                                     borderRadius: 'var(--border-radius)',
                                     fontSize: '0.9rem',
                                     background: 'white',
-                                    color: 'var(--dark)'
+                                    color: 'var(--dark)',
                                 }}
                             />
-                    </div>
-                )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Tercera fila: Teléfono y Dirección */}
-                {(openModal === 'representante' || openModal === 'profesor' || (openModal !== '' && openModal !== 'administrador')) && (
-                    <div style={{display: 'grid', gridTemplateColumns: (openModal === 'representante' || openModal === 'profesor') && openModal !== 'administrador' ? '1fr 1fr' : '1fr', gap: '12px'}}>
-                        {(openModal === 'representante' || openModal === 'profesor') && (
-                            <div className="form-group" style={{margin: 0}}>
-                                <label htmlFor="telefono" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-phone" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                {(openModal === 'representante' ||
+                    openModal === 'profesor' ||
+                    (openModal !== '' && openModal !== 'administrador')) && (
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                                (openModal === 'representante' ||
+                                    openModal === 'profesor') &&
+                                openModal !== 'administrador'
+                                    ? '1fr 1fr'
+                                    : '1fr',
+                            gap: '12px',
+                        }}
+                    >
+                        {(openModal === 'representante' ||
+                            openModal === 'profesor') && (
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    htmlFor="telefono"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-phone"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Teléfono *
                                 </label>
-                            <input
-                                type="text"
-                                id="telefono"
-                                name="telefono"
+                                <input
+                                    type="text"
+                                    id="telefono"
+                                    name="telefono"
                                     value={formData.telefono || ''}
-                                onChange={(e) => handleInputChange(e)}
+                                    onChange={(e) => handleInputChange(e)}
                                     placeholder="0412-1234567"
-                                required
+                                    required
                                     style={{
                                         width: '100%',
                                         padding: '8px 10px',
@@ -514,25 +758,42 @@ export default function Registo() {
                                         borderRadius: 'var(--border-radius)',
                                         fontSize: '0.9rem',
                                         background: 'white',
-                                        color: 'var(--dark)'
+                                        color: 'var(--dark)',
                                     }}
                                 />
-                    </div>
+                            </div>
                         )}
                         {openModal !== '' && openModal !== 'administrador' && (
-                            <div className="form-group" style={{margin: 0}}>
-                                <label htmlFor="direccion" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-map-marker-alt" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    htmlFor="direccion"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-map-marker-alt"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Dirección *
                                 </label>
-                            <input
-                                type="text"
-                                id="direccion"
-                                name="direccion"
+                                <input
+                                    type="text"
+                                    id="direccion"
+                                    name="direccion"
                                     value={formData.direccion || ''}
-                                onChange={(e) => handleInputChange(e)}
+                                    onChange={(e) => handleInputChange(e)}
                                     placeholder="Dirección completa"
-                                required
+                                    required
                                     style={{
                                         width: '100%',
                                         padding: '8px 10px',
@@ -540,7 +801,7 @@ export default function Registo() {
                                         borderRadius: 'var(--border-radius)',
                                         fontSize: '0.9rem',
                                         background: 'white',
-                                        color: 'var(--dark)'
+                                        color: 'var(--dark)',
                                     }}
                                 />
                             </div>
@@ -550,11 +811,38 @@ export default function Registo() {
 
                 {/* Información Académica (Estudiante) */}
                 {openModal === 'estudiante' && (
-                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
-                        <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="grado" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-book" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
-                                {formData.nivel === 'primaria' ? 'Grado *' : formData.nivel === 'secundaria' ? 'Año *' : 'Grado/Año *'}
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '12px',
+                        }}
+                    >
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label
+                                htmlFor="grado"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginBottom: '6px',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                <i
+                                    className="fas fa-book"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--primary)',
+                                    }}
+                                ></i>
+                                {formData.nivel === 'primaria'
+                                    ? 'Grado *'
+                                    : formData.nivel === 'secundaria'
+                                    ? 'Año *'
+                                    : 'Grado/Año *'}
                             </label>
                             <select
                                 id="grado"
@@ -569,13 +857,17 @@ export default function Registo() {
                                     border: '2px solid var(--light-gray)',
                                     borderRadius: 'var(--border-radius)',
                                     fontSize: '0.9rem',
-                                    background: formData.nivel ? 'white' : '#f5f5f5',
+                                    background: formData.nivel
+                                        ? 'white'
+                                        : '#f5f5f5',
                                     color: 'var(--dark)',
-                                    cursor: formData.nivel ? 'pointer' : 'not-allowed'
+                                    cursor: formData.nivel
+                                        ? 'pointer'
+                                        : 'not-allowed',
                                 }}
                             >
                                 <option value="">
-                                    {formData.nivel === 'primaria' 
+                                    {formData.nivel === 'primaria'
                                         ? 'Seleccione el grado'
                                         : formData.nivel === 'secundaria'
                                         ? 'Seleccione el año'
@@ -601,10 +893,27 @@ export default function Registo() {
                                     </>
                                 ) : null}
                             </select>
-                    </div>
-                        <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="seccion" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-users" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                        </div>
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label
+                                htmlFor="seccion"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginBottom: '6px',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                <i
+                                    className="fas fa-users"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--primary)',
+                                    }}
+                                ></i>
                                 Sección *
                             </label>
                             <select
@@ -620,7 +929,7 @@ export default function Registo() {
                                     borderRadius: 'var(--border-radius)',
                                     fontSize: '0.9rem',
                                     background: 'white',
-                                    color: 'var(--dark)'
+                                    color: 'var(--dark)',
                                 }}
                             >
                                 <option value="">Seleccione</option>
@@ -635,9 +944,26 @@ export default function Registo() {
                 {/* Información Profesional (Profesor) */}
                 {openModal === 'profesor' && (
                     <>
-                        <div className="form-group" style={{margin: 0}}>
-                            <label htmlFor="tipo_profesor" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                <i className="fas fa-user-tie" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label
+                                htmlFor="tipo_profesor"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginBottom: '6px',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                <i
+                                    className="fas fa-user-tie"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--primary)',
+                                    }}
+                                ></i>
                                 Tipo de Profesor *
                             </label>
                             <select
@@ -653,174 +979,338 @@ export default function Registo() {
                                     borderRadius: 'var(--border-radius)',
                                     fontSize: '0.9rem',
                                     background: 'white',
-                                    color: 'var(--dark)'
+                                    color: 'var(--dark)',
                                 }}
                             >
                                 <option value="">Seleccione</option>
                                 <option value="titular">Titular</option>
                                 <option value="suplente">Suplente</option>
-                                <option value="especialista">Especialista</option>
+                                <option value="especialista">
+                                    Especialista
+                                </option>
                             </select>
                         </div>
 
-                        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
-                            <div className="form-group" style={{margin: 0}}>
-                                <label style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-graduation-cap" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '12px',
+                            }}
+                        >
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-graduation-cap"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Grados/Secciones
                                 </label>
-                                <div style={{
-                                    border: '2px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    padding: '10px',
-                                    maxHeight: '120px',
-                                    overflowY: 'auto',
-                                    background: 'white',
-                                    minHeight: '80px'
-                                }}>
+                                <div
+                                    style={{
+                                        border: '2px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius)',
+                                        padding: '10px',
+                                        maxHeight: '120px',
+                                        overflowY: 'auto',
+                                        background: 'white',
+                                        minHeight: '80px',
+                                    }}
+                                >
                                     {loadingGrados ? (
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.8rem'}}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                color: 'var(--gray)',
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
                                             <i className="fas fa-spinner fa-spin"></i>
                                             <span>Cargando...</span>
                                         </div>
                                     ) : gradosSecciones.length === 0 ? (
-                                        <p style={{color: 'var(--gray)', fontSize: '0.8rem', margin: 0, fontStyle: 'italic'}}>
-                                            No hay grados disponibles. Puede registrar el profesor sin asignar grados.
+                                        <p
+                                            style={{
+                                                color: 'var(--gray)',
+                                                fontSize: '0.8rem',
+                                                margin: 0,
+                                                fontStyle: 'italic',
+                                            }}
+                                        >
+                                            No hay grados disponibles. Puede
+                                            registrar el profesor sin asignar
+                                            grados.
                                         </p>
                                     ) : (
-                                        <div style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '6px'
-                                        }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '6px',
+                                            }}
+                                        >
                                             {gradosSecciones.map((gs) => {
-                                                const isSelected = selectedGradosSecciones.find(sgs => sgs.id === gs.id);
+                                                const isSelected =
+                                                    selectedGradosSecciones.find(
+                                                        (sgs) =>
+                                                            sgs.id === gs.id
+                                                    );
                                                 return (
                                                     <label
                                                         key={gs.id}
                                                         style={{
                                                             display: 'flex',
-                                                            alignItems: 'center',
+                                                            alignItems:
+                                                                'center',
                                                             gap: '6px',
                                                             padding: '6px 8px',
-                                                            border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
+                                                            border: `1px solid ${
+                                                                isSelected
+                                                                    ? 'var(--primary)'
+                                                                    : 'var(--light-gray)'
+                                                            }`,
                                                             borderRadius: '6px',
-                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
+                                                            background:
+                                                                isSelected
+                                                                    ? 'rgba(67, 97, 238, 0.1)'
+                                                                    : 'white',
                                                             cursor: 'pointer',
-                                                            fontSize: '0.8rem'
+                                                            fontSize: '0.8rem',
                                                         }}
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={!!isSelected}
-                                                            onChange={() => handleGradoSeccionToggle(gs)}
+                                                            checked={
+                                                                !!isSelected
+                                                            }
+                                                            onChange={() =>
+                                                                handleGradoSeccionToggle(
+                                                                    gs
+                                                                )
+                                                            }
                                                             style={{
                                                                 width: '16px',
                                                                 height: '16px',
                                                                 cursor: 'pointer',
-                                                                accentColor: 'var(--primary)'
+                                                                accentColor:
+                                                                    'var(--primary)',
                                                             }}
                                                         />
-                                                        <span>{gs.grado}° {gs.nivel === 'primaria' ? 'Grado' : 'Año'} {gs.seccion}</span>
+                                                        <span>
+                                                            {gs.grado}°{' '}
+                                                            {gs.nivel ===
+                                                            'primaria'
+                                                                ? 'Grado'
+                                                                : 'Año'}{' '}
+                                                            {gs.seccion}
+                                                        </span>
                                                     </label>
                                                 );
                                             })}
                                         </div>
                                     )}
                                 </div>
-                                <small style={{display: 'block', marginTop: '6px', color: 'var(--gray)', fontSize: '0.75rem', fontStyle: 'italic'}}>
-                                    Opcional: Seleccione los grados donde el profesor estará asignado
+                                <small
+                                    style={{
+                                        display: 'block',
+                                        marginTop: '6px',
+                                        color: 'var(--gray)',
+                                        fontSize: '0.75rem',
+                                        fontStyle: 'italic',
+                                    }}
+                                >
+                                    Opcional: Seleccione los grados donde el
+                                    profesor estará asignado
                                 </small>
                             </div>
 
-                            <div className="form-group" style={{margin: 0}}>
-                                <label style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                                    <i className="fas fa-book" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                        fontWeight: '600',
+                                        color: 'var(--dark)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    <i
+                                        className="fas fa-book"
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            color: 'var(--primary)',
+                                        }}
+                                    ></i>
                                     Materias
                                 </label>
-                                <div style={{
-                                    border: '2px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    padding: '10px',
-                                    maxHeight: '120px',
-                                    overflowY: 'auto',
-                                    background: 'white',
-                                    minHeight: '80px'
-                                }}>
+                                <div
+                                    style={{
+                                        border: '2px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius)',
+                                        padding: '10px',
+                                        maxHeight: '120px',
+                                        overflowY: 'auto',
+                                        background: 'white',
+                                        minHeight: '80px',
+                                    }}
+                                >
                                     {loadingMaterias ? (
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.8rem'}}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                color: 'var(--gray)',
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
                                             <i className="fas fa-spinner fa-spin"></i>
                                             <span>Cargando...</span>
                                         </div>
                                     ) : materias.length === 0 ? (
-                                        <p style={{color: 'var(--gray)', fontSize: '0.8rem', margin: 0, fontStyle: 'italic'}}>
-                                            No hay materias disponibles. Puede registrar el profesor sin asignar materias.
+                                        <p
+                                            style={{
+                                                color: 'var(--gray)',
+                                                fontSize: '0.8rem',
+                                                margin: 0,
+                                                fontStyle: 'italic',
+                                            }}
+                                        >
+                                            No hay materias disponibles. Puede
+                                            registrar el profesor sin asignar
+                                            materias.
                                         </p>
                                     ) : (
-                                        <div style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '6px'
-                                        }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '6px',
+                                            }}
+                                        >
                                             {materias.map((materia) => {
-                                                const isSelected = selectedMaterias.find(sm => sm.id === materia.id);
+                                                const isSelected =
+                                                    selectedMaterias.find(
+                                                        (sm) =>
+                                                            sm.id === materia.id
+                                                    );
                                                 return (
                                                     <label
                                                         key={materia.id}
                                                         style={{
                                                             display: 'flex',
-                                                            alignItems: 'center',
+                                                            alignItems:
+                                                                'center',
                                                             gap: '6px',
                                                             padding: '6px 8px',
-                                                            border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
+                                                            border: `1px solid ${
+                                                                isSelected
+                                                                    ? 'var(--primary)'
+                                                                    : 'var(--light-gray)'
+                                                            }`,
                                                             borderRadius: '6px',
-                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
+                                                            background:
+                                                                isSelected
+                                                                    ? 'rgba(67, 97, 238, 0.1)'
+                                                                    : 'white',
                                                             cursor: 'pointer',
-                                                            fontSize: '0.8rem'
+                                                            fontSize: '0.8rem',
                                                         }}
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={!!isSelected}
-                                                            onChange={() => handleMateriaToggle(materia)}
+                                                            checked={
+                                                                !!isSelected
+                                                            }
+                                                            onChange={() =>
+                                                                handleMateriaToggle(
+                                                                    materia
+                                                                )
+                                                            }
                                                             style={{
                                                                 width: '16px',
                                                                 height: '16px',
                                                                 cursor: 'pointer',
-                                                                accentColor: 'var(--primary)'
+                                                                accentColor:
+                                                                    'var(--primary)',
                                                             }}
                                                         />
-                                                        <span>{materia.nombre}</span>
+                                                        <span>
+                                                            {materia.nombre}
+                                                        </span>
                                                     </label>
                                                 );
                                             })}
                                         </div>
                                     )}
                                 </div>
-                                <small style={{display: 'block', marginTop: '6px', color: 'var(--gray)', fontSize: '0.75rem', fontStyle: 'italic'}}>
-                                    Opcional: Seleccione las materias que el profesor dictará
+                                <small
+                                    style={{
+                                        display: 'block',
+                                        marginTop: '6px',
+                                        color: 'var(--gray)',
+                                        fontSize: '0.75rem',
+                                        fontStyle: 'italic',
+                                    }}
+                                >
+                                    Opcional: Seleccione las materias que el
+                                    profesor dictará
                                 </small>
                             </div>
-                    </div>
+                        </div>
                     </>
                 )}
 
                 {/* Foto de Perfil */}
                 {openModal === 'profesor' && (
-                    <div className="form-group" style={{margin: 0}}>
-                        <label htmlFor="foto" style={{display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600', color: 'var(--dark)', fontSize: '0.85rem'}}>
-                            <i className="fas fa-camera" style={{fontSize: '0.7rem', color: 'var(--primary)'}}></i>
+                    <div className="form-group" style={{ margin: 0 }}>
+                        <label
+                            htmlFor="foto"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginBottom: '6px',
+                                fontWeight: '600',
+                                color: 'var(--dark)',
+                                fontSize: '0.85rem',
+                            }}
+                        >
+                            <i
+                                className="fas fa-camera"
+                                style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--primary)',
+                                }}
+                            ></i>
                             Foto de Perfil
                         </label>
-                            <input
-                                type="file"
-                                id="foto"
-                                name="foto"
+                        <input
+                            type="file"
+                            id="foto"
+                            name="foto"
                             accept="image/*"
-                                onChange={(e) => {
-                                setFormData(prev => ({
-                                        ...prev,
-                                    foto: e.target.files[0]
+                            onChange={(e) => {
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    foto: e.target.files[0],
                                 }));
                             }}
                             style={{
@@ -830,33 +1320,37 @@ export default function Registo() {
                                 borderRadius: 'var(--border-radius)',
                                 fontSize: '0.9rem',
                                 background: 'white',
-                                color: 'var(--dark)'
+                                color: 'var(--dark)',
                             }}
                         />
                     </div>
                 )}
 
                 {errors.submit && (
-                    <div style={{
-                        padding: '10px',
-                        background: '#fee',
-                        border: '1px solid #fcc',
-                        borderRadius: 'var(--border-radius)',
-                        color: '#c33',
-                        fontSize: '0.85rem'
-                    }}>
+                    <div
+                        style={{
+                            padding: '10px',
+                            background: '#fee',
+                            border: '1px solid #fcc',
+                            borderRadius: 'var(--border-radius)',
+                            color: '#c33',
+                            fontSize: '0.85rem',
+                        }}
+                    >
                         {errors.submit}
                     </div>
                 )}
 
-                <div style={{
-                    marginTop: '15px',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '10px',
-                    paddingTop: '15px',
-                    borderTop: '1px solid var(--light-gray)'
-                }}>
+                <div
+                    style={{
+                        marginTop: '15px',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '10px',
+                        paddingTop: '15px',
+                        borderTop: '1px solid var(--light-gray)',
+                    }}
+                >
                     <button
                         type="button"
                         onClick={closeModal}
@@ -869,7 +1363,7 @@ export default function Registo() {
                             fontSize: '0.9rem',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'var(--transition)'
+                            transition: 'var(--transition)',
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = '#e0e0e0';
@@ -893,20 +1387,24 @@ export default function Registo() {
                             fontWeight: '600',
                             cursor: isLoading ? 'not-allowed' : 'pointer',
                             transition: 'var(--transition)',
-                            opacity: isLoading ? 0.6 : 1
+                            opacity: isLoading ? 0.6 : 1,
                         }}
                         onMouseEnter={(e) => {
                             if (!isLoading) {
-                                e.currentTarget.style.background = 'var(--primary-dark)';
+                                e.currentTarget.style.background =
+                                    'var(--primary-dark)';
                             }
                         }}
                         onMouseLeave={(e) => {
                             if (!isLoading) {
-                                e.currentTarget.style.background = 'var(--primary)';
+                                e.currentTarget.style.background =
+                                    'var(--primary)';
                             }
                         }}
                     >
-                        {isLoading ? 'Registrando...' : `Registrar ${getRoleName(openModal)}`}
+                        {isLoading
+                            ? 'Registrando...'
+                            : `Registrar ${getRoleName(openModal)}`}
                     </button>
                 </div>
             </form>
@@ -914,7 +1412,7 @@ export default function Registo() {
     };
 
     return (
-        <div className="main-content">
+        <div className="">
             <div className="header">
                 <div className="page-title">
                     <h1>Registro de Usuarios</h1>
@@ -922,12 +1420,14 @@ export default function Registo() {
                 </div>
             </div>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '20px',
-                marginTop: '30px'
-            }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '20px',
+                    marginTop: '30px',
+                }}
+            >
                 {/* Botón Estudiante */}
                 <button
                     onClick={() => openModalHandler('estudiante')}
@@ -943,44 +1443,65 @@ export default function Registo() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '15px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = 'var(--primary)';
                         e.currentTarget.style.transform = 'translateY(-5px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(67, 97, 238, 0.2)';
+                        e.currentTarget.style.boxShadow =
+                            '0 4px 16px rgba(67, 97, 238, 0.2)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = 'var(--light-gray)';
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                        e.currentTarget.style.boxShadow =
+                            '0 2px 8px rgba(0, 0, 0, 0.1)';
                     }}
                 >
-                    <div style={{
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #28a745, #20c997)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        overflow: 'hidden'
-                    }}>
-                        <i className="fas fa-user-graduate" style={{
-                            fontSize: '1.8rem',
-                            display: 'inline-flex',
+                    <div
+                        style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            background:
+                                'linear-gradient(135deg, #28a745, #20c997)',
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            lineHeight: '1',
-                            margin: '0',
-                            padding: '0'
-                        }}></i>
+                            color: 'white',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <i
+                            className="fas fa-user-graduate"
+                            style={{
+                                fontSize: '1.8rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: '1',
+                                margin: '0',
+                                padding: '0',
+                            }}
+                        ></i>
                     </div>
-                    <h3 style={{margin: 0, fontSize: '1.2rem', fontWeight: '600', color: 'var(--dark)'}}>
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: '1.2rem',
+                            fontWeight: '600',
+                            color: 'var(--dark)',
+                        }}
+                    >
                         Estudiante
                     </h3>
-                    <p style={{margin: 0, color: 'var(--gray)', fontSize: '0.9rem'}}>
+                    <p
+                        style={{
+                            margin: 0,
+                            color: 'var(--gray)',
+                            fontSize: '0.9rem',
+                        }}
+                    >
                         Registrar nuevo estudiante
                     </p>
                 </button>
@@ -1000,44 +1521,65 @@ export default function Registo() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '15px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = 'var(--primary)';
                         e.currentTarget.style.transform = 'translateY(-5px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(67, 97, 238, 0.2)';
+                        e.currentTarget.style.boxShadow =
+                            '0 4px 16px rgba(67, 97, 238, 0.2)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = 'var(--light-gray)';
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                        e.currentTarget.style.boxShadow =
+                            '0 2px 8px rgba(0, 0, 0, 0.1)';
                     }}
                 >
-                    <div style={{
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #007bff, #0056b3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        overflow: 'hidden'
-                    }}>
-                        <i className="fas fa-chalkboard-teacher" style={{
-                            fontSize: '1.8rem',
-                            display: 'inline-flex',
+                    <div
+                        style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            background:
+                                'linear-gradient(135deg, #007bff, #0056b3)',
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            lineHeight: '1',
-                            margin: '0',
-                            padding: '0'
-                        }}></i>
+                            color: 'white',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <i
+                            className="fas fa-chalkboard-teacher"
+                            style={{
+                                fontSize: '1.8rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: '1',
+                                margin: '0',
+                                padding: '0',
+                            }}
+                        ></i>
                     </div>
-                    <h3 style={{margin: 0, fontSize: '1.2rem', fontWeight: '600', color: 'var(--dark)'}}>
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: '1.2rem',
+                            fontWeight: '600',
+                            color: 'var(--dark)',
+                        }}
+                    >
                         Profesor
                     </h3>
-                    <p style={{margin: 0, color: 'var(--gray)', fontSize: '0.9rem'}}>
+                    <p
+                        style={{
+                            margin: 0,
+                            color: 'var(--gray)',
+                            fontSize: '0.9rem',
+                        }}
+                    >
                         Registrar nuevo profesor
                     </p>
                 </button>
@@ -1057,44 +1599,65 @@ export default function Registo() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '15px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = 'var(--primary)';
                         e.currentTarget.style.transform = 'translateY(-5px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(67, 97, 238, 0.2)';
+                        e.currentTarget.style.boxShadow =
+                            '0 4px 16px rgba(67, 97, 238, 0.2)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = 'var(--light-gray)';
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                        e.currentTarget.style.boxShadow =
+                            '0 2px 8px rgba(0, 0, 0, 0.1)';
                     }}
                 >
-                    <div style={{
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #17a2b8, #138496)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        overflow: 'hidden'
-                    }}>
-                        <i className="fas fa-user-friends" style={{
-                            fontSize: '1.8rem',
-                            display: 'inline-flex',
+                    <div
+                        style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            background:
+                                'linear-gradient(135deg, #17a2b8, #138496)',
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            lineHeight: '1',
-                            margin: '0',
-                            padding: '0'
-                        }}></i>
+                            color: 'white',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <i
+                            className="fas fa-user-friends"
+                            style={{
+                                fontSize: '1.8rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: '1',
+                                margin: '0',
+                                padding: '0',
+                            }}
+                        ></i>
                     </div>
-                    <h3 style={{margin: 0, fontSize: '1.2rem', fontWeight: '600', color: 'var(--dark)'}}>
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: '1.2rem',
+                            fontWeight: '600',
+                            color: 'var(--dark)',
+                        }}
+                    >
                         Representante
                     </h3>
-                    <p style={{margin: 0, color: 'var(--gray)', fontSize: '0.9rem'}}>
+                    <p
+                        style={{
+                            margin: 0,
+                            color: 'var(--gray)',
+                            fontSize: '0.9rem',
+                        }}
+                    >
                         Registrar nuevo representante
                     </p>
                 </button>
@@ -1114,44 +1677,65 @@ export default function Registo() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '15px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = 'var(--primary)';
                         e.currentTarget.style.transform = 'translateY(-5px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(67, 97, 238, 0.2)';
+                        e.currentTarget.style.boxShadow =
+                            '0 4px 16px rgba(67, 97, 238, 0.2)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = 'var(--light-gray)';
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                        e.currentTarget.style.boxShadow =
+                            '0 2px 8px rgba(0, 0, 0, 0.1)';
                     }}
                 >
-                    <div style={{
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #6f42c1, #5a32a3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        overflow: 'hidden'
-                    }}>
-                        <i className="fas fa-user-cog" style={{
-                            fontSize: '1.8rem',
-                            display: 'inline-flex',
+                    <div
+                        style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            background:
+                                'linear-gradient(135deg, #6f42c1, #5a32a3)',
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            lineHeight: '1',
-                            margin: '0',
-                            padding: '0'
-                        }}></i>
+                            color: 'white',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <i
+                            className="fas fa-user-cog"
+                            style={{
+                                fontSize: '1.8rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: '1',
+                                margin: '0',
+                                padding: '0',
+                            }}
+                        ></i>
                     </div>
-                    <h3 style={{margin: 0, fontSize: '1.2rem', fontWeight: '600', color: 'var(--dark)'}}>
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: '1.2rem',
+                            fontWeight: '600',
+                            color: 'var(--dark)',
+                        }}
+                    >
                         Administrador
                     </h3>
-                    <p style={{margin: 0, color: 'var(--gray)', fontSize: '0.9rem'}}>
+                    <p
+                        style={{
+                            margin: 0,
+                            color: 'var(--gray)',
+                            fontSize: '0.9rem',
+                        }}
+                    >
                         Registrar nuevo administrador
                     </p>
                 </button>
@@ -1159,8 +1743,8 @@ export default function Registo() {
 
             {/* Modal */}
             {openModal && (
-                <Modal 
-                    isOpen={openModal !== null} 
+                <Modal
+                    isOpen={openModal !== null}
                     onClose={closeModal}
                     title={`Nuevo ${getRoleName(openModal)}`}
                     roleIcon={getRoleIcon(openModal)}
