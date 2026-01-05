@@ -93,6 +93,14 @@ class ProfesorListSerializer(serializers.ModelSerializer):
             'fecha_creacion', 'fecha_actualizacion',
             'grado_secciones', 'materias'
         ]
+    
+    def to_representation(self, instance):
+        """Asegurar que grado_secciones se serialice correctamente"""
+        representation = super().to_representation(instance)
+        # Asegurar que grado_secciones sea una lista
+        if 'grado_secciones' not in representation or representation['grado_secciones'] is None:
+            representation['grado_secciones'] = []
+        return representation
 
 
 class ProfesorUpdateSerializer(serializers.ModelSerializer):

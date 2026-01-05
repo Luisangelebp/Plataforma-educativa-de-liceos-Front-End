@@ -4,14 +4,27 @@ from core.models import Usuario, GradoSeccion
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Usuario
         fields = ['id', 'email', 'nombre', 'apellido', 'rol', 'password', 'foto']
+        read_only_fields = ['id', 'rol']
 
     def create(self, validated_data):
         return Usuario.objects.create_user(**validated_data)
+    
+    def update(self, instance, validated_data):
+        # Si se proporciona una nueva contraseña, hashearla
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+        
+        # Actualizar los demás campos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 
 class LoginSerializer(serializers.Serializer):

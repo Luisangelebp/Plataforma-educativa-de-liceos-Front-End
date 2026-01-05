@@ -9,8 +9,18 @@ class PlantillaBoletinSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PlantillaBoletin
-        fields = ['id', 'periodo', 'grado_seccion', 'grado_seccion_nombre', 'archivo_word', 
-                  'activa', 'fecha_subida', 'fecha_actualizacion', 'subido_por', 'subido_por_nombre']
+        fields = [
+            'id',
+            'periodo',
+            'grado_seccion',
+            'grado_seccion_nombre',
+            'archivo_word',
+            'activa',
+            'fecha_subida',
+            'fecha_actualizacion',
+            'subido_por',
+            'subido_por_nombre'
+        ]
         read_only_fields = ['fecha_subida', 'fecha_actualizacion', 'subido_por']
     
     def get_grado_seccion_nombre(self, obj):
@@ -23,6 +33,7 @@ class PlantillaBoletinSerializer(serializers.ModelSerializer):
             return f"{obj.subido_por.nombre} {obj.subido_por.apellido}"
         return None
 
+
 class BoletinSerializer(serializers.ModelSerializer):
     estudiante_nombre = serializers.SerializerMethodField()
     estudiante_cedula = serializers.CharField(source='estudiante.cedula', read_only=True)
@@ -32,11 +43,29 @@ class BoletinSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Boletin
-        fields = ['id', 'estudiante', 'estudiante_nombre', 'estudiante_cedula', 
-                  'estudiante_grado', 'lapso', 'lapso_display', 'archivo_pdf', 
-                  'promedio_general', 'fecha_emision', 'fecha_actualizacion', 
-                  'subido_por', 'subido_por_nombre', 'observaciones']
-        read_only_fields = ['fecha_emision', 'fecha_actualizacion', 'subido_por', 'promedio_general']
+        fields = [
+            'id',
+            'estudiante',
+            'estudiante_nombre',
+            'estudiante_cedula',
+            'estudiante_grado',
+            'lapso',
+            'lapso_display',
+            'archivo_word',      # 🔹 nuevo campo para subir/descargar Word
+            'archivo_pdf',
+            'promedio_general',
+            'fecha_emision',
+            'fecha_actualizacion',
+            'subido_por',
+            'subido_por_nombre',
+            'observaciones'
+        ]
+        read_only_fields = [
+            'fecha_emision',
+            'fecha_actualizacion',
+            'subido_por',
+            'promedio_general'
+        ]
     
     def get_estudiante_nombre(self, obj):
         return f"{obj.estudiante.nombre} {obj.estudiante.apellido}"
@@ -65,6 +94,3 @@ class BoletinSerializer(serializers.ModelSerializer):
                     f"Ya existe un boletín para {estudiante} en el {dict(Boletin.LAPSO_OPCIONES)[lapso]}"
                 )
         return data
-
-
-

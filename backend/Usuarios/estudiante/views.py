@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import HttpResponse
 from django.template.loader import get_template
-from weasyprint import HTML
 
 from .models import Estudiante
 from .serializers import (
@@ -93,11 +92,15 @@ class EstudiantesPDFView(APIView):
             estudiantes = estudiantes.filter(grado_seccion__seccion__iexact=seccion)
 
         if not estudiantes.exists():
-            html = "<h1 style='text-align:center;'>No hay estudiantes que coincidan con los filtros.</h1>"
-            pdf_file = HTML(string=html).write_pdf()
-            response = HttpResponse(pdf_file, content_type="application/pdf")
-            response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
-            return response
+            try:
+                from weasyprint import HTML
+                html = "<h1 style='text-align:center;'>No hay estudiantes que coincidan con los filtros.</h1>"
+                pdf_file = HTML(string=html).write_pdf()
+                response = HttpResponse(pdf_file, content_type="application/pdf")
+                response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
+                return response
+            except ImportError:
+                return Response({'error': 'WeasyPrint no está disponible. Por favor, instale las dependencias del sistema necesarias.'}, status=500)
 
         # Determinar si mostrar "Grado" o "Año" según el nivel de las secciones
         niveles = set(e.grado_seccion.nivel for e in estudiantes if e.grado_seccion)
@@ -113,10 +116,14 @@ class EstudiantesPDFView(APIView):
         }
         html = template.render(context)
 
-        pdf_file = HTML(string=html).write_pdf()
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
-        return response
+        try:
+            from weasyprint import HTML
+            pdf_file = HTML(string=html).write_pdf()
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = "attachment; filename=estudiantes.pdf"
+            return response
+        except ImportError:
+            return Response({'error': 'WeasyPrint no está disponible. Por favor, instale las dependencias del sistema necesarias.'}, status=500)
 
 
 # Actualización y eliminación de estudiantes

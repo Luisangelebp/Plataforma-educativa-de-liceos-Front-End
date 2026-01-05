@@ -119,14 +119,14 @@ export default function Main({ setShowLogin }) {
                         <div className="cta-container">
                             <button
                                 className="cta-btn primary-btn scroll-animate"
-                                onClick={() => setShowLogin(true)}
+                                onClick={() => {
+                                    if (setShowLogin) {
+                                        setShowLogin(true);
+                                    }
+                                }}
                             >
                                 <span>Iniciar Sesión</span>
                                 <i className="fas fa-arrow-right"></i>
-                            </button>
-                            <button className="cta-btn secondary-btn scroll-animate">
-                                <span>Ver Demo</span>
-                                <i className="fas fa-play"></i>
                             </button>
                         </div>
                     </div>

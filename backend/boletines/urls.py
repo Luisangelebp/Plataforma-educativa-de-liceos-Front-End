@@ -18,7 +18,8 @@ urlpatterns = [
     path('estudiante/<int:estudiante_id>/', views.BoletinesPorEstudianteView.as_view(), name='boletines-por-estudiante'),
     path('estudiante/<int:estudiante_id>/lapso/<str:lapso>/', views.BoletinPorEstudianteLapsoView.as_view(), name='boletin-por-estudiante-lapso'),
     path('calcular-promedio/<int:estudiante_id>/lapso/<str:lapso>/', views.CalcularPromedioView.as_view(), name='calcular-promedio'),
+
+    # Secundaria
+    path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/generar/', views.GenerarBoletinSecundariaView.as_view(), name='generar-boletin-secundaria'),
+    path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/vista-previa/', views.VistaPreviaBoletinSecundariaView.as_view(), name='vista-previa-boletin-secundaria'),
 ]
-
-
-

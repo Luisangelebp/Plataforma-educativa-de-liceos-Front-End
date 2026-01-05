@@ -68,6 +68,10 @@ export function Boletines() {
     const [loadingVistaPrevia, setLoadingVistaPrevia] = useState(false);
     const [pdfUrl, setPdfUrl] = useState(null);
     const [plantillaAction, setPlantillaAction] = useState('subir'); // 'subir' o 'actualizar'
+    const [filtroLapso, setFiltroLapso] = useState('');
+    const [filtroGrado, setFiltroGrado] = useState('');
+    const [filtroSeccion, setFiltroSeccion] = useState('');
+    const [busquedaTexto, setBusquedaTexto] = useState('');
     const [uploadData, setUploadData] = useState({
         estudiante: null,
         lapso: '1',
@@ -87,7 +91,11 @@ export function Boletines() {
     const cargarEstudiantes = async () => {
         try {
             const response = await axiosInstance.get('usuarios/estudiante/');
-            setEstudiantes(response.data);
+            // Filtrar solo estudiantes de primaria
+            const estudiantesPrimaria = response.data.filter(est => 
+                est.grado_seccion && est.grado_seccion.nivel === 'primaria'
+            );
+            setEstudiantes(estudiantesPrimaria);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
         }
@@ -118,6 +126,30 @@ export function Boletines() {
             (b) => b.estudiante === estudianteId && b.lapso === lapso
         );
     };
+
+    // Filtrar estudiantes
+    const estudiantesFiltrados = estudiantes.filter(estudiante => {
+        const matchGrado = !filtroGrado || (estudiante.grado_seccion && estudiante.grado_seccion.grado === filtroGrado);
+        const matchSeccion = !filtroSeccion || (estudiante.grado_seccion && estudiante.grado_seccion.seccion === filtroSeccion);
+        const matchTexto = !busquedaTexto || 
+            estudiante.nombre?.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
+            estudiante.apellido?.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
+            estudiante.cedula?.toString().includes(busquedaTexto);
+
+        return matchGrado && matchSeccion && matchTexto;
+    });
+
+    // Obtener grados únicos de primaria
+    const gradosUnicos = [...new Set(estudiantes
+        .filter(e => e.grado_seccion)
+        .map(e => e.grado_seccion.grado)
+        .filter(g => g))].sort();
+
+    // Obtener secciones únicas
+    const seccionesUnicas = [...new Set(estudiantes
+        .filter(e => e.grado_seccion)
+        .map(e => e.grado_seccion.seccion)
+        .filter(s => s))].sort();
 
     const handleUploadClick = (estudiante, lapso = '1') => {
         const boletinExistente = getBoletinPorEstudiante(estudiante.id, lapso);
@@ -382,9 +414,79 @@ export function Boletines() {
             </div>
 
             <div className="table-container">
+                {/* Filtros */}
+                <div style={{
+                    display: 'flex',
+                    gap: '0.75rem',
+                    marginBottom: '1.5rem',
+                    flexWrap: 'wrap',
+                    padding: '1rem',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <select
+                        value={filtroGrado}
+                        onChange={(e) => setFiltroGrado(e.target.value)}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            fontSize: '0.875rem',
+                            background: 'white',
+                            minWidth: '150px'
+                        }}
+                    >
+                        <option value="">Todos los grados</option>
+                        {gradosUnicos.map(grado => (
+                            <option key={grado} value={grado}>
+                                {grado}° Grado
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={filtroSeccion}
+                        onChange={(e) => setFiltroSeccion(e.target.value)}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            fontSize: '0.875rem',
+                            background: 'white',
+                            minWidth: 'px'
+                        }}
+                    >
+                        <option value="">Todas las secciones</option>
+                        {seccionesUnicas.map(seccion => (
+                            <option key={seccion} value={seccion}>
+                                Sección {seccion}
+                            </option>
+                        ))}
+                    </select>
+
+                    <input
+                        type="text"
+                        placeholder="Buscar estudiante..."
+                        value={busquedaTexto}
+                        onChange={(e) => setBusquedaTexto(e.target.value)}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            fontSize: '0.875rem',
+                            minWidth: '200px',
+                            flex: 1
+                        }}
+                    />
+                </div>
+
                 <table className="boletines-table">
                     <thead>
-                        <tr>
+                        <tr style={{
+                            background: '#3b82f6',
+                            color: 'white'
+                        }}>
                             <th>Estudiante</th>
                             <th>Cédula</th>
                             <th>Grado/Sección</th>
@@ -398,12 +500,12 @@ export function Boletines() {
                             <tr>
                                 <td colSpan="6">Cargando...</td>
                             </tr>
-                        ) : estudiantes.length === 0 ? (
+                        ) : estudiantesFiltrados.length === 0 ? (
                             <tr>
-                                <td colSpan="6">No hay estudiantes registrados</td>
+                                <td colSpan="6">No hay estudiantes que coincidan con los filtros</td>
                             </tr>
                         ) : (
-                            estudiantes.map((estudiante) => (
+                            estudiantesFiltrados.map((estudiante) => (
                                 <tr key={estudiante.id}>
                                     <td>
                                         {estudiante.nombre} {estudiante.apellido}

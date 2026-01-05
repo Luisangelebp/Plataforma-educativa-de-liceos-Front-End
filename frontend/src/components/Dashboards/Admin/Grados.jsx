@@ -6,6 +6,10 @@ function ListaGrados({ setShowHorario }) {
     const [grados, setGrados] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('table'); // 'cards' o 'table'
+    const [filtroNivel, setFiltroNivel] = useState('todos'); // 'todos', 'primaria', 'secundaria'
+    const [filtroGrado, setFiltroGrado] = useState('');
+    const [filtroSeccion, setFiltroSeccion] = useState('');
+    const [busquedaTexto, setBusquedaTexto] = useState('');
 
     useEffect(() => {
         const fetchGrados = async () => {
@@ -22,14 +26,57 @@ function ListaGrados({ setShowHorario }) {
         fetchGrados();
     }, []);
 
+    // Función para filtrar grados
+    const gradosFiltrados = useMemo(() => {
+        let filtrados = [...grados];
+
+        // Filtro por nivel
+        if (filtroNivel !== 'todos') {
+            filtrados = filtrados.filter((grado) => grado.nivel === filtroNivel);
+        }
+
+        // Filtro por grado
+        if (filtroGrado) {
+            filtrados = filtrados.filter((grado) => grado.grado.toString() === filtroGrado);
+        }
+
+        // Filtro por sección
+        if (filtroSeccion) {
+            filtrados = filtrados.filter((grado) => grado.seccion === filtroSeccion);
+        }
+
+        // Búsqueda por texto (grado o sección)
+        if (busquedaTexto) {
+            const texto = busquedaTexto.toLowerCase();
+            filtrados = filtrados.filter((grado) => 
+                grado.grado.toString().toLowerCase().includes(texto) ||
+                grado.seccion.toLowerCase().includes(texto) ||
+                grado.nivel.toLowerCase().includes(texto)
+            );
+        }
+
+        return filtrados;
+    }, [grados, filtroNivel, filtroGrado, filtroSeccion, busquedaTexto]);
+
     const primaria = useMemo(
-        () => grados.filter((grado) => grado.nivel === 'primaria'),
-        [grados]
+        () => gradosFiltrados.filter((grado) => grado.nivel === 'primaria'),
+        [gradosFiltrados]
     );
     const secundaria = useMemo(
-        () => grados.filter((grado) => grado.nivel === 'secundaria'),
-        [grados]
+        () => gradosFiltrados.filter((grado) => grado.nivel === 'secundaria'),
+        [gradosFiltrados]
     );
+
+    // Obtener grados y secciones únicos para los filtros
+    const gradosUnicos = useMemo(() => {
+        const gradosSet = new Set(grados.map(g => g.grado));
+        return Array.from(gradosSet).sort((a, b) => Number(a) - Number(b));
+    }, [grados]);
+
+    const seccionesUnicas = useMemo(() => {
+        const seccionesSet = new Set(grados.map(g => g.seccion));
+        return Array.from(seccionesSet).sort();
+    }, [grados]);
 
     const handleDelete = async (grado) => {
         if (confirm(`¿Eliminar el grado ${grado.grado} sección ${grado.seccion}?`)) {
@@ -60,9 +107,218 @@ function ListaGrados({ setShowHorario }) {
 
     return (
         <>
+            {/* Filtros de búsqueda */}
+            {grados.length > 0 && (
+                <div className="section-card" style={{marginBottom: '20px', padding: '15px'}}>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '5px'
+                        }}>
+                            <h3 style={{
+                                fontSize: '0.95rem',
+                                fontWeight: '600',
+                                color: 'var(--dark)',
+                                margin: 0
+                            }}>
+                                <i className="fas fa-filter" style={{marginRight: '6px', color: 'var(--primary)', fontSize: '0.85rem'}}></i>
+                                Filtros
+                            </h3>
+                            {(filtroNivel !== 'todos' || filtroGrado || filtroSeccion || busquedaTexto) && (
+                                <button
+                                    onClick={() => {
+                                        setFiltroNivel('todos');
+                                        setFiltroGrado('');
+                                        setFiltroSeccion('');
+                                        setBusquedaTexto('');
+                                    }}
+                                    title="Limpiar filtros"
+                                    style={{
+                                        width: '20px',
+                                        height: '20px',
+                                        padding: '0',
+                                        background: 'transparent',
+                                        color: 'var(--gray)',
+                                        border: 'none',
+                                        borderRadius: 'var(--border-radius-sm)',
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer',
+                                        transition: 'var(--transition)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.color = 'var(--primary)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.color = 'var(--gray)';
+                                    }}
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            )}
+                        </div>
+                        
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                            gap: '8px'
+                        }}>
+                            {/* Filtro por nivel */}
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    marginBottom: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)'
+                                }}>
+                                    Nivel
+                                </label>
+                                <select
+                                    value={filtroNivel}
+                                    onChange={(e) => setFiltroNivel(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        border: '1px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius-sm)',
+                                        fontSize: '0.8rem',
+                                        background: 'white',
+                                        color: 'var(--dark)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <option value="todos">Todos</option>
+                                    <option value="primaria">Primaria</option>
+                                    <option value="secundaria">Secundaria</option>
+                                </select>
+                            </div>
+
+                            {/* Filtro por grado */}
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    marginBottom: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)'
+                                }}>
+                                    Grado/Año
+                                </label>
+                                <select
+                                    value={filtroGrado}
+                                    onChange={(e) => setFiltroGrado(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        border: '1px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius-sm)',
+                                        fontSize: '0.8rem',
+                                        background: 'white',
+                                        color: 'var(--dark)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <option value="">Todos</option>
+                                    {gradosUnicos.map((grado) => (
+                                        <option key={grado} value={grado}>
+                                            {grado}°
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Filtro por sección */}
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    marginBottom: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)'
+                                }}>
+                                    Sección
+                                </label>
+                                <select
+                                    value={filtroSeccion}
+                                    onChange={(e) => setFiltroSeccion(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        border: '1px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius-sm)',
+                                        fontSize: '0.8rem',
+                                        background: 'white',
+                                        color: 'var(--dark)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <option value="">Todas</option>
+                                    {seccionesUnicas.map((seccion) => (
+                                        <option key={seccion} value={seccion}>
+                                            {seccion}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Búsqueda por texto */}
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    marginBottom: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: 'var(--dark)'
+                                }}>
+                                    Búsqueda
+                                </label>
+                                <input
+                                    type="text"
+                                    value={busquedaTexto}
+                                    onChange={(e) => setBusquedaTexto(e.target.value)}
+                                    placeholder="Buscar..."
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        border: '1px solid var(--light-gray)',
+                                        borderRadius: 'var(--border-radius-sm)',
+                                        fontSize: '0.8rem',
+                                        background: 'white',
+                                        color: 'var(--dark)'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mostrar cantidad de resultados */}
+                        <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--gray)',
+                            fontStyle: 'italic',
+                            marginTop: '2px'
+                        }}>
+                            Mostrando {gradosFiltrados.length} de {grados.length} grado(s)
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {grados.length === 0 ? (
                 <div className="section-card" style={{textAlign: 'center', padding: '40px'}}>
                     <p style={{color: 'var(--gray)', fontSize: '1rem'}}>No hay grados registrados.</p>
+                </div>
+            ) : gradosFiltrados.length === 0 ? (
+                <div className="section-card" style={{textAlign: 'center', padding: '40px'}}>
+                    <p style={{color: 'var(--gray)', fontSize: '1rem'}}>No hay grados que coincidan con los filtros seleccionados.</p>
                 </div>
             ) : (
                 <>
@@ -249,8 +505,8 @@ function ListaGrados({ setShowHorario }) {
                                                     e.currentTarget.style.background = 'var(--danger)';
                                                     e.currentTarget.style.transform = 'translateY(0)';
                                                     e.currentTarget.style.boxShadow = 'none';
-                                                }}
-                                            >
+                                    }}
+                                >
                                                 <i className="fas fa-trash" style={{
                                                     fontSize: '0.8rem',
                                                     display: 'inline-flex',
@@ -569,8 +825,8 @@ function ListaGrados({ setShowHorario }) {
                                                     e.currentTarget.style.background = 'var(--danger)';
                                                     e.currentTarget.style.transform = 'translateY(0)';
                                                     e.currentTarget.style.boxShadow = 'none';
-                                                }}
-                                            >
+                                    }}
+                                >
                                                 <i className="fas fa-trash" style={{
                                                     fontSize: '0.8rem',
                                                     display: 'inline-flex',
@@ -814,7 +1070,6 @@ const RegistrarGrado = ({ isOpen, onClose }) => {
                                                 <option value="3">3° Año</option>
                                                 <option value="4">4° Año</option>
                                                 <option value="5">5° Año</option>
-                                                <option value="6">6° Año</option>
                                             </>
                                         ) : null}
                             </select>

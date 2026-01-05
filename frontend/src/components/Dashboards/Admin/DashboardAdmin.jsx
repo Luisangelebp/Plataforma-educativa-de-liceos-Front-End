@@ -1,162 +1,193 @@
-import '../css/dashboards.css';
-import { Profile } from '../../profile/Profile.jsx';
-import { Link, Outlet } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
-const userAdmin = window.localStorage.getItem('user');
-const API_URL = 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export function Admin() {
-    const [menuOpen, setMenuOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [boletinesExpanded, setBoletinesExpanded] = useState(false);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                setUser(JSON.parse(userStr));
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+        // Expandir boletines si estamos en una ruta de boletines
+        if (location.pathname.startsWith('/admin/boletines')) {
+            setBoletinesExpanded(true);
+        }
+    }, [location.pathname]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        // Marcar que viene de logout para mostrar directamente el login
+        sessionStorage.setItem('fromLogout', 'true');
+        navigate('/');
+    };
+
+    const getUserInitials = () => {
+        if (!user) return 'A';
+        const nombre = user.nombre || user.nombres || '';
+        const apellido = user.apellido || user.apellidos || '';
+        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A';
+    };
+
+    const getUserName = () => {
+        if (!user) return 'Administrador';
+        return user.nombre || user.nombres || 'Administrador';
+    };
+
     return (
-        <>
-            <header>
-                <div className="logo-container">
-                    <div
-                        className="mobil-menu"
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <i className="bi bi-list"></i>
-                    </div>
-                    {menuOpen && (
-                        <>
-                            <div
-                                className="overlay"
-                                onClick={() => setMenuOpen(false)}
-                            ></div>
-                            <ul className="modalMenu">
-                                <li>
-                                    <Link
-                                        to=""
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Inicio
-                                    </Link>
-                                </li>
-                                <details>
-                                    <summary>Usuarios</summary>
-                                    <ul>
-                                        <li>
-                                            <Link
-                                                to="./registro"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Registrar Usuario
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaE"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Estudiantes
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaR"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Representantes
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                to="./listaP"
-                                                className="menu-item"
-                                                onClick={() =>
-                                                    setMenuOpen(false)
-                                                }
-                                            >
-                                                Lista de Profesores
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </details>
-                                <li>
-                                    <Link
-                                        to="./grados"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Grados
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./materias"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Materias
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./horarios"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Asignar Horarios
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./boletines"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Boletines
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="./calendario"
-                                        className="menu-item"
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        Calendario
-                                    </Link>
-                                </li>
-                            </ul>
-                        </>
-                    )}
-                    <div className="logo">
-                        <svg
-                            viewBox="0 0 100 100"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <use
-                                href="../../logo.svg"
-                                width={100}
-                                height={100}
-                            />
-                        </svg>
-                    </div>
-                    <div className="cenit">
-                        <h1>CENIT</h1>
-                        <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
-                    </div>
+        <div className="dashboard">
+            {/* Sidebar */}
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    <Link to="/admin/cuenta" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="user-profile" style={{ cursor: 'pointer' }}>
+                            <div className="user-avatar">
+                                {getUserInitials()}
+                            </div>
+                            <div className="user-info">
+                                <h4>{getUserName()}</h4>
+                                <p>Admin</p>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
-                <Profile
-                    userImg={
-                        userAdmin.foto ? `${API_URL}${userAdmin.foto}` : null
-                    }
-                ></Profile>
-            </header>
-            <main className="main">
+                
+                <nav className="nav-menu">
+                    <div className="nav-item">
+                        <Link
+                            to="/admin"
+                            className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-home"></i>
+                            <span className="nav-text">Inicio</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/registro"
+                            className={`nav-link ${location.pathname === '/admin/registro' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-user-plus"></i>
+                            <span className="nav-text">Registrar Usuario</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/listaE"
+                            className={`nav-link ${location.pathname === '/admin/listaE' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-users"></i>
+                            <span className="nav-text">Estudiantes</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/listaP"
+                            className={`nav-link ${location.pathname === '/admin/listaP' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-chalkboard-teacher"></i>
+                            <span className="nav-text">Profesores</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/listaR"
+                            className={`nav-link ${location.pathname === '/admin/listaR' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-user-friends"></i>
+                            <span className="nav-text">Representantes</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/grados"
+                            className={`nav-link ${location.pathname === '/admin/grados' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-layer-group"></i>
+                            <span className="nav-text">Grados</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/materias"
+                            className={`nav-link ${location.pathname === '/admin/materias' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-book"></i>
+                            <span className="nav-text">Materias</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/horarios"
+                            className={`nav-link ${location.pathname === '/admin/horarios' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-clock"></i>
+                            <span className="nav-text">Horarios</span>
+                        </Link>
+                    </div>
+                    <div className="nav-item">
+                        <div
+                            className={`nav-link ${location.pathname.startsWith('/admin/boletines') ? 'active' : ''}`}
+                            onClick={() => setBoletinesExpanded(!boletinesExpanded)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <i className={`fas fa-chevron-${boletinesExpanded ? 'down' : 'right'}`} style={{ fontSize: '0.7rem', width: '16px', textAlign: 'center' }}></i>
+                            <i className="fas fa-file-pdf"></i>
+                            <span className="nav-text">Boletines</span>
+                        </div>
+                        {boletinesExpanded && (
+                            <div className="nav-sublist">
+                                <Link
+                                    to="/admin/boletines/primaria"
+                                    className={`nav-sublink ${location.pathname === '/admin/boletines/primaria' ? 'active' : ''}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <span className="nav-text">Primaria</span>
+                                </Link>
+                                <Link
+                                    to="/admin/boletines/secundaria"
+                                    className={`nav-sublink ${location.pathname === '/admin/boletines/secundaria' ? 'active' : ''}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <span className="nav-text">Secundaria</span>
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                    <div className="nav-item">
+                        <Link
+                            to="/admin/calendario"
+                            className={`nav-link ${location.pathname === '/admin/calendario' ? 'active' : ''}`}
+                        >
+                            <i className="fas fa-calendar-alt"></i>
+                            <span className="nav-text">Calendario</span>
+                        </Link>
+                    </div>
+                </nav>
+                
+                <div className="sidebar-footer">
+                    <button className="logout-btn" onClick={handleLogout}>
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span className="nav-text">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+            
+            {/* Contenido Principal */}
+            <div className="main-content">
                 <Outlet />
-            </main>
-        </>
+            </div>
+        </div>
     );
 }
