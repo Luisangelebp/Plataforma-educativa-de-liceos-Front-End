@@ -38,18 +38,29 @@ def index(request):
             <div class="section">
                 <h2>Usuarios</h2>
                 <ul>
-                    <li><a href="/usuarios/estudiante/">/usuarios/estudiante/</a> (lista, detalle <code>/&lt;id&gt;/</code>, pdf <code>/pdf/</code>, registro <code>/registro/</code>)</li>
-                    <li><a href="/usuarios/profesor/">/usuarios/profesor/</a> (lista, detalle <code>/&lt;id&gt;/</code>, registro <code>/registro/</code>)</li>
-                    <li><a href="/usuarios/representante/">/usuarios/representante/</a> (lista, detalle <code>/&lt;id&gt;/</code>, registro <code>/registro/</code>)</li>
-                    <li><a href="/usuarios/administrador/">/usuarios/administrador/</a> (lista, registro <code>/registro/</code>)</li>
+                    <li><a href="/usuarios/estudiante/">/usuarios/estudiante/</a></li>
+                    <li><a href="/usuarios/profesor/">/usuarios/profesor/</a></li>
+                    <li><a href="/usuarios/representante/">/usuarios/representante/</a></li>
+                    <li><a href="/usuarios/administrador/">/usuarios/administrador/</a></li>
                 </ul>
             </div>
 
             <div class="section">
                 <h2>Horarios (DRF router)</h2>
                 <ul>
-                    <li><a href="/horarios/">/horarios/</a> (API root de la app)</li>
+                    <li><a href="/horarios/">/horarios/</a></li>
                     <li><a href="/horarios/materias/">/horarios/materias/</a></li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Calificaciones</h2>
+                <ul>
+                    <li><a href="/calificaciones/">/calificaciones/</a> (lista, crear <code>POST</code>)</li>
+                    <li><a href="/calificaciones/enviar_finales/">/calificaciones/enviar_finales/</a> (cerrar lapso <code>POST</code>)</li>
+                    <li><a href="/calificaciones/&lt;id&gt;/">/calificaciones/&lt;id&gt;/</a> (detalle, editar <code>PUT/PATCH</code>, eliminar <code>DELETE</code>)</li>
+                    <li><a href="/calificaciones/&lt;id&gt;/agregar_evaluacion/">/calificaciones/&lt;id&gt;/agregar_evaluacion/</a></li>
+                    <li><a href="/calificaciones/&lt;id&gt;/listar_evaluaciones/">/calificaciones/&lt;id&gt;/listar_evaluaciones/</a></li>
                 </ul>
             </div>
 
@@ -66,7 +77,7 @@ def index(request):
 urlpatterns = [
     path('', index),  # 👈 raíz muestra índice
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),  # incluye login, registro y grado-seccion
+    path('', include('core.urls')),
     path('usuarios/estudiante/', include('Usuarios.estudiante.urls')),
     path('usuarios/profesor/', include('Usuarios.profesor.urls')),
     path('usuarios/representante/', include('Usuarios.representante.urls')),
@@ -74,7 +85,7 @@ urlpatterns = [
     path('horarios/', include('horarios.urls')),
     path('boletines/', include('boletines.urls')),
     path('calendario/', include('calendario.urls')),
-    path('calificaciones/', include('calificaciones.urls')),
+    path('calificaciones/', include('calificaciones.urls')),  # 👈 ya estaba incluida
 ]
 
 # Servir archivos media en desarrollo
