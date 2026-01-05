@@ -46,6 +46,8 @@ export function BoletinesProfesor() {
     const [selectedPeriodo, setSelectedPeriodo] = useState('1');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedEstudiante, setSelectedEstudiante] = useState(null);
+    const [profesorId, setProfesorId] = useState(null);
+    const [profesorInfo, setProfesorInfo] = useState(null);
     const [uploadData, setUploadData] = useState({
         estudiante: null,
         lapso: '1',
@@ -53,10 +55,16 @@ export function BoletinesProfesor() {
     });
 
     useEffect(() => {
-        cargarPlantillas();
-        cargarEstudiantes();
-        cargarBoletines();
-    }, [selectedPeriodo]);
+        cargarDatosProfesor();
+    }, []);
+
+    useEffect(() => {
+        if (profesorInfo) {
+            cargarPlantillas();
+            cargarEstudiantes();
+            cargarBoletines();
+        }
+    }, [selectedPeriodo, profesorInfo]);
 
     const cargarPlantillas = async () => {
         try {
@@ -69,12 +77,95 @@ export function BoletinesProfesor() {
         }
     };
 
+    const cargarDatosProfesor = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            console.log('Usuario del localStorage:', user);
+            if (user && user.id) {
+                // Obtener el profesor usando el ID del usuario
+                const response = await axiosInstance.get('usuarios/profesor/');
+                console.log('Lista completa de profesores:', response.data);
+                
+                // Buscar el profesor - el campo usuario puede venir como objeto o como ID
+                const profesor = response.data.find(p => {
+                    const usuarioId = typeof p.usuario === 'object' ? p.usuario?.id : p.usuario;
+                    // Convertir ambos a números para comparación segura
+                    const usuarioIdNum = Number(usuarioId);
+                    const userIdNum = Number(user.id);
+                    console.log(`Comparando: usuarioId=${usuarioId} (${typeof usuarioId}) -> ${usuarioIdNum}, user.id=${user.id} (${typeof user.id}) -> ${userIdNum}`);
+                    return usuarioIdNum === userIdNum;
+                });
+                
+                if (profesor) {
+                    console.log('Profesor encontrado:', profesor);
+                    setProfesorId(profesor.id);
+                    // Obtener información completa del profesor incluyendo grado_secciones
+                    const profesorCompleto = await axiosInstance.get(`usuarios/profesor/${profesor.id}/`);
+                    console.log('Información completa del profesor:', profesorCompleto.data);
+                    setProfesorInfo(profesorCompleto.data);
+                } else {
+                    console.warn('No se encontró el profesor para el usuario:', user.id);
+                    console.warn('Profesores disponibles:', response.data.map(p => ({
+                        id: p.id,
+                        usuario: p.usuario,
+                        nombre: p.nombre
+                    })));
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar datos del profesor:', error);
+        }
+    };
+
     const cargarEstudiantes = async () => {
         try {
-            const response = await axiosInstance.get('usuarios/estudiante/');
-            setEstudiantes(response.data);
+            // Si el profesor no tiene grado_secciones asignados, no mostrar estudiantes
+            if (!profesorInfo) {
+                console.log('No hay información del profesor aún');
+                setEstudiantes([]);
+                return;
+            }
+
+            if (!profesorInfo.grado_secciones || profesorInfo.grado_secciones.length === 0) {
+                console.log('El profesor no tiene grado_secciones asignados');
+                setEstudiantes([]);
+                return;
+            }
+
+            // Obtener los IDs de los grado_secciones del profesor
+            const gradoSeccionesIds = profesorInfo.grado_secciones.map(gs => {
+                if (typeof gs === 'object' && gs.id) {
+                    return gs.id;
+                }
+                return gs;
+            }).filter(id => id != null);
+
+            console.log('IDs de grado_secciones del profesor:', gradoSeccionesIds);
+
+            if (gradoSeccionesIds.length === 0) {
+                console.log('No se pudieron extraer IDs válidos de grado_secciones');
+                setEstudiantes([]);
+                return;
+            }
+
+            // Construir parámetros de consulta para filtrar estudiantes por grado_seccion
+            let params = new URLSearchParams();
+            gradoSeccionesIds.forEach(id => {
+                params.append('grado_seccion_id', id);
+            });
+
+            console.log('Parámetros de búsqueda:', params.toString());
+
+            // Obtener estudiantes que pertenecen a los grado_secciones del profesor
+            const url = `usuarios/estudiante/?${params.toString()}`;
+            console.log('URL de búsqueda de estudiantes:', url);
+            const response = await axiosInstance.get(url);
+            console.log('Respuesta completa:', response);
+            console.log('Estudiantes encontrados:', response.data?.length || 0, response.data);
+            setEstudiantes(response.data || []);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
+            setEstudiantes([]);
         }
     };
 
@@ -402,7 +493,31 @@ export function BoletinesProfesor() {
                             </tr>
                         </thead>
                         <tbody>
-                            {estudiantes.map((estudiante) => {
+                            {estudiantes.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" style={{
+                                        padding: '40px',
+                                        textAlign: 'center',
+                                        color: 'var(--gray)',
+                                        fontSize: '0.95rem'
+                                    }}>
+                                        {!profesorInfo ? (
+                                            <span>Cargando información del profesor...</span>
+                                        ) : !profesorInfo.grado_secciones || profesorInfo.grado_secciones.length === 0 ? (
+                                            <span>
+                                                <i className="fas fa-info-circle" style={{marginRight: '8px'}}></i>
+                                                No tienes secciones asignadas. Contacta al administrador.
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                <i className="fas fa-users" style={{marginRight: '8px'}}></i>
+                                                No hay estudiantes en tus secciones asignadas.
+                                            </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ) : (
+                                estudiantes.map((estudiante) => {
                                 const boletin = boletines.find(
                                     (b) =>
                                         b.estudiante === estudiante.id &&
@@ -580,7 +695,7 @@ export function BoletinesProfesor() {
                                         </td>
                                     </tr>
                                 );
-                            })}
+                            }))}
                         </tbody>
                     </table>
                 </div>

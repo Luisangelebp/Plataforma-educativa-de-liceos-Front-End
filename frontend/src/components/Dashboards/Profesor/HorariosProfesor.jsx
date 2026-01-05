@@ -43,12 +43,32 @@ export function HorariosProfesor() {
     const cargarDatosProfesor = async () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
+            console.log('Usuario del localStorage:', user);
             if (user && user.id) {
                 // Obtener el perfil del profesor
                 const response = await axiosInstance.get(`usuarios/profesor/`);
-                const profesor = response.data.find(p => p.usuario === user.id);
+                console.log('Lista completa de profesores:', response.data);
+                
+                // Buscar el profesor - el campo usuario puede venir como objeto o como ID
+                const profesor = response.data.find(p => {
+                    const usuarioId = typeof p.usuario === 'object' ? p.usuario?.id : p.usuario;
+                    // Convertir ambos a números para comparación segura
+                    const usuarioIdNum = Number(usuarioId);
+                    const userIdNum = Number(user.id);
+                    console.log(`Comparando: usuarioId=${usuarioId} (${typeof usuarioId}) -> ${usuarioIdNum}, user.id=${user.id} (${typeof user.id}) -> ${userIdNum}`);
+                    return usuarioIdNum === userIdNum;
+                });
+                
                 if (profesor) {
+                    console.log('Profesor encontrado:', profesor);
                     setProfesorId(profesor.id);
+                } else {
+                    console.warn('No se encontró el profesor para el usuario:', user.id);
+                    console.warn('Profesores disponibles:', response.data.map(p => ({
+                        id: p.id,
+                        usuario: p.usuario,
+                        nombre: p.nombre
+                    })));
                 }
             }
         } catch (error) {
@@ -59,11 +79,25 @@ export function HorariosProfesor() {
     const cargarHorarios = async () => {
         setLoading(true);
         try {
+            // Filtrar horarios por profesor usando parámetro de consulta si está disponible
+            // Si no, obtener todos y filtrar en el frontend
             const response = await axiosInstance.get('horarios/');
-            let horariosFiltrados = response.data.filter(h => h.profesor === profesorId);
+            console.log('Todos los horarios:', response.data);
+            console.log('Profesor ID:', profesorId);
+            
+            // El campo profesor puede venir como ID numérico o como objeto con id
+            let horariosFiltrados = response.data.filter(h => {
+                const profesorHorario = typeof h.profesor === 'object' ? h.profesor?.id : h.profesor;
+                return profesorHorario === profesorId;
+            });
+            
+            console.log('Horarios filtrados por profesor:', horariosFiltrados);
             
             if (selectedGrado) {
-                horariosFiltrados = horariosFiltrados.filter(h => h.grado_seccion === parseInt(selectedGrado));
+                horariosFiltrados = horariosFiltrados.filter(h => {
+                    const gradoSeccionId = typeof h.grado_seccion === 'object' ? h.grado_seccion?.id : h.grado_seccion;
+                    return gradoSeccionId === parseInt(selectedGrado);
+                });
             }
             
             // Ordenar por día de la semana y hora
@@ -75,6 +109,7 @@ export function HorariosProfesor() {
                 return a.hora_inicio.localeCompare(b.hora_inicio);
             });
             
+            console.log('Horarios finales:', horariosFiltrados);
             setHorarios(horariosFiltrados);
         } catch (error) {
             console.error('Error al cargar horarios:', error);
@@ -272,7 +307,17 @@ export function HorariosProfesor() {
                                         gap: '12px'
                                     }}>
                                         {horariosPorDia[dia].map((horario) => {
-                                            const gradoSeccion = gradosSecciones.find(g => g.id === horario.grado_seccion);
+                                            // Manejar grado_seccion que puede venir como objeto o ID
+                                            const gradoSeccionId = typeof horario.grado_seccion === 'object' 
+                                                ? horario.grado_seccion?.id 
+                                                : horario.grado_seccion;
+                                            const gradoSeccion = gradosSecciones.find(g => g.id === gradoSeccionId);
+                                            
+                                            // Manejar materia que puede venir como objeto o ID
+                                            const materiaNombre = typeof horario.materia === 'object' 
+                                                ? horario.materia?.nombre 
+                                                : (horario.materia_nombre || horario.materia);
+                                            
                                             return (
                                                 <div key={horario.id} style={{
                                                     padding: '12px',
@@ -293,7 +338,7 @@ export function HorariosProfesor() {
                                                                 fontWeight: '600',
                                                                 color: 'var(--dark)'
                                                             }}>
-                                                                {horario.materia_nombre || horario.materia}
+                                                                {materiaNombre}
                                                             </p>
                                                             {gradoSeccion && (
                                                                 <p style={{
