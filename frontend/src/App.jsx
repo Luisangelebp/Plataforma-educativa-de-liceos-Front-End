@@ -16,17 +16,21 @@ import { Grados } from './components/Dashboards/Admin/Grados.jsx';
 import { Materias } from './components/Dashboards/Admin/Materias.jsx';
 import { Horarios } from './components/Dashboards/Admin/Horarios.jsx';
 import { Boletines } from './components/Dashboards/Admin/Boletines.jsx';
+import BoletinesSecundaria from './components/Dashboards/Admin/BoletinesSecundaria.jsx';
+import CuentaAdmin from './components/Dashboards/Admin/Cuenta.jsx';
 
 // imports for representante dashboard routes can be added here
 
 import DashboardRepresentante from './components/Dashboards/Representante/DashboardRepresentante.jsx';
 import { BoletinesRepresentante } from './components/Dashboards/Representante/BoletinesRepresentante.jsx';
 import ResumenRepresentante from './components/Dashboards/Representante/ResumenRepresentante.jsx';
+import CuentaRepresentante from './components/Dashboards/Representante/Cuenta.jsx';
 
 // imports for estudiante routes can be added here
 
 import { Estudiante } from './components/Dashboards/Estudiante/Estudiante.jsx';
 import { BoletinesEstudiante } from './components/Dashboards/Estudiante/BoletinesEstudiante.jsx';
+import CuentaEstudiante from './components/Dashboards/Estudiante/Cuenta.jsx';
 
 // imports for profesor routes can be added here
 
@@ -36,6 +40,7 @@ import { ListaEstudiantesProfesor } from './components/Dashboards/Profesor/Lista
 import { Asistencia } from './components/Dashboards/Profesor/Asistencia.jsx';
 import { HorariosProfesor } from './components/Dashboards/Profesor/HorariosProfesor.jsx';
 import { Calificaciones } from './components/Dashboards/Profesor/Calificaciones.jsx';
+import CuentaProfesor from './components/Dashboards/Profesor/Cuenta.jsx';
 
 // Calendario
 import { Calendario } from './components/Dashboards/Calendario/Calendario.jsx';
@@ -59,9 +64,12 @@ function App() {
                     {/*Horarios routes can be added here*/}
                     <Route path="horarios" element={<Horarios />} />
                     {/*Boletines routes can be added here*/}
-                    <Route path="boletines" element={<Boletines />} />
+                    <Route path="boletines/primaria" element={<Boletines />} />
+                    <Route path="boletines/secundaria" element={<BoletinesSecundaria />} />
                     {/*Calendario routes can be added here*/}
                     <Route path="calendario" element={<Calendario />} />
+                    {/*Cuenta routes can be added here*/}
+                    <Route path="cuenta" element={<CuentaAdmin />} />
                 </Route>
                 <Route
                     path="/representante"
@@ -70,10 +78,12 @@ function App() {
                     <Route index element={<ResumenRepresentante />} />
                     <Route path="boletines" element={<BoletinesRepresentante />} />
                     <Route path="calendario" element={<Calendario />} />
+                    <Route path="cuenta" element={<CuentaRepresentante />} />
                 </Route>
                 <Route path="/estudiante" element={<Estudiante />}>
                     <Route index element={<BoletinesEstudiante />} />
                     <Route path="boletines" element={<BoletinesEstudiante />} />
+                    <Route path="cuenta" element={<CuentaEstudiante />} />
                 </Route>
                 <Route path="/profesor" element={<Profesor />}>
                     <Route index element={<BoletinesProfesor />} />
@@ -83,6 +93,7 @@ function App() {
                     <Route path="asistencia" element={<Asistencia />} />
                     <Route path="boletines" element={<BoletinesProfesor />} />
                     <Route path="calendario" element={<Calendario />} />
+                    <Route path="cuenta" element={<CuentaProfesor />} />
                 </Route>
             </Routes>
         </Router>
