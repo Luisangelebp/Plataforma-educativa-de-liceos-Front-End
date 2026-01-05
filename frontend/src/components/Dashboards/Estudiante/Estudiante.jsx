@@ -21,6 +21,8 @@ export function Estudiante() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
+        // Marcar que viene de logout para mostrar directamente el login
+        sessionStorage.setItem('fromLogout', 'true');
         navigate('/');
     };
 
@@ -41,15 +43,17 @@ export function Estudiante() {
             {/* Sidebar */}
             <div className="sidebar">
                 <div className="sidebar-header">
-                    <div className="user-profile">
-                        <div className="user-avatar">
-                            {getUserInitials()}
+                    <Link to="/estudiante/cuenta" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="user-profile" style={{ cursor: 'pointer' }}>
+                            <div className="user-avatar">
+                                {getUserInitials()}
+                            </div>
+                            <div className="user-info">
+                                <h4>{getUserName()}</h4>
+                                <p>Estudiante</p>
+                            </div>
                         </div>
-                        <div className="user-info">
-                            <h4>{getUserName()}</h4>
-                            <p>Estudiante</p>
-                        </div>
-                    </div>
+                    </Link>
                 </div>
                 
                 <nav className="nav-menu">
