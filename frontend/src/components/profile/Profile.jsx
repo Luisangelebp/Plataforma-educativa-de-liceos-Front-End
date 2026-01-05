@@ -5,6 +5,8 @@ export function Profile({ userImg }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const logout = () => {
         window.localStorage.clear();
+        // Marcar que viene de logout para mostrar directamente el login
+        sessionStorage.setItem('fromLogout', 'true');
         window.location.href = '/';
     };
 

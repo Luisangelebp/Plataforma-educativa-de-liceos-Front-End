@@ -243,7 +243,7 @@ function AsignarHorario({ isOpen, materia, onClose }) {
         const token = localStorage.getItem('accessToken');
         
         try {
-            const formDataObj = new FormData();
+        const formDataObj = new FormData();
             formDataObj.append('materia', materia);
             formDataObj.append('dia_semana', formData.dia_semana);
             formDataObj.append('hora_inicio', formData.hora_inicio);
