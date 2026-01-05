@@ -46,8 +46,6 @@ export function HorariosProfesor() {
         cargarGradosSecciones();
     }, []);
 
-    console.log(profesorId);
-
     // const cargarDatosProfesor = async () => {
     //     try {
     //         const user = JSON.parse(localStorage.getItem('user'));
@@ -73,8 +71,6 @@ export function HorariosProfesor() {
             let horariosFiltrados = response.data.filter(
                 (h) => h.profesor === profesorId
             );
-
-            console.log(horariosFiltrados);
 
             if (selectedGrado) {
                 horariosFiltrados = horariosFiltrados.filter(
