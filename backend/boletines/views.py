@@ -3,18 +3,27 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 import os
+import subprocess
+from io import BytesIO
+
+from django.core.files import File
+from django.core.files.base import ContentFile
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
 from .models import PlantillaBoletin, Boletin
 from .serializers import PlantillaBoletinSerializer, BoletinSerializer
 from Usuarios.estudiante.models import Estudiante
 from core.models import GradoSeccion
-import subprocess
-import os
-from django.core.files import File
+from calificaciones.models import Calificacion
+from calificaciones.serializers import CalificacionSerializer
 
 
 class PlantillaBoletinListCreateView(APIView):
@@ -441,25 +450,137 @@ class BoletinPorEstudianteLapsoView(APIView):
 class CalcularPromedioView(APIView):
     """
     Calcular promedio general de un estudiante en un lapso
-    TODO: Implementar lógica de cálculo según reglas de negocio
     """
     permission_classes = [IsAuthenticated]
     
     def get(self, request, estudiante_id, lapso):
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         
-        # TODO: Implementar cálculo real de promedios
-        # Por ahora retornamos un placeholder
-        promedio = None
-        
-        # Aquí deberías calcular el promedio basado en las calificaciones del estudiante
-        # Ejemplo de estructura:
-        # calificaciones = Calificacion.objects.filter(estudiante=estudiante, lapso=lapso)
-        # promedio = sum(c.nota for c in calificaciones) / len(calificaciones) if calificaciones else None
-        
+        # Obtener calificaciones enviadas
+        calificaciones = Calificacion.objects.filter(estudiante=estudiante, lapso=lapso, enviado=True)
+        if not calificaciones.exists():
+            return Response({'error': 'No hay calificaciones enviadas'}, status=404)
+
+        # Usar el serializer para aprovechar la lógica de promedios
+        serializer = CalificacionSerializer(calificaciones, many=True)
+        data = serializer.data
+
+        # Extraer promedios de cada materia
+        promedios = [c['promedio_lapso'] or c['promedio'] for c in data if c['promedio_lapso'] or c['promedio']]
+        promedio_general = round(sum(promedios) / len(promedios), 2) if promedios else None
+
         return Response({
             'estudiante_id': estudiante_id,
             'lapso': lapso,
-            'promedio_general': promedio
+            'promedio_general': promedio_general,
+            'detalle': data  # opcional: devuelve todas las calificaciones con sus evaluaciones
         })
 
+
+class GenerarBoletinSecundariaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, estudiante_id, lapso):
+        # 🔐 Solo admin puede generar
+        if request.user.rol != 'admin':
+            return Response({'error': 'Solo el administrador puede generar boletines'}, status=403)
+
+        estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
+
+        # 🔁 Evitar duplicados
+        if Boletin.objects.filter(estudiante=estudiante, lapso=lapso).exists():
+            return Response({'error': 'Ya existe un boletín para este estudiante y lapso'}, status=400)
+
+        # 📊 Obtener calificaciones enviadas
+        calificaciones = Calificacion.objects.filter(estudiante=estudiante, lapso=lapso, enviado=True)
+        if not calificaciones.exists():
+            return Response({'error': 'No hay calificaciones enviadas'}, status=404)
+
+        serializer = CalificacionSerializer(calificaciones, many=True)
+        materias = serializer.data
+
+        # 🧮 Calcular promedio general
+        promedios = [m['promedio_lapso'] for m in materias if m['promedio_lapso'] is not None]
+        promedio_general = round(sum(promedios) / len(promedios), 2) if promedios else None
+
+        # 📅 Periodo académico (constante por ahora)
+        periodo = "2023-2024"
+
+        # 🧾 Renderizar HTML
+        html_string = render_to_string("boletines/boletin_secundaria.html", {
+            "estudiante": estudiante,
+            "cedula": estudiante.cedula,
+            "fecha_nacimiento": estudiante.fecha_nacimiento or "No registrada",
+            "grado": estudiante.grado_seccion.grado if estudiante.grado_seccion else "No registrado",
+            "seccion": estudiante.grado_seccion.seccion if estudiante.grado_seccion else "No registrada",
+            "numero_lista": estudiante.numero_lista if hasattr(estudiante, "numero_lista") else "No registrado",
+            "materias": materias,
+            "lapso": lapso,
+            "promedio_general": promedio_general,
+            "periodo": periodo,
+            "fecha_emision": timezone.now().date(),
+            "director": "Lic. Carlos Rodríguez",
+            "secretaria": "Secretaría Académica"
+        })
+
+        # 🖨️ Generar PDF con WeasyPrint
+        pdf_file = BytesIO()
+        HTML(string=html_string).write_pdf(pdf_file)
+        pdf_content = ContentFile(pdf_file.getvalue())
+
+        # 💾 Guardar boletín
+        boletin = Boletin.objects.create(
+            estudiante=estudiante,
+            lapso=lapso,
+            promedio_general=promedio_general,
+            subido_por=request.user
+        )
+        boletin.archivo_pdf.save(f"boletin_{estudiante.cedula}_{lapso}.pdf", pdf_content)
+        boletin.save()
+
+        return Response(BoletinSerializer(boletin).data, status=201)
+
+
+class VistaPreviaBoletinSecundariaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, estudiante_id, lapso):
+        # 🔐 Solo admin puede ver la vista previa
+        if request.user.rol != 'admin':
+            return Response({'error': 'Solo el administrador puede ver la vista previa'}, status=403)
+
+        estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
+        boletin = Boletin.objects.filter(estudiante=estudiante, lapso=lapso).first()
+
+        if not boletin or not boletin.archivo_pdf:
+            return Response({'error': 'No existe boletín en PDF para este estudiante y lapso'}, status=404)
+
+        # 📊 Obtener calificaciones enviadas
+        calificaciones = Calificacion.objects.filter(estudiante=estudiante, lapso=lapso, enviado=True)
+        serializer = CalificacionSerializer(calificaciones, many=True)
+        materias = serializer.data
+
+        # 🧮 Calcular promedio general
+        promedios = [m['promedio_lapso'] for m in materias if m['promedio_lapso'] is not None]
+        promedio_general = round(sum(promedios) / len(promedios), 2) if promedios else None
+
+        periodo = "2023-2024"
+
+        context = {
+            "estudiante": estudiante,
+            "cedula": estudiante.cedula,
+            "fecha_nacimiento": estudiante.fecha_nacimiento or "No registrada",
+            "grado": estudiante.grado_seccion.grado if estudiante.grado_seccion else "No registrado",
+            "seccion": estudiante.grado_seccion.seccion if estudiante.grado_seccion else "No registrada",
+            "numero_lista": getattr(estudiante, "numero_lista", "No registrado"),
+            "materias": materias,
+            "lapso": lapso,
+            "promedio_general": promedio_general,
+            "periodo": periodo,
+            "fecha_emision": boletin.fecha_emision.date(),
+            "director": "Lic. Carlos Rodríguez",
+            "secretaria": "Secretaría Académica"
+        }
+
+        # 🔎 Renderizar el mismo HTML que se usa para PDF
+        return render(request, "boletines/boletin_secundaria.html", context)
