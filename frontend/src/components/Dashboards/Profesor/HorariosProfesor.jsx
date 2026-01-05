@@ -67,31 +67,15 @@ export function HorariosProfesor() {
     const cargarHorarios = async () => {
         setLoading(true);
         try {
-            // Filtrar horarios por profesor usando parámetro de consulta si está disponible
-            // Si no, obtener todos y filtrar en el frontend
             const response = await axiosInstance.get('horarios/');
-            console.log('Todos los horarios:', response.data);
-            console.log('Profesor ID:', profesorId);
-
-            // El campo profesor puede venir como ID numérico o como objeto con id
-            let horariosFiltrados = response.data.filter((h) => {
-                const profesorHorario =
-                    typeof h.profesor === 'object'
-                        ? h.profesor?.id
-                        : h.profesor;
-                return profesorHorario === profesorId;
-            });
-
-            console.log('Horarios filtrados por profesor:', horariosFiltrados);
+            let horariosFiltrados = response.data.filter(
+                (h) => h.profesor === profesorId
+            );
 
             if (selectedGrado) {
-                horariosFiltrados = horariosFiltrados.filter((h) => {
-                    const gradoSeccionId =
-                        typeof h.grado_seccion === 'object'
-                            ? h.grado_seccion?.id
-                            : h.grado_seccion;
-                    return gradoSeccionId === parseInt(selectedGrado);
-                });
+                horariosFiltrados = horariosFiltrados.filter(
+                    (h) => h.grado_seccion === parseInt(selectedGrado)
+                );
             }
 
             // Ordenar por día de la semana y hora
@@ -109,7 +93,6 @@ export function HorariosProfesor() {
                 return a.hora_inicio.localeCompare(b.hora_inicio);
             });
 
-            console.log('Horarios finales:', horariosFiltrados);
             setHorarios(horariosFiltrados);
         } catch (error) {
             console.error('Error al cargar horarios:', error);
@@ -143,7 +126,7 @@ export function HorariosProfesor() {
     });
 
     return (
-        <div className="main-content">
+        <div className="">
             <div className="header">
                 <div
                     className="page-title"
@@ -397,7 +380,8 @@ export function HorariosProfesor() {
                                                                     color: 'var(--dark)',
                                                                 }}
                                                             >
-                                                                {materiaNombre}
+                                                                {horario.materia_nombre ||
+                                                                    horario.materia}
                                                             </p>
                                                             {gradoSeccion && (
                                                                 <p
