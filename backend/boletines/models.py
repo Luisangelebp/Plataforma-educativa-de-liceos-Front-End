@@ -38,6 +38,7 @@ class PlantillaBoletin(models.Model):
         grado = f" - {self.grado_seccion}" if self.grado_seccion else " - Todos"
         return f"Plantilla {self.get_periodo_display()}{grado}"
 
+
 class Boletin(models.Model):
     """Boletín subido por el profesor para un estudiante en un lapso"""
     LAPSO_OPCIONES = [
@@ -80,6 +81,3 @@ class Boletin(models.Model):
     
     def __str__(self):
         return f"Boletín {self.get_lapso_display()} - {self.estudiante}"
-
-
-

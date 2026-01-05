@@ -23,6 +23,3 @@ urlpatterns = [
     path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/generar/', views.GenerarBoletinSecundariaView.as_view(), name='generar-boletin-secundaria'),
     path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/vista-previa/', views.VistaPreviaBoletinSecundariaView.as_view(), name='vista-previa-boletin-secundaria'),
 ]
-
-
-

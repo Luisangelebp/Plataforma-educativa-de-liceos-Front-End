@@ -9,8 +9,18 @@ class PlantillaBoletinSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PlantillaBoletin
-        fields = ['id', 'periodo', 'grado_seccion', 'grado_seccion_nombre', 'archivo_word', 
-                  'activa', 'fecha_subida', 'fecha_actualizacion', 'subido_por', 'subido_por_nombre']
+        fields = [
+            'id',
+            'periodo',
+            'grado_seccion',
+            'grado_seccion_nombre',
+            'archivo_word',
+            'activa',
+            'fecha_subida',
+            'fecha_actualizacion',
+            'subido_por',
+            'subido_por_nombre'
+        ]
         read_only_fields = ['fecha_subida', 'fecha_actualizacion', 'subido_por']
     
     def get_grado_seccion_nombre(self, obj):
@@ -22,6 +32,7 @@ class PlantillaBoletinSerializer(serializers.ModelSerializer):
         if obj.subido_por:
             return f"{obj.subido_por.nombre} {obj.subido_por.apellido}"
         return None
+
 
 class BoletinSerializer(serializers.ModelSerializer):
     estudiante_nombre = serializers.SerializerMethodField()
@@ -83,6 +94,3 @@ class BoletinSerializer(serializers.ModelSerializer):
                     f"Ya existe un boletín para {estudiante} en el {dict(Boletin.LAPSO_OPCIONES)[lapso]}"
                 )
         return data
-
-
-

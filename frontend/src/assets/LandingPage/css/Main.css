@@ -47,7 +47,7 @@ body {
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
     color: var(--black);
-    overflow-x: hidden;
+    
     background: var(--white);
 }
 
@@ -1625,10 +1625,10 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Prevenir desbordamiento horizontal */
+/* Prevenir desbordamiento horizontal
 body {
     overflow-x: hidden;
-}
+} */
 
 /* Mejoras de rendimiento */
 .scroll-animate {
