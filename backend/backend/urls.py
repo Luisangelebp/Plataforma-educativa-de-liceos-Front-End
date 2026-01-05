@@ -54,6 +54,48 @@ def index(request):
             </div>
 
             <div class="section">
+                <h2>Calificaciones</h2>
+                <ul>
+                    <li><a href="/calificaciones/">/calificaciones/</a> (lista, crear <code>POST</code>)</li>
+                    <li><a href="/calificaciones/enviar_finales/">/calificaciones/enviar_finales/</a> (cerrar lapso <code>POST</code>)</li>
+                    <li><a href="/calificaciones/&lt;id&gt;/">/calificaciones/&lt;id&gt;/</a> (detalle, editar <code>PUT/PATCH</code>, eliminar <code>DELETE</code>)</li>
+                    <li><a href="/calificaciones/&lt;id&gt;/agregar_evaluacion/">/calificaciones/&lt;id&gt;/agregar_evaluacion/</a> (agregar evaluación <code>POST</code>)</li>
+                    <li><a href="/calificaciones/&lt;id&gt;/listar_evaluaciones/">/calificaciones/&lt;id&gt;/listar_evaluaciones/</a> (listar evaluaciones <code>GET</code>)</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Boletines – Plantillas</h2>
+                <ul>
+                    <li><a href="/boletines/plantillas/">/boletines/plantillas/</a> (lista, crear <code>POST</code>, solo admin)</li>
+                    <li><a href="/boletines/plantillas/&lt;id&gt;/">/boletines/plantillas/&lt;id&gt;/</a> (detalle, editar <code>PUT</code>, eliminar <code>DELETE</code>)</li>
+                    <li><a href="/boletines/plantillas/&lt;id&gt;/descargar/">/boletines/plantillas/&lt;id&gt;/descargar/</a> (descargar plantilla Word, admin/profesor)</li>
+                    <li><a href="/boletines/plantillas/periodo/&lt;periodo&gt;/">/boletines/plantillas/periodo/&lt;periodo&gt;/</a> (plantillas activas por periodo)</li>
+                    <li><a href="/boletines/plantillas/periodo/&lt;periodo&gt;/grado/&lt;grado_id&gt;/">/boletines/plantillas/periodo/&lt;periodo&gt;/grado/&lt;grado_id&gt;/</a> (plantilla específica por periodo y grado)</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Boletines – Generales</h2>
+                <ul>
+                    <li><a href="/boletines/">/boletines/</a> (lista, crear <code>POST</code>, admin/profesor)</li>
+                    <li><a href="/boletines/&lt;id&gt;/">/boletines/&lt;id&gt;/</a> (detalle, editar <code>PUT</code>, eliminar <code>DELETE</code>)</li>
+                    <li><a href="/boletines/&lt;id&gt;/descargar/">/boletines/&lt;id&gt;/descargar/</a> (descargar boletín en PDF, solo admin)</li>
+                    <li><a href="/boletines/estudiante/&lt;estudiante_id&gt;/">/boletines/estudiante/&lt;estudiante_id&gt;/</a> (boletines de un estudiante)</li>
+                    <li><a href="/boletines/estudiante/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/">/boletines/estudiante/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/</a> (boletín de un estudiante en un lapso específico)</li>
+                    <li><a href="/boletines/calcular-promedio/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/">/boletines/calcular-promedio/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/</a> (calcular promedio general de un estudiante en un lapso)</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Boletines – Secundaria</h2>
+                <ul>
+                    <li><a href="/boletines/secundaria/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/generar/">/boletines/secundaria/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/generar/</a> (generar boletín automático en PDF, solo admin <code>POST</code>)</li>
+                    <li><a href="/boletines/secundaria/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/vista-previa/">/boletines/secundaria/&lt;estudiante_id&gt;/lapso/&lt;lapso&gt;/vista-previa/</a> (vista previa del boletín en navegador, solo admin, idéntico al PDF)</li>
+                </ul>
+            </div>
+
+            <div class="section">
                 <h2>Admin</h2>
                 <ul>
                     <li><a href="/admin/">/admin/</a></li>

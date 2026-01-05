@@ -11,7 +11,7 @@ class RegistroProfesorView(APIView):
     
     def post(self, request):
         # Si viene como FormData, procesar grado_secciones y materias
-        data = request.data.copy()
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
         
         # Si grado_secciones viene como string JSON, parsearlo
         if 'grado_secciones' in data and isinstance(data['grado_secciones'], str):
@@ -20,16 +20,32 @@ class RegistroProfesorView(APIView):
             except json.JSONDecodeError:
                 pass
         
-        # Si materias viene como lista de strings, convertirlos a enteros
+        # Si materias viene como FormData (JSON string) o JSON, procesarlo
         if 'materias' in data:
-            if isinstance(data.getlist('materias'), list):
-                materias_list = data.getlist('materias')
-                data['materias'] = [int(m) for m in materias_list if m]
-            elif isinstance(data['materias'], str):
-                try:
-                    data['materias'] = [int(data['materias'])]
-                except ValueError:
-                    data['materias'] = []
+            # Verificar si es FormData (tiene método getlist)
+            if hasattr(request.data, 'getlist'):
+                # Es FormData, puede venir como JSON string o como lista
+                if isinstance(data['materias'], str):
+                    try:
+                        materias_list = json.loads(data['materias'])
+                        if isinstance(materias_list, list):
+                            if len(materias_list) > 0:
+                                # Convertir a lista de enteros
+                                data['materias'] = [int(m) for m in materias_list if m is not None and m != '']
+                            else:
+                                # Array vacío, eliminar para que el backend lo maneje
+                                del data['materias']
+                    except (json.JSONDecodeError, ValueError, TypeError):
+                        # No es JSON válido, eliminar
+                        if 'materias' in data:
+                            del data['materias']
+                elif isinstance(data['materias'], list):
+                    # Ya viene como lista (puede pasar con DRF), convertir a enteros
+                    if len(data['materias']) > 0:
+                        data['materias'] = [int(m) for m in data['materias'] if m is not None and m != '']
+                    else:
+                        del data['materias']
+            # Si es JSON, el DRF parser ya lo maneja correctamente, no necesitamos procesar
         
         serializer = RegistroProfesorSerializer(data=data)
         if serializer.is_valid():
@@ -43,19 +59,32 @@ class ListProfesoresView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]  # en producción usar IsAuthenticated
 
     def get_queryset(self):
-        queryset = Profesor.objects.all()
         nivel = self.request.GET.get("nivel")
         grado = self.request.GET.get("grado")
         seccion = self.request.GET.get("seccion")
 
-        if nivel:
-            queryset = queryset.filter(grado_secciones__nivel__iexact=nivel)
-        if grado:
-            queryset = queryset.filter(grado_secciones__grado=grado)
-        if seccion:
-            queryset = queryset.filter(grado_secciones__seccion=seccion)
+        # Construir el queryset base - usar select_related y prefetch_related
+        # Prefetch_related es crucial para ManyToMany fields
+        queryset = Profesor.objects.prefetch_related(
+            'grado_secciones',
+            'materias'
+        ).select_related('usuario')
 
-        return queryset.distinct()
+        # Aplicar filtros si existen
+        if nivel or grado or seccion:
+            if nivel:
+                queryset = queryset.filter(grado_secciones__nivel__iexact=nivel)
+            if grado:
+                queryset = queryset.filter(grado_secciones__grado=grado)
+            if seccion:
+                queryset = queryset.filter(grado_secciones__seccion=seccion)
+            # Solo usar distinct si hay filtros aplicados
+            queryset = queryset.distinct()
+        else:
+            # Si no hay filtros, simplemente obtener todos
+            queryset = queryset.all()
+
+        return queryset
 
 
 class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -72,7 +101,7 @@ class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         
         # Si viene como FormData, procesar grado_secciones y materias
-        data = request.data.copy()
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
         
         # Si grado_secciones viene como string JSON, parsearlo
         if 'grado_secciones' in data and isinstance(data['grado_secciones'], str):
@@ -81,16 +110,32 @@ class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
             except json.JSONDecodeError:
                 pass
         
-        # Si materias viene como lista de strings, convertirlos a enteros
+        # Si materias viene como FormData (JSON string) o JSON, procesarlo
         if 'materias' in data:
-            if isinstance(data.getlist('materias'), list):
-                materias_list = data.getlist('materias')
-                data['materias'] = [int(m) for m in materias_list if m]
-            elif isinstance(data['materias'], str):
-                try:
-                    data['materias'] = [int(data['materias'])]
-                except ValueError:
-                    data['materias'] = []
+            # Verificar si es FormData (tiene método getlist)
+            if hasattr(request.data, 'getlist'):
+                # Es FormData, puede venir como JSON string o como lista
+                if isinstance(data['materias'], str):
+                    try:
+                        materias_list = json.loads(data['materias'])
+                        if isinstance(materias_list, list):
+                            if len(materias_list) > 0:
+                                # Convertir a lista de enteros
+                                data['materias'] = [int(m) for m in materias_list if m is not None and m != '']
+                            else:
+                                # Array vacío, eliminar para que el backend lo maneje
+                                del data['materias']
+                    except (json.JSONDecodeError, ValueError, TypeError):
+                        # No es JSON válido, eliminar
+                        if 'materias' in data:
+                            del data['materias']
+                elif isinstance(data['materias'], list):
+                    # Ya viene como lista (puede pasar con DRF), convertir a enteros
+                    if len(data['materias']) > 0:
+                        data['materias'] = [int(m) for m in data['materias'] if m is not None and m != '']
+                    else:
+                        del data['materias']
+            # Si es JSON, el DRF parser ya lo maneja correctamente, no necesitamos procesar
         
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
