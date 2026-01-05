@@ -159,6 +159,41 @@ const LoginSession = ({ setShowLogin }) => {
                 <div className="shape shape-5"></div>
             </div>
             <div className="login-card" onClick={(e) => e.stopPropagation()} ref={modalRef}>
+                {/* Botón de volver/refrescar */}
+                <button
+                    onClick={() => window.location.reload()}
+                    title="Volver a la página principal"
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '36px',
+                        height: '36px',
+                        padding: '0',
+                        background: 'transparent',
+                        color: 'var(--gray)',
+                        border: 'none',
+                        borderRadius: '50%',
+                        fontSize: '1.1rem',
+                        cursor: 'pointer',
+                        transition: 'var(--transition)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'var(--primary)';
+                        e.currentTarget.style.background = 'rgba(67, 97, 238, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--gray)';
+                        e.currentTarget.style.background = 'transparent';
+                    }}
+                >
+                    <i className="fas fa-arrow-left"></i>
+                </button>
+
                 {/* Panel Izquierdo */}
                 <div className="login-left">
                     <div className="logo-container">
@@ -216,7 +251,6 @@ const LoginSession = ({ setShowLogin }) => {
                         <div className="form-group">
                             <label htmlFor="username">Usuario</label>
                             <div className="input-with-icon">
-                                <i className="fas fa-user"></i>
                                 <input
                                     type="text"
                                     id="username"
@@ -225,6 +259,7 @@ const LoginSession = ({ setShowLogin }) => {
                                     onChange={handleInputChange}
                                     placeholder="Ingrese su usuario"
                                     required
+                                    style={{paddingLeft: '15px'}}
                                 />
                             </div>
                             {errors.username && (

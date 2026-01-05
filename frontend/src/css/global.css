@@ -734,6 +734,35 @@ body {
     color: var(--primary-light);
 }
 
+.nav-sublist {
+    margin-left: 20px;
+    margin-top: 4px;
+    padding-left: 8px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-sublink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    font-size: 0.85rem;
+    margin: 2px 0;
+    margin-left: 8px;
+    line-height: 1.4;
+}
+
+.nav-sublink:hover,
+.nav-sublink.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    padding-left: 20px;
+}
+
 .sidebar-footer {
     padding: 15px 20px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
