@@ -27,12 +27,14 @@ axiosInstance.interceptors.request.use((config) => {
 export function HorariosProfesor() {
     const [horarios, setHorarios] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [profesorId, setProfesorId] = useState(null);
-    const [selectedGrado, setSelectedGrado] = useState('');
+    // const [profesorId, setProfesorId] = useState(null);
+    const profesorId = JSON.parse(localStorage.getItem('user')).id;
+    const [selectedGrado, setSelectedGrado] = useState();
+    const [gradosSecciones, setGradosSecciones] = useState([]);
 
-    useEffect(() => {
-        cargarDatosProfesor();
-    }, []);
+    // useEffect(() => {
+    //     cargarDatosProfesor();
+    // }, []);
 
     useEffect(() => {
         if (profesorId) {
@@ -40,23 +42,29 @@ export function HorariosProfesor() {
         }
     }, [profesorId, selectedGrado]);
 
-    const cargarDatosProfesor = async () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user && user.id) {
-                // Obtener el perfil del profesor
-                const response = await axiosInstance.get(`usuarios/profesor/`);
-                const profesor = response.data.find(
-                    (p) => p.usuario === user.id
-                );
-                if (profesor) {
-                    setProfesorId(profesor.id);
-                }
-            }
-        } catch (error) {
-            console.error('Error al cargar datos del profesor:', error);
-        }
-    };
+    useEffect(() => {
+        cargarGradosSecciones();
+    }, []);
+
+    console.log(profesorId);
+
+    // const cargarDatosProfesor = async () => {
+    //     try {
+    //         const user = JSON.parse(localStorage.getItem('user'));
+    //         if (user && user.id) {
+    //             // Obtener el perfil del profesor
+    //             const response = await axiosInstance.get(`usuarios/profesor/`);
+    //             const profesor = response.data.find(
+    //                 (p) => p.usuario === user.id
+    //             );
+    //             if (profesor) {
+    //                 setProfesorId(profesor.id);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Error al cargar datos del profesor:', error);
+    //     }
+    // };
 
     const cargarHorarios = async () => {
         setLoading(true);
@@ -65,6 +73,8 @@ export function HorariosProfesor() {
             let horariosFiltrados = response.data.filter(
                 (h) => h.profesor === profesorId
             );
+
+            console.log(horariosFiltrados);
 
             if (selectedGrado) {
                 horariosFiltrados = horariosFiltrados.filter(
@@ -95,15 +105,9 @@ export function HorariosProfesor() {
         }
     };
 
-    const [gradosSecciones, setGradosSecciones] = useState([]);
-
-    useEffect(() => {
-        cargarGradosSecciones();
-    }, []);
-
     const cargarGradosSecciones = async () => {
         try {
-            const response = await axiosInstance.get('core/grado-seccion/');
+            const response = await axiosInstance.get('grado-seccion/');
             setGradosSecciones(response.data);
         } catch (error) {
             console.error('Error al cargar grados:', error);
@@ -344,7 +348,7 @@ export function HorariosProfesor() {
                                             const gradoSeccion =
                                                 gradosSecciones.find(
                                                     (g) =>
-                                                        g.id ===
+                                                        g.id ==
                                                         horario.grado_seccion
                                                 );
                                             return (
