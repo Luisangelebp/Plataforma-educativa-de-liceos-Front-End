@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-from .models import Calificacion
+from .models import Calificacion, Evaluacion
 from .serializers import CalificacionSerializer
 from horarios.models import Materia
 from Usuarios.estudiante.models import Estudiante
@@ -20,27 +20,17 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         queryset = Calificacion.objects.all()
         
         # Filtros opcionales
-        materia = self.request.query_params.get('materia', None)
-        lapso = self.request.query_params.get('lapso', None)
-        estudiante = self.request.query_params.get('estudiante', None)
-        profesor_id = self.request.query_params.get('profesor', None)
-        
-        # Si es profesor, solo puede ver sus propias calificaciones
-        if self.request.user.rol == 'profesor':
-            try:
-                profesor = self.request.user.profesor_profile
-                queryset = queryset.filter(profesor=profesor)
-            except:
-                queryset = queryset.none()
-        
-        # Si es estudiante, solo puede ver sus propias calificaciones
-        if self.request.user.rol == 'estudiante':
-            try:
-                estudiante_profile = self.request.user.estudiante_profile
-                queryset = queryset.filter(estudiante=estudiante_profile)
-            except:
-                queryset = queryset.none()
-        
+        materia = self.request.query_params.get('materia')
+        lapso = self.request.query_params.get('lapso')
+        estudiante = self.request.query_params.get('estudiante')
+        profesor_id = self.request.query_params.get('profesor')
+
+        # 🔹 Filtros adicionales por nivel/grado/sección
+        nivel = self.request.query_params.get("nivel")
+        grado = self.request.query_params.get("grado")
+        seccion = self.request.query_params.get("seccion")
+        grado_seccion_ids = self.request.query_params.getlist("grado_seccion_id") or self.request.query_params.getlist("grado_seccion")
+
         if materia:
             queryset = queryset.filter(materia_id=materia)
         if lapso:
@@ -49,7 +39,31 @@ class CalificacionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(estudiante_id=estudiante)
         if profesor_id:
             queryset = queryset.filter(profesor_id=profesor_id)
-        
+
+        if grado_seccion_ids:
+            queryset = queryset.filter(estudiante__grado_seccion_id__in=grado_seccion_ids)
+        if nivel:
+            queryset = queryset.filter(estudiante__grado_seccion__nivel__iexact=nivel)
+        if grado:
+            queryset = queryset.filter(estudiante__grado_seccion__grado=grado)
+        if seccion:
+            queryset = queryset.filter(estudiante__grado_seccion__seccion__iexact=seccion)
+
+        # 🔹 Restricciones por rol
+        if self.request.user.rol == 'profesor':
+            try:
+                profesor = self.request.user.profesor_profile
+                queryset = queryset.filter(profesor=profesor)
+            except:
+                queryset = queryset.none()
+
+        if self.request.user.rol == 'estudiante':
+            try:
+                estudiante_profile = self.request.user.estudiante_profile
+                queryset = queryset.filter(estudiante=estudiante_profile)
+            except:
+                queryset = queryset.none()
+
         return queryset.select_related('estudiante', 'materia', 'profesor')
     
     def perform_create(self, serializer):
@@ -162,3 +176,29 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    # 🔹 Acciones para secundaria (evaluaciones dinámicas)
+    @action(detail=True, methods=['post'])
+    def agregar_evaluacion(self, request, pk=None):
+        calificacion = self.get_object()
+        nombre = request.data.get("nombre")
+        nota = request.data.get("nota", 0)
+        lapso = request.data.get("lapso", calificacion.lapso)
+
+        if not nombre:
+            return Response({"error": "Se requiere nombre de la evaluación"}, status=400)
+
+        evaluacion = Evaluacion.objects.create(
+            calificacion=calificacion,
+            nombre=nombre,
+            nota=nota,
+            lapso=lapso
+        )
+        return Response({"id": evaluacion.id, "nombre": evaluacion.nombre, "nota": evaluacion.nota}, status=201)
+
+    @action(detail=True, methods=['get'])
+    def listar_evaluaciones(self, request, pk=None):
+        calificacion = self.get_object()
+        evaluaciones = calificacion.evaluaciones.all()
+        data = [{"id": ev.id, "nombre": ev.nombre, "lapso": ev.lapso, "nota": ev.nota} for ev in evaluaciones]
+        return Response(data)

@@ -67,7 +67,6 @@ class GradoSeccion(models.Model):
         ('3', '3er año'),
         ('4', '4to año'),
         ('5', '5to año'),
-        ('6', '6to año'),
     ]
 
     SECCION_OPCIONES = [

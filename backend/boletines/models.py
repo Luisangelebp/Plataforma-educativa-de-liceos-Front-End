@@ -39,7 +39,7 @@ class PlantillaBoletin(models.Model):
         return f"Plantilla {self.get_periodo_display()}{grado}"
 
 class Boletin(models.Model):
-    """Boletín PDF subido por el profesor para un estudiante en un lapso"""
+    """Boletín subido por el profesor para un estudiante en un lapso"""
     LAPSO_OPCIONES = [
         ('1', 'Primer Lapso'),
         ('2', 'Segundo Lapso'),
@@ -52,7 +52,11 @@ class Boletin(models.Model):
         related_name='boletines'
     )
     lapso = models.CharField(max_length=1, choices=LAPSO_OPCIONES)
-    archivo_pdf = models.FileField(upload_to='boletines/')
+
+    # 🔹 Nuevo campo para soportar Word y conversión automática
+    archivo_word = models.FileField(upload_to='boletines/', null=True, blank=True)
+    archivo_pdf = models.FileField(upload_to='boletines/', null=True, blank=True)
+
     promedio_general = models.DecimalField(
         max_digits=5,
         decimal_places=2,

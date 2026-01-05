@@ -32,11 +32,29 @@ class BoletinSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Boletin
-        fields = ['id', 'estudiante', 'estudiante_nombre', 'estudiante_cedula', 
-                  'estudiante_grado', 'lapso', 'lapso_display', 'archivo_pdf', 
-                  'promedio_general', 'fecha_emision', 'fecha_actualizacion', 
-                  'subido_por', 'subido_por_nombre', 'observaciones']
-        read_only_fields = ['fecha_emision', 'fecha_actualizacion', 'subido_por', 'promedio_general']
+        fields = [
+            'id',
+            'estudiante',
+            'estudiante_nombre',
+            'estudiante_cedula',
+            'estudiante_grado',
+            'lapso',
+            'lapso_display',
+            'archivo_word',      # 🔹 nuevo campo para subir/descargar Word
+            'archivo_pdf',
+            'promedio_general',
+            'fecha_emision',
+            'fecha_actualizacion',
+            'subido_por',
+            'subido_por_nombre',
+            'observaciones'
+        ]
+        read_only_fields = [
+            'fecha_emision',
+            'fecha_actualizacion',
+            'subido_por',
+            'promedio_general'
+        ]
     
     def get_estudiante_nombre(self, obj):
         return f"{obj.estudiante.nombre} {obj.estudiante.apellido}"
