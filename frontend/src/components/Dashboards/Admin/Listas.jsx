@@ -3,10 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/usuarios/`;
+const API_URL = `${
+    import.meta.env.VITE_API_URL || 'http://localhost:8000'
+}/usuarios/`;
 
 // Componente de Ficha/Card
-const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
+const UserCard = ({
+    user,
+    type,
+    onCardClick,
+    onEdit,
+    onDelete,
+    onAssing,
+    onAssingP,
+}) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
@@ -32,16 +42,38 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                 {type === 'estudiante' && (
                     <>
                         <p>
-                            <strong>{user.grado_seccion?.nivel === 'primaria' ? 'Grado' : user.grado_seccion?.nivel === 'secundaria' ? 'Año' : 'Grado/Año'}:</strong> {user.grado_seccion?.grado ? `${user.grado_seccion.grado}° ${user.grado_seccion.nivel === 'primaria' ? 'Grado' : user.grado_seccion.nivel === 'secundaria' ? 'Año' : ''}` : user.grado || 'N/A'}
+                            <strong>
+                                {user.grado_seccion?.nivel === 'primaria'
+                                    ? 'Grado'
+                                    : user.grado_seccion?.nivel === 'secundaria'
+                                    ? 'Año'
+                                    : 'Grado/Año'}
+                                :
+                            </strong>{' '}
+                            {user.grado_seccion?.grado
+                                ? `${user.grado_seccion.grado}° ${
+                                      user.grado_seccion.nivel === 'primaria'
+                                          ? 'Grado'
+                                          : user.grado_seccion.nivel ===
+                                            'secundaria'
+                                          ? 'Año'
+                                          : ''
+                                  }`
+                                : user.grado || 'N/A'}
                         </p>
                         <p>
-                            <strong>Sección:</strong> {user.grado_seccion?.seccion || user.seccion || 'N/A'}
+                            <strong>Sección:</strong>{' '}
+                            {user.grado_seccion?.seccion ||
+                                user.seccion ||
+                                'N/A'}
                         </p>
                         <p>
-                            <strong>Nivel:</strong> {user.grado_seccion?.nivel || user.nivel || 'N/A'}
+                            <strong>Nivel:</strong>{' '}
+                            {user.grado_seccion?.nivel || user.nivel || 'N/A'}
                         </p>
                         <p>
-                            <strong>Edad:</strong> {user.edad ? `${user.edad} años` : 'N/A'}
+                            <strong>Edad:</strong>{' '}
+                            {user.edad ? `${user.edad} años` : 'N/A'}
                         </p>
                     </>
                 )}
@@ -49,15 +81,26 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                     <>
                         <p>
                             <strong>Grados Asignados:</strong>{' '}
-                            {user.grado_secciones && user.grado_secciones.length > 0
-                                ? user.grado_secciones.map(gs => `${gs.grado}° ${gs.nivel === 'primaria' ? 'Grado' : 'Año'} ${gs.seccion}`).join(', ')
+                            {user.grado_secciones &&
+                            user.grado_secciones.length > 0
+                                ? user.grado_secciones
+                                      .map(
+                                          (gs) =>
+                                              `${gs.grado}° ${
+                                                  gs.nivel === 'primaria'
+                                                      ? 'Grado'
+                                                      : 'Año'
+                                              } ${gs.seccion}`
+                                      )
+                                      .join(', ')
                                 : user.grado_asignado || 'Sin asignar'}
                         </p>
                         <p>
                             <strong>Tipo:</strong> {user.tipo_profesor || 'N/A'}
                         </p>
                         <p>
-                            <strong>Edad:</strong> {user.edad ? `${user.edad} años` : 'N/A'}
+                            <strong>Edad:</strong>{' '}
+                            {user.edad ? `${user.edad} años` : 'N/A'}
                         </p>
                     </>
                 )}
@@ -81,6 +124,17 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
                     }}
                 >
                     <i className="fas fa-user-plus"></i> Asignar Representante
+                </button>
+            )}
+            {type === 'profesor' && (
+                <button
+                    className="btn-assing"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onAssingP(user);
+                    }}
+                >
+                    <i className="fa-solid fa-book"></i> Asignar Curso y Sección
                 </button>
             )}
 
@@ -109,7 +163,15 @@ const UserCard = ({ user, type, onCardClick, onEdit, onDelete, onAssing }) => {
 };
 
 // Componente de Fila para Tabla
-const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
+const UserRow = ({
+    user,
+    type,
+    onRowClick,
+    onEdit,
+    onDelete,
+    onAssing,
+    onAssingP,
+}) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
@@ -125,7 +187,8 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                     alt={`${user.nombre} ${user.apellido}`}
                     className="user-avatar"
                     onError={(e) => {
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNSAyNUMzMC41MjI4IDI1IDM1IDI5LjQ3NzIgMzUgMzVDMzUgNDAuNTIyOCAzMC41MjI4IDQ1IDI1IDQ1QzE5LjQ3NzIgNDUgMTUgNDAuNTIyOCAxNSAzNUMxNSAyOS40NzcyIDE5LjQ3NzIgMjUgMjUgMjVaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik0yNSAxNEMyNy43NjE0IDE0IDMwIDE2LjIzODYgMzAgMTlDMzAgMjEuNzYxNCAyNy43NjE0IDI0IDI1IDI0QzIyLjIzODYgMjQgMjAgMjEuNzYxNCAyMCAxOUMyMCAxNi4yMzg2IDIyLjIzODYgMTQgMjUgMTRaIiBmaWxsPSIjQ0NDQ0NDIi8+Cjwvc3ZnPgo=';
+                        e.target.src =
+                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNSAyNUMzMC41MjI4IDI1IDM1IDI5LjQ3NzIgMzUgMzVDMzUgNDAuNTIyOCAzMC41MjI4IDQ1IDI1IDQ1QzE5LjQ3NzIgNDUgMTUgNDAuNTIyOCAxNSAzNUMxNSAyOS40NzcyIDE5LjQ3NzIgMjUgMjUgMjVaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik0yNSAxNEMyNy43NjE0IDE0IDMwIDE2LjIzODYgMzAgMTlDMzAgMjEuNzYxNCAyNy43NjE0IDI0IDI1IDI0QzIyLjIzODYgMjQgMjAgMjEuNzYxNCAyMCAxOUMyMCAxNi4yMzg2IDIyLjIzODYgMTQgMjUgMTRaIiBmaWxsPSIjQ0NDQ0NDIi8+Cjwvc3ZnPgo=';
                     }}
                 />
             </td>
@@ -136,7 +199,9 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                 <>
                     <td>{user.cedula || 'N/A'}</td>
                     <td>{user.grado_seccion?.grado || user.grado || 'N/A'}</td>
-                    <td>{user.grado_seccion?.seccion || user.seccion || 'N/A'}</td>
+                    <td>
+                        {user.grado_seccion?.seccion || user.seccion || 'N/A'}
+                    </td>
                     <td>{user.grado_seccion?.nivel || user.nivel || 'N/A'}</td>
                     <td>{user.edad ? `${user.edad} años` : 'N/A'}</td>
                 </>
@@ -145,14 +210,30 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                 <>
                     <td>{user.cedula || 'N/A'}</td>
                     <td>
-                        {user.grado_secciones && Array.isArray(user.grado_secciones) && user.grado_secciones.length > 0
-                            ? user.grado_secciones.map((gs, idx) => {
-                                // Manejar tanto objetos como valores primitivos
-                                const grado = typeof gs === 'object' && gs !== null ? gs.grado : gs;
-                                const seccion = typeof gs === 'object' && gs !== null ? gs.seccion : '';
-                                const nivel = typeof gs === 'object' && gs !== null ? gs.nivel : '';
-                                return `${grado || ''} ${seccion || ''} (${nivel || ''})`.trim();
-                            }).filter(Boolean).join(', ') || 'Sin grados asignados'
+                        {user.grado_secciones &&
+                        Array.isArray(user.grado_secciones) &&
+                        user.grado_secciones.length > 0
+                            ? user.grado_secciones
+                                  .map((gs, idx) => {
+                                      // Manejar tanto objetos como valores primitivos
+                                      const grado =
+                                          typeof gs === 'object' && gs !== null
+                                              ? gs.grado
+                                              : gs;
+                                      const seccion =
+                                          typeof gs === 'object' && gs !== null
+                                              ? gs.seccion
+                                              : '';
+                                      const nivel =
+                                          typeof gs === 'object' && gs !== null
+                                              ? gs.nivel
+                                              : '';
+                                      return `${grado || ''} ${
+                                          seccion || ''
+                                      } (${nivel || ''})`.trim();
+                                  })
+                                  .filter(Boolean)
+                                  .join(', ') || 'Sin grados asignados'
                             : 'Sin grados asignados'}
                     </td>
                     <td>{user.tipo_profesor || 'N/A'}</td>
@@ -179,6 +260,18 @@ const UserRow = ({ user, type, onRowClick, onEdit, onDelete, onAssing }) => {
                         title="Asignar Representante"
                     >
                         <i className="fas fa-user-plus"></i>
+                    </button>
+                )}
+                {type === 'profesor' && (
+                    <button
+                        className="btn-assing"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAssingP(user);
+                        }}
+                        title="Asignar Curso y Sección"
+                    >
+                        <i className="fa-solid fa-book"></i>
                     </button>
                 )}
                 <button
@@ -326,8 +419,19 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                 <div className="detail-row">
                                     <strong>Grados Asignados:</strong>
                                     <span>
-                                        {user.grado_secciones && user.grado_secciones.length > 0
-                                            ? user.grado_secciones.map(gs => `${gs.grado}° ${gs.nivel === 'primaria' ? 'Grado' : 'Año'} ${gs.seccion}`).join(', ')
+                                        {user.grado_secciones &&
+                                        user.grado_secciones.length > 0
+                                            ? user.grado_secciones
+                                                  .map(
+                                                      (gs) =>
+                                                          `${gs.grado}° ${
+                                                              gs.nivel ===
+                                                              'primaria'
+                                                                  ? 'Grado'
+                                                                  : 'Año'
+                                                          } ${gs.seccion}`
+                                                  )
+                                                  .join(', ')
                                             : 'Sin asignar'}
                                     </span>
                                 </div>
@@ -335,7 +439,13 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                     <div className="detail-row">
                                         <strong>Materias:</strong>
                                         <span>
-                                            {user.materias.map(m => typeof m === 'object' ? m.nombre : m).join(', ')}
+                                            {user.materias
+                                                .map((m) =>
+                                                    typeof m === 'object'
+                                                        ? m.nombre
+                                                        : m
+                                                )
+                                                .join(', ')}
                                         </span>
                                     </div>
                                 )}
@@ -430,12 +540,18 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 tipo_profesor: user.tipo_profesor || '',
                 representante: user.representante || '',
             });
-            
+
             // Si es profesor, cargar asignaciones actuales
             if (type === 'profesor') {
                 // Manejar grado_secciones - puede venir como array de objetos o array de IDs
-                if (user.grado_secciones && Array.isArray(user.grado_secciones)) {
-                    if (user.grado_secciones.length > 0 && typeof user.grado_secciones[0] === 'object') {
+                if (
+                    user.grado_secciones &&
+                    Array.isArray(user.grado_secciones)
+                ) {
+                    if (
+                        user.grado_secciones.length > 0 &&
+                        typeof user.grado_secciones[0] === 'object'
+                    ) {
                         // Ya viene como objetos completos
                         setSelectedGradosSecciones(user.grado_secciones);
                     } else {
@@ -445,10 +561,13 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 } else {
                     setSelectedGradosSecciones([]);
                 }
-                
+
                 // Manejar materias - puede venir como array de objetos o array de IDs
                 if (user.materias && Array.isArray(user.materias)) {
-                    if (user.materias.length > 0 && typeof user.materias[0] === 'object') {
+                    if (
+                        user.materias.length > 0 &&
+                        typeof user.materias[0] === 'object'
+                    ) {
                         // Ya viene como objetos completos
                         setSelectedMaterias(user.materias);
                     } else {
@@ -459,7 +578,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     setSelectedMaterias([]);
                 }
             }
-            
+
             setErrors({});
         }
     }, [user, isOpen, type]);
@@ -468,21 +587,29 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         setLoadingGrados(true);
         try {
             const token = localStorage.getItem('accessToken');
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const baseUrl =
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await axios.get(`${baseUrl}/grado-seccion/`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             setGradosSecciones(response.data || []);
-            
+
             // Si el usuario tiene grado_secciones asignados, marcarlos como seleccionados
-            if (user && user.grado_secciones && Array.isArray(user.grado_secciones)) {
+            if (
+                user &&
+                user.grado_secciones &&
+                Array.isArray(user.grado_secciones)
+            ) {
                 if (user.grado_secciones.length > 0) {
-                    if (typeof user.grado_secciones[0] === 'object' && user.grado_secciones[0].id) {
+                    if (
+                        typeof user.grado_secciones[0] === 'object' &&
+                        user.grado_secciones[0].id
+                    ) {
                         // Ya son objetos con ID
                         setSelectedGradosSecciones(user.grado_secciones);
                     } else if (typeof user.grado_secciones[0] === 'number') {
                         // Son IDs, buscar los objetos correspondientes
-                        const gradosSeleccionados = response.data.filter(gs => 
+                        const gradosSeleccionados = response.data.filter((gs) =>
                             user.grado_secciones.includes(gs.id)
                         );
                         setSelectedGradosSecciones(gradosSeleccionados);
@@ -501,22 +628,26 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         setLoadingMaterias(true);
         try {
             const token = localStorage.getItem('accessToken');
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const baseUrl =
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await axios.get(`${baseUrl}/horarios/materias/`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             setMaterias(response.data || []);
-            
+
             // Si el usuario tiene materias asignadas, marcarlas como seleccionadas
             if (user && user.materias && Array.isArray(user.materias)) {
                 if (user.materias.length > 0) {
-                    if (typeof user.materias[0] === 'object' && user.materias[0].id) {
+                    if (
+                        typeof user.materias[0] === 'object' &&
+                        user.materias[0].id
+                    ) {
                         // Ya son objetos con ID
                         setSelectedMaterias(user.materias);
                     } else if (typeof user.materias[0] === 'number') {
                         // Son IDs, buscar los objetos correspondientes
-                        const materiasSeleccionadas = response.data.filter(m => 
-                            user.materias.includes(m.id)
+                        const materiasSeleccionadas = response.data.filter(
+                            (m) => user.materias.includes(m.id)
                         );
                         setSelectedMaterias(materiasSeleccionadas);
                     }
@@ -531,10 +662,10 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     };
 
     const handleGradoSeccionToggle = (gradoSeccion) => {
-        setSelectedGradosSecciones(prev => {
-            const exists = prev.find(gs => gs.id === gradoSeccion.id);
+        setSelectedGradosSecciones((prev) => {
+            const exists = prev.find((gs) => gs.id === gradoSeccion.id);
             if (exists) {
-                return prev.filter(gs => gs.id !== gradoSeccion.id);
+                return prev.filter((gs) => gs.id !== gradoSeccion.id);
             } else {
                 return [...prev, gradoSeccion];
             }
@@ -542,10 +673,10 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     };
 
     const handleMateriaToggle = (materia) => {
-        setSelectedMaterias(prev => {
-            const exists = prev.find(m => m.id === materia.id);
+        setSelectedMaterias((prev) => {
+            const exists = prev.find((m) => m.id === materia.id);
             if (exists) {
-                return prev.filter(m => m.id !== materia.id);
+                return prev.filter((m) => m.id !== materia.id);
             } else {
                 return [...prev, materia];
             }
@@ -591,17 +722,30 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
             }
 
             // Si es profesor y tiene foto, grados o materias, usar FormData (materias como JSON string)
-            if (type === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0 || selectedMaterias.length > 0)) {
+            if (
+                type === 'profesor' &&
+                (formData.foto ||
+                    selectedGradosSecciones.length > 0 ||
+                    selectedMaterias.length > 0)
+            ) {
                 const formDataObj = new FormData();
-                
+
                 // Agregar todos los campos del formulario (excluyendo campos especiales)
                 Object.keys(formData).forEach((key) => {
                     // Excluir campos que se manejan por separado
-                    if (key !== 'foto' && key !== 'materias' && key !== 'grado_secciones' && key !== 'grado_asignado' && formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+                    if (
+                        key !== 'foto' &&
+                        key !== 'materias' &&
+                        key !== 'grado_secciones' &&
+                        key !== 'grado_asignado' &&
+                        formData[key] !== null &&
+                        formData[key] !== undefined &&
+                        formData[key] !== ''
+                    ) {
                         formDataObj.append(key, formData[key]);
                     }
                 });
-                
+
                 // Agregar foto si existe
                 if (formData.foto) {
                     formDataObj.append('foto', formData.foto);
@@ -609,19 +753,28 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
 
                 // Agregar grado_secciones como JSON string
                 // Siempre enviar, incluso si está vacío, para que el backend pueda limpiar las asignaciones
-                const gradoSeccionesData = selectedGradosSecciones.map(gs => ({
-                    nivel: gs.nivel,
-                    grado: gs.grado,
-                    seccion: gs.seccion
-                }));
-                formDataObj.append('grado_secciones', JSON.stringify(gradoSeccionesData));
-                
+                const gradoSeccionesData = selectedGradosSecciones.map(
+                    (gs) => ({
+                        nivel: gs.nivel,
+                        grado: gs.grado,
+                        seccion: gs.seccion,
+                    })
+                );
+                formDataObj.append(
+                    'grado_secciones',
+                    JSON.stringify(gradoSeccionesData)
+                );
+
                 // Agregar materias como JSON string (similar a cómo funciona en Materias.jsx)
                 // Siempre enviar, incluso si está vacío, para que el backend pueda limpiar las asignaciones
-                const materiasIds = selectedMaterias.map(m => {
-                    const id = typeof m === 'object' ? m.id : m;
-                    return id != null ? Number(id) : null;
-                }).filter(id => id !== null && id !== undefined && !isNaN(id));
+                const materiasIds = selectedMaterias
+                    .map((m) => {
+                        const id = typeof m === 'object' ? m.id : m;
+                        return id != null ? Number(id) : null;
+                    })
+                    .filter(
+                        (id) => id !== null && id !== undefined && !isNaN(id)
+                    );
                 formDataObj.append('materias', JSON.stringify(materiasIds));
 
                 dataToSend = formDataObj;
@@ -634,40 +787,47 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 delete dataToSend.materias; // Eliminar si existe en formData
                 delete dataToSend.grado_secciones; // Eliminar si existe en formData
                 delete dataToSend.grado_asignado; // Eliminar si existe en formData
-                
+
                 if (selectedGradosSecciones.length > 0) {
-                    dataToSend.grado_secciones = selectedGradosSecciones.map(gs => ({
-                        nivel: gs.nivel,
-                        grado: gs.grado,
-                        seccion: gs.seccion
-                    }));
+                    dataToSend.grado_secciones = selectedGradosSecciones.map(
+                        (gs) => ({
+                            nivel: gs.nivel,
+                            grado: gs.grado,
+                            seccion: gs.seccion,
+                        })
+                    );
                 } else {
                     dataToSend.grado_secciones = [];
                 }
-                
+
                 // Enviar materias como array de números enteros solo si hay materias seleccionadas
                 if (selectedMaterias.length > 0) {
-                    dataToSend.materias = selectedMaterias.map(m => {
-                        // Asegurar que extraemos solo el ID y lo convertimos a número
-                        const id = typeof m === 'object' ? m.id : m;
-                        return id != null ? Number(id) : null;
-                    }).filter(id => id !== null && id !== undefined && !isNaN(id));
+                    dataToSend.materias = selectedMaterias
+                        .map((m) => {
+                            // Asegurar que extraemos solo el ID y lo convertimos a número
+                            const id = typeof m === 'object' ? m.id : m;
+                            return id != null ? Number(id) : null;
+                        })
+                        .filter(
+                            (id) =>
+                                id !== null && id !== undefined && !isNaN(id)
+                        );
                 }
                 // Si no hay materias, no enviar el campo (el backend lo manejará correctamente)
-                
+
                 headers['Content-Type'] = 'application/json';
             } else {
                 // Para otros tipos de usuario, usar FormData normal
                 const formDataObj = new FormData();
-            Object.keys(formData).forEach((key) => {
-                if (
-                    formData[key] !== null &&
-                    formData[key] !== undefined &&
-                    formData[key] !== ''
-                ) {
+                Object.keys(formData).forEach((key) => {
+                    if (
+                        formData[key] !== null &&
+                        formData[key] !== undefined &&
+                        formData[key] !== ''
+                    ) {
                         formDataObj.append(key, formData[key]);
-                }
-            });
+                    }
+                });
                 dataToSend = formDataObj;
                 headers['Content-Type'] = 'multipart/form-data';
             }
@@ -682,8 +842,10 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
             } else {
                 console.log('Es JSON:', JSON.stringify(dataToSend, null, 2));
             }
-            
-            await axios.patch(`${API_URL}${type}/${user.id}/`, dataToSend, { headers });
+
+            await axios.patch(`${API_URL}${type}/${user.id}/`, dataToSend, {
+                headers,
+            });
 
             alert('Usuario actualizado con éxito');
             onSave();
@@ -826,7 +988,13 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                 )}
                             </div>
                             <div className="form-group">
-                                <label>{formData.nivel === 'primaria' ? 'Grado:' : formData.nivel === 'secundaria' ? 'Año:' : 'Grado/Año:'}</label>
+                                <label>
+                                    {formData.nivel === 'primaria'
+                                        ? 'Grado:'
+                                        : formData.nivel === 'secundaria'
+                                        ? 'Año:'
+                                        : 'Grado/Año:'}
+                                </label>
                                 <select
                                     name="grado"
                                     value={formData.grado || ''}
@@ -834,7 +1002,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     disabled={!formData.nivel}
                                 >
                                     <option value="">
-                                        {formData.nivel === 'primaria' 
+                                        {formData.nivel === 'primaria'
                                             ? 'Seleccione el grado'
                                             : formData.nivel === 'secundaria'
                                             ? 'Seleccione el año'
@@ -897,7 +1065,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     <option value="">Seleccione...</option>
                                     <option value="titular">Titular</option>
                                     <option value="suplente">Suplente</option>
-                                    <option value="especialista">Especialista</option>
+                                    <option value="especialista">
+                                        Especialista
+                                    </option>
                                 </select>
                                 {errors.tipo_profesor && (
                                     <span className="error">
@@ -1350,6 +1520,182 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
     );
 };
 
+// Modal para Asignar Curso y Sección a Profesor
+
+const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
+    const navigate = useNavigate();
+    const [cursos, setCursos] = useState([]);
+    const [selectedCurso, setSelectedCurso] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useBodyOverflowLock(isOpen);
+
+    useEffect(() => {
+        fetchCursos();
+    }, []);
+
+    const fetchCursos = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/grado-seccion/`
+            );
+            setCursos(response.data);
+        } catch (error) {
+            console.error('Error al cargar cursos:', error);
+            alert('Error al cargar la lista de cursos');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const handleAssign = async () => {
+        if (!selectedCurso) {
+            alert('Por favor, seleccione un curso');
+            return;
+        }
+        console.log(selectedCurso);
+        try {
+            await axios.patch(`${API_URL}Profesor/${user.id}/`, {
+                grado_secciones: selectedCurso,
+            });
+            alert('Curso asignado con éxito');
+            onAssignP();
+            onClose();
+        } catch (error) {
+            console.error('Error al asignar curso:', error);
+            alert('Error al asignar el curso');
+        }
+    };
+
+    const filteredCursos = useMemo(() => {
+        return cursos.filter((curso) => {
+            const fullName = `${curso.nombre} ${curso.seccion}`.toLowerCase();
+            return fullName.includes(searchTerm.toLowerCase());
+        });
+    }, [cursos, searchTerm]);
+
+    const ITEMS_PER_PAGE = 5;
+    const [currentPage, setCurrentPage] = useState(0);
+    const totalPages = Math.ceil(filteredCursos.length / ITEMS_PER_PAGE);
+    const paginatedCursos = filteredCursos.slice(
+        currentPage * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE
+    );
+
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [filteredCursos]);
+
+    if (!isOpen || !user) return null;
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className="modal-content assign-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="modal-header">
+                    <h2>Asignar Curso y Seccion</h2>
+                    <button className="close-btn" onClick={onClose}>
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+                <div className="modal-body">
+                    <div className="form-group">
+                        <label>Seleccione un Curso:</label>
+                        <input
+                            type="search"
+                            name="searchCurso"
+                            id="searchCurso"
+                            placeholder="Buscar por nombre..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="representantes-list">
+                        {filteredCursos.length === 0 ? (
+                            <p>No hay cursos registrados</p>
+                        ) : (
+                            paginatedCursos.map((curso) => (
+                                <div
+                                    key={curso.id}
+                                    className={`representante-item ${
+                                        selectedCurso.includes(curso.id)
+                                            ? 'selected'
+                                            : ''
+                                    }`}
+                                    onClick={() =>
+                                        setSelectedCurso((prev) => {
+                                            if (prev.includes(curso.id)) {
+                                                return prev.filter(
+                                                    (id) => id !== curso.id
+                                                );
+                                            } else {
+                                                return [...prev, curso.id];
+                                            }
+                                        })
+                                    }
+                                >
+                                    <div className="datos">
+                                        <p>Nivel: {curso.nivel}</p>
+                                        <p>Grado: {curso.grado}</p>
+                                        <p>Sección: {curso.seccion}</p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        {totalPages > 1 && (
+                            <div className="carousel-controls">
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.max(prev - 1, 0)
+                                        )
+                                    }
+                                    disabled={currentPage === 0}
+                                >
+                                    ← Anterior
+                                </button>
+
+                                <span style={{ margin: '0 1rem' }}>
+                                    Página {currentPage + 1} de {totalPages}
+                                </span>
+
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.min(prev + 1, totalPages - 1)
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages - 1}
+                                >
+                                    Siguiente →
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button
+                        type="button"
+                        className="btn-cancel"
+                        onClick={onClose}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        className="btn-assing"
+                        onClick={handleAssign}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Guardando...' : 'Asignar'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Lista de Estudiantes
 export function ListaE() {
     const navigate = useNavigate();
@@ -1485,14 +1831,18 @@ export function ListaE() {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'cards' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('cards')}
                         title="Vista de tarjetas"
                     >
                         <i className="fas fa-th"></i>
                     </button>
                     <button
-                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'table' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('table')}
                         title="Vista de tabla"
                     >
@@ -1504,31 +1854,34 @@ export function ListaE() {
             {/* Contador de resultados */}
             <div className="results-info">
                 <span>
-                    Mostrando {filteredEstudiantes.length} de {estudiantes.length} estudiantes
+                    Mostrando {filteredEstudiantes.length} de{' '}
+                    {estudiantes.length} estudiantes
                 </span>
             </div>
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-            <div className="cards-grid">
+                <div className="cards-grid">
                     {loading ? (
                         <div className="loading">Cargando estudiantes...</div>
                     ) : filteredEstudiantes.length === 0 ? (
-                        <p className="no-data">No hay estudiantes que coincidan con la búsqueda</p>
-                ) : (
+                        <p className="no-data">
+                            No hay estudiantes que coincidan con la búsqueda
+                        </p>
+                    ) : (
                         filteredEstudiantes.map((estudiante) => (
-                        <UserCard
-                            key={estudiante.id}
-                            user={estudiante}
-                            type="estudiante"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onAssing={handleAssign}
-                        />
-                    ))
-                )}
-            </div>
+                            <UserCard
+                                key={estudiante.id}
+                                user={estudiante}
+                                type="estudiante"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                                onAssing={handleAssign}
+                            />
+                        ))
+                    )}
+                </div>
             )}
 
             {/* Vista de Tabla */}
@@ -1537,7 +1890,9 @@ export function ListaE() {
                     {loading ? (
                         <div className="loading">Cargando estudiantes...</div>
                     ) : filteredEstudiantes.length === 0 ? (
-                        <p className="no-data">No hay estudiantes que coincidan con la búsqueda</p>
+                        <p className="no-data">
+                            No hay estudiantes que coincidan con la búsqueda
+                        </p>
                     ) : (
                         <table className="users-table">
                             <thead>
@@ -1707,14 +2062,18 @@ export function ListaR() {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'cards' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('cards')}
                         title="Vista de tarjetas"
                     >
                         <i className="fas fa-th"></i>
                     </button>
                     <button
-                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'table' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('table')}
                         title="Vista de tabla"
                     >
@@ -1726,39 +2085,48 @@ export function ListaR() {
             {/* Contador de resultados */}
             <div className="results-info">
                 <span>
-                    Mostrando {filteredRepresentantes.length} de {representantes.length} representantes
+                    Mostrando {filteredRepresentantes.length} de{' '}
+                    {representantes.length} representantes
                 </span>
             </div>
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-            <div className="cards-grid">
+                <div className="cards-grid">
                     {loading ? (
-                        <div className="loading">Cargando representantes...</div>
+                        <div className="loading">
+                            Cargando representantes...
+                        </div>
                     ) : filteredRepresentantes.length === 0 ? (
-                        <p className="no-data">No hay representantes que coincidan con la búsqueda</p>
-                ) : (
+                        <p className="no-data">
+                            No hay representantes que coincidan con la búsqueda
+                        </p>
+                    ) : (
                         filteredRepresentantes.map((representante) => (
-                        <UserCard
-                            key={representante.id}
-                            user={representante}
-                            type="representante"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    ))
-                )}
-            </div>
+                            <UserCard
+                                key={representante.id}
+                                user={representante}
+                                type="representante"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                            />
+                        ))
+                    )}
+                </div>
             )}
 
             {/* Vista de Tabla */}
             {viewMode === 'table' && (
                 <div className="table-container">
                     {loading ? (
-                        <div className="loading">Cargando representantes...</div>
+                        <div className="loading">
+                            Cargando representantes...
+                        </div>
                     ) : filteredRepresentantes.length === 0 ? (
-                        <p className="no-data">No hay representantes que coincidan con la búsqueda</p>
+                        <p className="no-data">
+                            No hay representantes que coincidan con la búsqueda
+                        </p>
                     ) : (
                         <table className="users-table">
                             <thead>
@@ -1821,6 +2189,7 @@ export function ListaP() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('table');
     const [filtroTipo, setFiltroTipo] = useState('');
@@ -1840,13 +2209,18 @@ export function ListaP() {
             // Log detallado para verificar estructura de grado_secciones
             if (response.data && response.data.length > 0) {
                 response.data.forEach((prof, index) => {
-                    console.log(`Profesor ${index + 1} (${prof.nombre} ${prof.apellido}):`, {
-                        id: prof.id,
-                        grado_secciones: prof.grado_secciones,
-                        tipo_grado_secciones: typeof prof.grado_secciones,
-                        es_array: Array.isArray(prof.grado_secciones),
-                        longitud: prof.grado_secciones?.length
-                    });
+                    console.log(
+                        `Profesor ${index + 1} (${prof.nombre} ${
+                            prof.apellido
+                        }):`,
+                        {
+                            id: prof.id,
+                            grado_secciones: prof.grado_secciones,
+                            tipo_grado_secciones: typeof prof.grado_secciones,
+                            es_array: Array.isArray(prof.grado_secciones),
+                            longitud: prof.grado_secciones?.length,
+                        }
+                    );
                 });
             }
             setProfesores(response.data);
@@ -1891,6 +2265,11 @@ export function ListaP() {
     const handleEdit = (user) => {
         setSelectedUser(user);
         setShowEditModal(true);
+    };
+
+    const handleAssign = (user) => {
+        setSelectedUser(user);
+        setShowAssignModal(true);
     };
 
     const handleDelete = async (user) => {
@@ -1950,14 +2329,18 @@ export function ListaP() {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'cards' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('cards')}
                         title="Vista de tarjetas"
                     >
                         <i className="fas fa-th"></i>
                     </button>
                     <button
-                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        className={`view-btn ${
+                            viewMode === 'table' ? 'active' : ''
+                        }`}
                         onClick={() => setViewMode('table')}
                         title="Vista de tabla"
                     >
@@ -1969,30 +2352,34 @@ export function ListaP() {
             {/* Contador de resultados */}
             <div className="results-info">
                 <span>
-                    Mostrando {filteredProfesores.length} de {profesores.length} profesores
+                    Mostrando {filteredProfesores.length} de {profesores.length}{' '}
+                    profesores
                 </span>
             </div>
 
             {/* Vista de Cards */}
             {viewMode === 'cards' && (
-            <div className="cards-grid">
+                <div className="cards-grid">
                     {loading ? (
                         <div className="loading">Cargando profesores...</div>
                     ) : filteredProfesores.length === 0 ? (
-                        <p className="no-data">No hay profesores que coincidan con la búsqueda</p>
-                ) : (
+                        <p className="no-data">
+                            No hay profesores que coincidan con la búsqueda
+                        </p>
+                    ) : (
                         filteredProfesores.map((profesor) => (
-                        <UserCard
-                            key={profesor.id}
-                            user={profesor}
-                            type="profesor"
-                            onCardClick={handleCardClick}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    ))
-                )}
-            </div>
+                            <UserCard
+                                key={profesor.id}
+                                user={profesor}
+                                type="profesor"
+                                onCardClick={handleCardClick}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                                onAssingP={handleAssign}
+                            />
+                        ))
+                    )}
+                </div>
             )}
 
             {/* Vista de Tabla */}
@@ -2001,7 +2388,9 @@ export function ListaP() {
                     {loading ? (
                         <div className="loading">Cargando profesores...</div>
                     ) : filteredProfesores.length === 0 ? (
-                        <p className="no-data">No hay profesores que coincidan con la búsqueda</p>
+                        <p className="no-data">
+                            No hay profesores que coincidan con la búsqueda
+                        </p>
                     ) : (
                         <table className="users-table">
                             <thead>
@@ -2025,6 +2414,7 @@ export function ListaP() {
                                         onRowClick={handleCardClick}
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}
+                                        onAssingP={handleAssign}
                                     />
                                 ))}
                             </tbody>
@@ -2051,6 +2441,16 @@ export function ListaP() {
                     setSelectedUser(null);
                 }}
                 onSave={fetchProfesores}
+            />
+            <AssignPModal
+                user={selectedUser}
+                type="profesor"
+                isOpen={showAssignModal}
+                onClose={() => {
+                    setShowAssignModal(false);
+                    setSelectedUser(null);
+                }}
+                onAssignP={fetchProfesores}
             />
         </div>
     );

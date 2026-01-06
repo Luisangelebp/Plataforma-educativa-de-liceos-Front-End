@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ResumenRepresentante.css';
 
-const API_URL = 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL + '/' || 'http://localhost:8000/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
     return {
-        'Authorization': token ? `Bearer ${token}` : '',
+        Authorization: token ? `Bearer ${token}` : '',
     };
 };
 
@@ -31,6 +31,7 @@ const ResumenRepresentante = () => {
     const [boletines, setBoletines] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const repreId = JSON.parse(localStorage.getItem('user')).id;
 
     useEffect(() => {
         cargarDatos();
@@ -39,10 +40,7 @@ const ResumenRepresentante = () => {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            await Promise.all([
-                cargarEstudiantes(),
-                cargarBoletines()
-            ]);
+            await Promise.all([cargarEstudiantes(), cargarBoletines()]);
         } catch (error) {
             console.error('Error al cargar datos:', error);
         } finally {
@@ -53,11 +51,11 @@ const ResumenRepresentante = () => {
     const cargarEstudiantes = async () => {
         try {
             const response = await axiosInstance.get('usuarios/representante/');
-            // El backend debería devolver los estudiantes asociados al representante
-            // Por ahora asumimos que viene en la respuesta
-            if (response.data && response.data.estudiantes) {
-                setEstudiantes(response.data.estudiantes);
-            }
+            response.data.find((rep) => rep.id === repreId) &&
+                setEstudiantes(
+                    response.data.find((rep) => rep.id === repreId)
+                        .estudiantes || []
+                );
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
         }
@@ -76,14 +74,17 @@ const ResumenRepresentante = () => {
     const totalBoletines = boletines.length || 0;
     const boletinesRecientes = boletines.slice(0, 3);
 
-  return (
+    return (
         <div className="resumen-representante">
             <div className="resumen-header">
                 <h1>
                     <i className="fas fa-home"></i>
                     Panel del Representante
                 </h1>
-                <p>Bienvenido, aquí puedes gestionar la información de tus representados</p>
+                <p>
+                    Bienvenido, aquí puedes gestionar la información de tus
+                    representados
+                </p>
             </div>
 
             {loading ? (
@@ -101,12 +102,19 @@ const ResumenRepresentante = () => {
                             </div>
                             <div className="card-content">
                                 <h3>Mis Representados</h3>
-                                <p className="card-number">{totalEstudiantes}</p>
-                                <p className="card-label">Estudiante{totalEstudiantes !== 1 ? 's' : ''}</p>
+                                <p className="card-number">
+                                    {totalEstudiantes}
+                                </p>
+                                <p className="card-label">
+                                    Estudiante
+                                    {totalEstudiantes !== 1 ? 's' : ''}
+                                </p>
                             </div>
-                            <button 
+                            <button
                                 className="card-button"
-                                onClick={() => navigate('/representante/boletines')}
+                                onClick={() =>
+                                    navigate('/representante/boletines')
+                                }
                             >
                                 <i className="fas fa-arrow-right"></i>
                                 Ver Detalles
@@ -120,11 +128,15 @@ const ResumenRepresentante = () => {
                             <div className="card-content">
                                 <h3>Boletines Disponibles</h3>
                                 <p className="card-number">{totalBoletines}</p>
-                                <p className="card-label">Boletín{totalBoletines !== 1 ? 'es' : ''}</p>
+                                <p className="card-label">
+                                    Boletín{totalBoletines !== 1 ? 'es' : ''}
+                                </p>
                             </div>
-                            <button 
+                            <button
                                 className="card-button"
-                                onClick={() => navigate('/representante/boletines')}
+                                onClick={() =>
+                                    navigate('/representante/boletines')
+                                }
                             >
                                 <i className="fas fa-arrow-right"></i>
                                 Ver Boletines
@@ -137,11 +149,15 @@ const ResumenRepresentante = () => {
                             </div>
                             <div className="card-content">
                                 <h3>Calendario</h3>
-                                <p className="card-label">Actividades y eventos</p>
+                                <p className="card-label">
+                                    Actividades y eventos
+                                </p>
                             </div>
-                            <button 
+                            <button
                                 className="card-button"
-                                onClick={() => navigate('/representante/calendario')}
+                                onClick={() =>
+                                    navigate('/representante/calendario')
+                                }
                             >
                                 <i className="fas fa-arrow-right"></i>
                                 Ver Calendario
@@ -158,7 +174,10 @@ const ResumenRepresentante = () => {
                             </h2>
                             <div className="boletines-recientes-grid">
                                 {boletinesRecientes.map((boletin) => (
-                                    <div key={boletin.id} className="boletin-reciente-card">
+                                    <div
+                                        key={boletin.id}
+                                        className="boletin-reciente-card"
+                                    >
                                         <div className="boletin-reciente-header">
                                             <h4>
                                                 <i className="fas fa-file-pdf"></i>
@@ -166,40 +185,49 @@ const ResumenRepresentante = () => {
                                             </h4>
                                             {boletin.promedio_general && (
                                                 <span className="promedio-badge">
-                                                    {parseFloat(boletin.promedio_general).toFixed(2)}
+                                                    {parseFloat(
+                                                        boletin.promedio_general
+                                                    ).toFixed(2)}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="boletin-reciente-info">
                                             <p>
                                                 <i className="fas fa-user-graduate"></i>
-                                                {boletin.estudiante_nombre || 'Estudiante'}
+                                                {boletin.estudiante_nombre ||
+                                                    'Estudiante'}
                                             </p>
                                             <p>
                                                 <i className="fas fa-calendar"></i>
-                                                {new Date(boletin.fecha_emision).toLocaleDateString('es-ES', {
+                                                {new Date(
+                                                    boletin.fecha_emision
+                                                ).toLocaleDateString('es-ES', {
                                                     year: 'numeric',
                                                     month: 'short',
-                                                    day: 'numeric'
+                                                    day: 'numeric',
                                                 })}
                                             </p>
                                         </div>
-                                        <button 
+                                        <button
                                             className="btn-ver-boletin"
-                                            onClick={() => navigate('/representante/boletines')}
+                                            onClick={() =>
+                                                navigate(
+                                                    '/representante/boletines'
+                                                )
+                                            }
                                         >
                                             Ver Detalles
                                             <i className="fas fa-arrow-right"></i>
                                         </button>
                                     </div>
                                 ))}
-      </div>
-      </div>
+                            </div>
+                        </div>
                     )}
-    </>
+                </>
             )}
         </div>
-  );
+    );
 };
 
 export default ResumenRepresentante;
