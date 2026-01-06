@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Vista índice en la raíz
 def index(request):
@@ -117,6 +118,8 @@ urlpatterns = [
     path('boletines/', include('boletines.urls')),
     path('calendario/', include('calendario.urls')),
     path('calificaciones/', include('calificaciones.urls')),  # 👈 ya estaba incluida
+    # refresh 
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 # Servir archivos media en desarrollo
