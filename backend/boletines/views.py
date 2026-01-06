@@ -581,4 +581,3 @@ class VistaPreviaBoletinSecundariaView(APIView):
 
         # 🔎 Renderizar el mismo HTML que se usa para PDF
         return render(request, "boletines/boletin_secundaria.html", context)
-
