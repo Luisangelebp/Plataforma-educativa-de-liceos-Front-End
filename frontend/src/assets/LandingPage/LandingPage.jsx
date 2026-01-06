@@ -10,12 +10,12 @@ export default function LandingPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const landingRef = useRef(null);
     const isTransitioningRef = useRef(false);
-    
+
     // Calcular estados iniciales de forma síncrona para evitar parpadeo
     const urlShowLogin = searchParams.get('showLogin');
     const fromLogout = sessionStorage.getItem('fromLogout') === 'true';
-    const hasToken = !!localStorage.getItem('accessToken');
-    
+    const hasToken = localStorage.getItem('accessToken');
+
     const [showLogin, setShowLogin] = useState(() => {
         // Si viene de logout o tiene parámetro, mostrar login directamente
         return urlShowLogin === 'true' || fromLogout;
@@ -27,14 +27,14 @@ export default function LandingPage() {
     const handleShowLogin = () => {
         // Marcar que estamos en transición
         isTransitioningRef.current = true;
-        
+
         // Ocultar la landing inmediatamente con CSS de forma síncrona
         if (landingRef.current) {
             landingRef.current.style.visibility = 'hidden';
             landingRef.current.style.opacity = '0';
             landingRef.current.style.pointerEvents = 'none';
         }
-        
+
         // Actualizar estados de forma síncrona
         setShouldHideLanding(true);
         setShowLogin(true);
@@ -71,8 +71,8 @@ export default function LandingPage() {
     // Si el usuario está autenticado, redirigir al dashboard correspondiente
     if (isAuthenticated) {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const rol = user.rol || '';
-        
+        const rol = localStorage.getItem('rol') || '';
+
         if (rol === 'admin') {
             window.location.href = '/admin';
         } else if (rol === 'representante') {
@@ -82,7 +82,7 @@ export default function LandingPage() {
         } else if (rol === 'profesor') {
             window.location.href = '/profesor';
         }
-        
+
         return null;
     }
 
@@ -93,12 +93,12 @@ export default function LandingPage() {
 
     // Por defecto, mostrar la landing page antigua (Header + Main + Footer)
     return (
-        <div 
-            ref={landingRef} 
-            style={{ 
+        <div
+            ref={landingRef}
+            style={{
                 visibility: shouldHideLanding ? 'hidden' : 'visible',
                 opacity: shouldHideLanding ? 0 : 1,
-                transition: 'none' // Sin transición para evitar parpadeo
+                transition: 'none', // Sin transición para evitar parpadeo
             }}
         >
             <Header />
