@@ -38,7 +38,7 @@ import CuentaEstudiante from './components/Dashboards/Estudiante/Cuenta.jsx';
 import { Profesor } from './components/Dashboards/Profesor/Profesor.jsx';
 import { BoletinesProfesor } from './components/Dashboards/Profesor/BoletinesProfesor.jsx';
 import { ListaEstudiantesProfesor } from './components/Dashboards/Profesor/ListaEstudiantesProfesor.jsx';
-import { Asistencia } from './components/Dashboards/Profesor/Asistencia.jsx';
+// import { Asistencia } from './components/Dashboards/Profesor/Asistencia.jsx';
 import { HorariosProfesor } from './components/Dashboards/Profesor/HorariosProfesor.jsx';
 import { Calificaciones } from './components/Dashboards/Profesor/Calificaciones.jsx';
 import CuentaProfesor from './components/Dashboards/Profesor/Cuenta.jsx';
@@ -129,7 +129,7 @@ function App() {
                             path="calificaciones"
                             element={<Calificaciones />}
                         />
-                        <Route path="asistencia" element={<Asistencia />} />
+                        {/* <Route path="asistencia" element={<Asistencia />} /> */}
                         <Route
                             path="boletines"
                             element={<BoletinesProfesor />}

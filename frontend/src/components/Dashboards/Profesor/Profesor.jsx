@@ -120,7 +120,7 @@ export function Profesor() {
                             <span className="nav-text">Calificaciones</span>
                         </Link>
                     </div>
-                    <div className="nav-item">
+                    {/* <div className="nav-item">
                         <Link
                             to="/profesor/asistencia"
                             className={`nav-link ${
@@ -132,7 +132,7 @@ export function Profesor() {
                             <i className="fas fa-clipboard-check"></i>
                             <span className="nav-text">Control Asistencia</span>
                         </Link>
-                    </div>
+                    </div> */}
                     <div className="nav-item">
                         <Link
                             to="/profesor/boletines"

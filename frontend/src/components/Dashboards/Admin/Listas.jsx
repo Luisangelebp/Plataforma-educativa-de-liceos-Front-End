@@ -1555,7 +1555,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
         }
         console.log(selectedCurso);
         try {
-            await axios.patch(`${API_URL}Profesor/${user.id}/`, {
+            await axios.patch(`${API_URL}profesor/${user.id}/`, {
                 grado_secciones: selectedCurso,
             });
             alert('Curso asignado con éxito');
@@ -1569,7 +1569,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
 
     const filteredCursos = useMemo(() => {
         return cursos.filter((curso) => {
-            const fullName = `${curso.nombre} ${curso.seccion}`.toLowerCase();
+            const fullName = `${curso.nivel} ${curso.grado}`.toLowerCase();
             return fullName.includes(searchTerm.toLowerCase());
         });
     }, [cursos, searchTerm]);
@@ -2205,7 +2205,6 @@ export function ListaP() {
     const fetchProfesores = async () => {
         try {
             const response = await axios.get(`${API_URL}profesor/`);
-            console.log('Profesores recibidos:', response.data);
             // Log detallado para verificar estructura de grado_secciones
             if (response.data && response.data.length > 0) {
                 response.data.forEach((prof, index) => {

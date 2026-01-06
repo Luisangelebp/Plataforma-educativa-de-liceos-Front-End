@@ -31,17 +31,12 @@ export function Calificaciones() {
     const [selectedLapso, setSelectedLapso] = useState('1');
     const [calificaciones, setCalificaciones] = useState({});
     const [loading, setLoading] = useState(false);
-    const [profesorId, setProfesorId] = useState(null);
-
+    const profesorId = JSON.parse(localStorage.getItem('user')).id;
     const lapsoOptions = [
         { value: '1', label: 'Primer Lapso' },
         { value: '2', label: 'Segundo Lapso' },
         { value: '3', label: 'Tercer Lapso' },
     ];
-
-    useEffect(() => {
-        cargarDatosProfesor();
-    }, []);
 
     useEffect(() => {
         if (profesorId) {
@@ -55,23 +50,6 @@ export function Calificaciones() {
             cargarCalificaciones();
         }
     }, [selectedMateria, selectedLapso]);
-
-    const cargarDatosProfesor = async () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user && user.id) {
-                const response = await axiosInstance.get(`usuarios/profesor/`);
-                const profesor = response.data.find(
-                    (p) => p.usuario === user.id
-                );
-                if (profesor) {
-                    setProfesorId(profesor.id);
-                }
-            }
-        } catch (error) {
-            console.error('Error al cargar datos del profesor:', error);
-        }
-    };
 
     const cargarMaterias = async () => {
         try {
@@ -198,6 +176,7 @@ export function Calificaciones() {
                     calificacion.notas[2] !== '' ? calificacion.notas[2] : null,
                 nota4:
                     calificacion.notas[3] !== '' ? calificacion.notas[3] : null,
+                profesor: profesorId,
             };
 
             if (calificacion.id) {
