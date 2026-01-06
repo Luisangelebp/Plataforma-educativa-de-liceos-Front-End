@@ -1,4 +1,5 @@
 import './css/App.css';
+import './assets/setupAxios.js';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './assets/LandingPage/LandingPage.jsx';
 

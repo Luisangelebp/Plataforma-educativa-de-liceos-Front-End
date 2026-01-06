@@ -14,6 +14,7 @@ from io import BytesIO
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.template.loader import render_to_string
+from weasyprint import HTML
 
 from .models import PlantillaBoletin, Boletin
 from .serializers import PlantillaBoletinSerializer, BoletinSerializer
@@ -581,4 +582,3 @@ class VistaPreviaBoletinSecundariaView(APIView):
 
         # 🔎 Renderizar el mismo HTML que se usa para PDF
         return render(request, "boletines/boletin_secundaria.html", context)
-
