@@ -10,7 +10,7 @@ class RegistroProfesorSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
     password = serializers.CharField(write_only=True)
 
-    # Recibir varias secciones en la petición
+    # Recibir varias secciones en la petición (objetos completos)
     grado_secciones = GradoSeccionSerializer(many=True, write_only=True, required=False)
     # Recibir IDs de materias
     materias = serializers.PrimaryKeyRelatedField(
@@ -97,14 +97,14 @@ class ProfesorListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Asegurar que grado_secciones se serialice correctamente"""
         representation = super().to_representation(instance)
-        # Asegurar que grado_secciones sea una lista
         if 'grado_secciones' not in representation or representation['grado_secciones'] is None:
             representation['grado_secciones'] = []
         return representation
 
 
 class ProfesorUpdateSerializer(serializers.ModelSerializer):
-    grado_secciones = GradoSeccionSerializer(many=True, write_only=True, required=False)
+    # Ahora aceptamos lista mixta: IDs o objetos completos
+    grado_secciones = serializers.ListField(write_only=True, required=False)
     materias = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Materia.objects.all(),
@@ -124,17 +124,26 @@ class ProfesorUpdateSerializer(serializers.ModelSerializer):
         secciones_data = validated_data.pop('grado_secciones', None)
         materias_data = validated_data.pop('materias', None)
 
-        # Actualizar campos básicos primero
+        # Actualizar campos básicos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Manejar grado_secciones
+        # Manejar grado_secciones (IDs o objetos completos)
         if secciones_data is not None:
             instance.grado_secciones.clear()
-            # Si se envía un array vacío, simplemente limpiar
-            if len(secciones_data) > 0:
-                for seccion in secciones_data:
+            for seccion in secciones_data:
+                if isinstance(seccion, int):
+                    # Caso: ID numérico
+                    try:
+                        grado_seccion = GradoSeccion.objects.get(id=seccion)
+                        instance.grado_secciones.add(grado_seccion)
+                    except GradoSeccion.DoesNotExist:
+                        raise serializers.ValidationError(
+                            f"La sección con id {seccion} no existe."
+                        )
+                elif isinstance(seccion, dict):
+                    # Caso: objeto completo
                     grado_seccion, _ = GradoSeccion.objects.get_or_create(
                         nivel=seccion['nivel'],
                         grado=seccion['grado'],
@@ -144,7 +153,6 @@ class ProfesorUpdateSerializer(serializers.ModelSerializer):
 
         # Manejar materias
         if materias_data is not None:
-            # Si se envía un array vacío, limpiar todas las asignaciones
             if len(materias_data) == 0:
                 instance.materias.clear()
             else:
