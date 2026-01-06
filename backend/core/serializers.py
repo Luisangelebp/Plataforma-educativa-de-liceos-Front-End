@@ -5,16 +5,24 @@ from core.models import Usuario, GradoSeccion
 
 class UsuarioSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
+    rol = serializers.CharField(required=False)  # Permitir escribir rol durante la creación
 
     class Meta:
         model = Usuario
         fields = ['id', 'email', 'nombre', 'apellido', 'rol', 'password', 'foto']
-        read_only_fields = ['id', 'rol']
+        read_only_fields = ['id']  # Removido 'rol' de read_only para permitir escritura durante creación
 
     def create(self, validated_data):
-        return Usuario.objects.create_user(**validated_data)
+        # Extraer rol si está presente, es requerido para create_user
+        rol = validated_data.pop('rol', None)
+        if not rol:
+            raise serializers.ValidationError({'rol': 'El rol es obligatorio para crear un usuario.'})
+        return Usuario.objects.create_user(rol=rol, **validated_data)
     
     def update(self, instance, validated_data):
+        # No permitir cambiar el rol durante la actualización
+        validated_data.pop('rol', None)
+        
         # Si se proporciona una nueva contraseña, hashearla
         password = validated_data.pop('password', None)
         if password:

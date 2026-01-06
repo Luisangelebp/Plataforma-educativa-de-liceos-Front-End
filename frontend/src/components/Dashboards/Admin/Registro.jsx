@@ -257,7 +257,7 @@ export default function Registo() {
             }
 
             if (typeU === 'profesor' && (formData.foto || selectedGradosSecciones.length > 0)) {
-        const formDataObj = new FormData();
+                const formDataObj = new FormData();
                 
                 for (const key in formData) {
                     if (key !== 'typeU' && key !== 'foto') {
@@ -297,10 +297,11 @@ export default function Registo() {
                 // Materias se asignan desde la lista de profesores, no desde el registro
                 
                 headers['Content-Type'] = 'application/json';
-            } else {
+            } else if ((typeU === 'representante' || typeU === 'estudiante' || typeU === 'administrador') && formData.foto) {
+                // Si hay foto, usar FormData
                 const formDataObj = new FormData();
                 for (const key in formData) {
-                    if (key !== 'typeU') {
+                    if (key !== 'typeU' && key !== 'foto') {
                         // Para estudiantes menores de 12 años, no enviar cédula
                         if (typeU === 'estudiante' && key === 'cedula') {
                             const edad = formData.fecha_nacimiento ? calcularEdad(formData.fecha_nacimiento) : null;
@@ -312,8 +313,24 @@ export default function Registo() {
                         formDataObj.append(key, formData[key]);
                     }
                 }
+                formDataObj.append('foto', formData.foto);
                 dataToSend = formDataObj;
-        }
+            } else {
+                // Sin foto, usar JSON
+                dataToSend = { ...formData };
+                delete dataToSend.typeU;
+                delete dataToSend.foto;
+                
+                // Para estudiantes menores de 12 años, no enviar cédula
+                if (typeU === 'estudiante' && dataToSend.cedula) {
+                    const edad = formData.fecha_nacimiento ? calcularEdad(formData.fecha_nacimiento) : null;
+                    if (edad !== null && edad < 12) {
+                        delete dataToSend.cedula;
+                    }
+                }
+                
+                headers['Content-Type'] = 'application/json';
+            }
 
             const response = await axios.post(`${API_URL}/${typeU}/registro/`, dataToSend, { headers });
                     console.log('Usuario registrado con éxito:', response.data);
