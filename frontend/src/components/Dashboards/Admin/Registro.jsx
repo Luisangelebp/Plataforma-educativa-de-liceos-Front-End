@@ -340,26 +340,6 @@ export default function Registo() {
                 }
                 formDataObj.append('foto', formData.foto);
                 dataToSend = formDataObj;
-            } else if ((typeU === 'representante' || typeU === 'estudiante' || typeU === 'administrador') && formData.foto) {
-                // Si hay foto, usar FormData
-                const formDataObj = new FormData();
-                for (const key in formData) {
-                    if (key !== 'typeU' && key !== 'foto') {
-                        // Para estudiantes menores de 12 años, no enviar cédula
-                        if (typeU === 'estudiante' && key === 'cedula') {
-                            const edad = formData.fecha_nacimiento
-                                ? calcularEdad(formData.fecha_nacimiento)
-                                : null;
-                            if (edad !== null && edad < 12) {
-                                // No agregar cédula si es menor de 12 años
-                                continue;
-                            }
-                        }
-                        formDataObj.append(key, formData[key]);
-                    }
-                }
-                formDataObj.append('foto', formData.foto);
-                dataToSend = formDataObj;
             } else {
                 // Sin foto, usar JSON
                 dataToSend = { ...formData };
