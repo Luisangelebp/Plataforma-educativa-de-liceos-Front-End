@@ -21,6 +21,7 @@ const DashboardRepresentante = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
+        localStorage.removeItem('rol');
         // Marcar que viene de logout para mostrar directamente el login
         sessionStorage.setItem('fromLogout', 'true');
         navigate('/');
@@ -43,8 +44,14 @@ const DashboardRepresentante = () => {
             {/* Sidebar */}
             <div className="sidebar">
                 <div className="sidebar-header">
-                    <Link to="/representante/cuenta" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="user-profile" style={{ cursor: 'pointer' }}>
+                    <Link
+                        to="/representante/cuenta"
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                        <div
+                            className="user-profile"
+                            style={{ cursor: 'pointer' }}
+                        >
                             <div className="user-avatar">
                                 {getUserInitials()}
                             </div>
@@ -55,12 +62,16 @@ const DashboardRepresentante = () => {
                         </div>
                     </Link>
                 </div>
-                
+
                 <nav className="nav-menu">
                     <div className="nav-item">
                         <Link
                             to="/representante"
-                            className={`nav-link ${location.pathname === '/representante' ? 'active' : ''}`}
+                            className={`nav-link ${
+                                location.pathname === '/representante'
+                                    ? 'active'
+                                    : ''
+                            }`}
                         >
                             <i className="fas fa-home"></i>
                             <span className="nav-text">Inicio</span>
@@ -69,7 +80,11 @@ const DashboardRepresentante = () => {
                     <div className="nav-item">
                         <Link
                             to="/representante/boletines"
-                            className={`nav-link ${location.pathname === '/representante/boletines' ? 'active' : ''}`}
+                            className={`nav-link ${
+                                location.pathname === '/representante/boletines'
+                                    ? 'active'
+                                    : ''
+                            }`}
                         >
                             <i className="fas fa-file-pdf"></i>
                             <span className="nav-text">Boletines</span>
@@ -78,14 +93,19 @@ const DashboardRepresentante = () => {
                     <div className="nav-item">
                         <Link
                             to="/representante/calendario"
-                            className={`nav-link ${location.pathname === '/representante/calendario' ? 'active' : ''}`}
+                            className={`nav-link ${
+                                location.pathname ===
+                                '/representante/calendario'
+                                    ? 'active'
+                                    : ''
+                            }`}
                         >
                             <i className="fas fa-calendar-alt"></i>
                             <span className="nav-text">Calendario</span>
                         </Link>
                     </div>
                 </nav>
-                
+
                 <div className="sidebar-footer">
                     <button className="logout-btn" onClick={handleLogout}>
                         <i className="fas fa-sign-out-alt"></i>
@@ -93,7 +113,7 @@ const DashboardRepresentante = () => {
                     </button>
                 </div>
             </div>
-            
+
             {/* Contenido Principal */}
             <div className="main-content">
                 <Outlet />

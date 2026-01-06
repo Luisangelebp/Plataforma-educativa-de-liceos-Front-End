@@ -28,6 +28,7 @@ export function Admin() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
+        localStorage.removeItem('rol');
         // Marcar que viene de logout para mostrar directamente el login
         sessionStorage.setItem('fromLogout', 'true');
         navigate('/');
