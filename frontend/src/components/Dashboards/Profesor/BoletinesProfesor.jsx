@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Admin/css/Boletines.css';
 
-const API_URL = 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
@@ -46,8 +46,7 @@ export function BoletinesProfesor() {
     const [selectedPeriodo, setSelectedPeriodo] = useState('1');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedEstudiante, setSelectedEstudiante] = useState(null);
-    const [profesorId, setProfesorId] = useState(null);
-    const [profesorInfo, setProfesorInfo] = useState(null);
+    const profesorInfo = JSON.parse(localStorage.getItem('user'));
     const [uploadData, setUploadData] = useState({
         estudiante: null,
         lapso: '1',
@@ -55,16 +54,12 @@ export function BoletinesProfesor() {
     });
 
     useEffect(() => {
-        cargarDatosProfesor();
-    }, []);
-
-    useEffect(() => {
         if (profesorInfo) {
             cargarPlantillas();
             cargarEstudiantes();
             cargarBoletines();
         }
-    }, [selectedPeriodo, profesorInfo]);
+    }, [selectedPeriodo]);
 
     const cargarPlantillas = async () => {
         try {
@@ -77,46 +72,6 @@ export function BoletinesProfesor() {
         }
     };
 
-    const cargarDatosProfesor = async () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            console.log('Usuario del localStorage:', user);
-            if (user && user.id) {
-                // Obtener el profesor usando el ID del usuario
-                const response = await axiosInstance.get('usuarios/profesor/');
-                console.log('Lista completa de profesores:', response.data);
-                
-                // Buscar el profesor - el campo usuario puede venir como objeto o como ID
-                const profesor = response.data.find(p => {
-                    const usuarioId = typeof p.usuario === 'object' ? p.usuario?.id : p.usuario;
-                    // Convertir ambos a números para comparación segura
-                    const usuarioIdNum = Number(usuarioId);
-                    const userIdNum = Number(user.id);
-                    console.log(`Comparando: usuarioId=${usuarioId} (${typeof usuarioId}) -> ${usuarioIdNum}, user.id=${user.id} (${typeof user.id}) -> ${userIdNum}`);
-                    return usuarioIdNum === userIdNum;
-                });
-                
-                if (profesor) {
-                    console.log('Profesor encontrado:', profesor);
-                    setProfesorId(profesor.id);
-                    // Obtener información completa del profesor incluyendo grado_secciones
-                    const profesorCompleto = await axiosInstance.get(`usuarios/profesor/${profesor.id}/`);
-                    console.log('Información completa del profesor:', profesorCompleto.data);
-                    setProfesorInfo(profesorCompleto.data);
-                } else {
-                    console.warn('No se encontró el profesor para el usuario:', user.id);
-                    console.warn('Profesores disponibles:', response.data.map(p => ({
-                        id: p.id,
-                        usuario: p.usuario,
-                        nombre: p.nombre
-                    })));
-                }
-            }
-        } catch (error) {
-            console.error('Error al cargar datos del profesor:', error);
-        }
-    };
-
     const cargarEstudiantes = async () => {
         try {
             // Si el profesor no tiene grado_secciones asignados, no mostrar estudiantes
@@ -126,31 +81,41 @@ export function BoletinesProfesor() {
                 return;
             }
 
-            if (!profesorInfo.grado_secciones || profesorInfo.grado_secciones.length === 0) {
+            if (
+                !profesorInfo.grado_secciones ||
+                profesorInfo.grado_secciones.length === 0
+            ) {
                 console.log('El profesor no tiene grado_secciones asignados');
                 setEstudiantes([]);
                 return;
             }
 
             // Obtener los IDs de los grado_secciones del profesor
-            const gradoSeccionesIds = profesorInfo.grado_secciones.map(gs => {
-                if (typeof gs === 'object' && gs.id) {
-                    return gs.id;
-                }
-                return gs;
-            }).filter(id => id != null);
+            const gradoSeccionesIds = profesorInfo.grado_secciones
+                .map((gs) => {
+                    if (typeof gs === 'object' && gs.id) {
+                        return gs.id;
+                    }
+                    return gs;
+                })
+                .filter((id) => id != null);
 
-            console.log('IDs de grado_secciones del profesor:', gradoSeccionesIds);
+            console.log(
+                'IDs de grado_secciones del profesor:',
+                gradoSeccionesIds
+            );
 
             if (gradoSeccionesIds.length === 0) {
-                console.log('No se pudieron extraer IDs válidos de grado_secciones');
+                console.log(
+                    'No se pudieron extraer IDs válidos de grado_secciones'
+                );
                 setEstudiantes([]);
                 return;
             }
 
             // Construir parámetros de consulta para filtrar estudiantes por grado_seccion
             let params = new URLSearchParams();
-            gradoSeccionesIds.forEach(id => {
+            gradoSeccionesIds.forEach((id) => {
                 params.append('grado_seccion_id', id);
             });
 
@@ -161,7 +126,11 @@ export function BoletinesProfesor() {
             console.log('URL de búsqueda de estudiantes:', url);
             const response = await axiosInstance.get(url);
             console.log('Respuesta completa:', response);
-            console.log('Estudiantes encontrados:', response.data?.length || 0, response.data);
+            console.log(
+                'Estudiantes encontrados:',
+                response.data?.length || 0,
+                response.data
+            );
             setEstudiantes(response.data || []);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
@@ -596,273 +565,310 @@ export function BoletinesProfesor() {
                         <tbody>
                             {estudiantes.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" style={{
-                                        padding: '40px',
-                                        textAlign: 'center',
-                                        color: 'var(--gray)',
-                                        fontSize: '0.95rem'
-                                    }}>
+                                    <td
+                                        colSpan="5"
+                                        style={{
+                                            padding: '40px',
+                                            textAlign: 'center',
+                                            color: 'var(--gray)',
+                                            fontSize: '0.95rem',
+                                        }}
+                                    >
                                         {!profesorInfo ? (
-                                            <span>Cargando información del profesor...</span>
-                                        ) : !profesorInfo.grado_secciones || profesorInfo.grado_secciones.length === 0 ? (
                                             <span>
-                                                <i className="fas fa-info-circle" style={{marginRight: '8px'}}></i>
-                                                No tienes secciones asignadas. Contacta al administrador.
+                                                Cargando información del
+                                                profesor...
+                                            </span>
+                                        ) : !profesorInfo.grado_secciones ||
+                                          profesorInfo.grado_secciones
+                                              .length === 0 ? (
+                                            <span>
+                                                <i
+                                                    className="fas fa-info-circle"
+                                                    style={{
+                                                        marginRight: '8px',
+                                                    }}
+                                                ></i>
+                                                No tienes secciones asignadas.
+                                                Contacta al administrador.
                                             </span>
                                         ) : (
                                             <span>
-                                                <i className="fas fa-users" style={{marginRight: '8px'}}></i>
-                                                No hay estudiantes en tus secciones asignadas.
+                                                <i
+                                                    className="fas fa-users"
+                                                    style={{
+                                                        marginRight: '8px',
+                                                    }}
+                                                ></i>
+                                                No hay estudiantes en tus
+                                                secciones asignadas.
                                             </span>
                                         )}
                                     </td>
                                 </tr>
                             ) : (
                                 estudiantes.map((estudiante) => {
-                                const boletin = boletines.find(
-                                    (b) =>
-                                        b.estudiante === estudiante.id &&
-                                        b.lapso === selectedPeriodo
-                                );
-                                return (
-                                    <tr
-                                        key={estudiante.id}
-                                        style={{
-                                            borderBottom:
-                                                '1px solid var(--light-gray)',
-                                            transition: 'var(--transition)',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background =
-                                                'rgba(67, 97, 238, 0.03)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background =
-                                                'white';
-                                        }}
-                                    >
-                                        <td
+                                    const boletin = boletines.find(
+                                        (b) =>
+                                            b.estudiante === estudiante.id &&
+                                            b.lapso === selectedPeriodo
+                                    );
+                                    return (
+                                        <tr
+                                            key={estudiante.id}
                                             style={{
-                                                padding: '15px',
-                                                fontSize: '0.95rem',
-                                                color: 'var(--dark)',
-                                                fontWeight: '500',
+                                                borderBottom:
+                                                    '1px solid var(--light-gray)',
+                                                transition: 'var(--transition)',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background =
+                                                    'rgba(67, 97, 238, 0.03)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background =
+                                                    'white';
                                             }}
                                         >
-                                            {estudiante.nombre}{' '}
-                                            {estudiante.apellido}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '15px',
-                                                fontSize: '0.95rem',
-                                                color: 'var(--gray)',
-                                            }}
-                                        >
-                                            {estudiante.cedula || '—'}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '15px',
-                                                fontSize: '0.95rem',
-                                                color: 'var(--gray)',
-                                            }}
-                                        >
-                                            {estudiante.grado_seccion
-                                                ? `${estudiante.grado_seccion.grado} ${estudiante.grado_seccion.seccion}`
-                                                : '—'}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '15px',
-                                                textAlign: 'center',
-                                            }}
-                                        >
-                                            {boletin ? (
-                                                <span
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '6px',
-                                                        padding: '6px 12px',
-                                                        background:
-                                                            'rgba(76, 201, 240, 0.1)',
-                                                        color: 'var(--success)',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: '500',
-                                                        border: '1px solid rgba(76, 201, 240, 0.3)',
-                                                    }}
-                                                >
-                                                    <i
-                                                        className="fas fa-check-circle"
+                                            <td
+                                                style={{
+                                                    padding: '15px',
+                                                    fontSize: '0.95rem',
+                                                    color: 'var(--dark)',
+                                                    fontWeight: '500',
+                                                }}
+                                            >
+                                                {estudiante.nombre}{' '}
+                                                {estudiante.apellido}
+                                            </td>
+                                            <td
+                                                style={{
+                                                    padding: '15px',
+                                                    fontSize: '0.95rem',
+                                                    color: 'var(--gray)',
+                                                }}
+                                            >
+                                                {estudiante.cedula || '—'}
+                                            </td>
+                                            <td
+                                                style={{
+                                                    padding: '15px',
+                                                    fontSize: '0.95rem',
+                                                    color: 'var(--gray)',
+                                                }}
+                                            >
+                                                {estudiante.grado_seccion
+                                                    ? `${estudiante.grado_seccion.grado} ${estudiante.grado_seccion.seccion}`
+                                                    : '—'}
+                                            </td>
+                                            <td
+                                                style={{
+                                                    padding: '15px',
+                                                    textAlign: 'center',
+                                                }}
+                                            >
+                                                {boletin ? (
+                                                    <span
                                                         style={{
-                                                            fontSize: '0.75rem',
+                                                            display:
+                                                                'inline-flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: '6px',
+                                                            padding: '6px 12px',
+                                                            background:
+                                                                'rgba(76, 201, 240, 0.1)',
+                                                            color: 'var(--success)',
+                                                            borderRadius:
+                                                                '20px',
+                                                            fontSize: '0.85rem',
+                                                            fontWeight: '500',
+                                                            border: '1px solid rgba(76, 201, 240, 0.3)',
                                                         }}
-                                                    ></i>
-                                                    Subido
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '6px',
-                                                        padding: '6px 12px',
-                                                        background:
-                                                            'rgba(248, 150, 30, 0.1)',
-                                                        color: 'var(--warning)',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: '500',
-                                                        border: '1px solid rgba(248, 150, 30, 0.3)',
-                                                    }}
-                                                >
-                                                    <i
-                                                        className="fas fa-clock"
+                                                    >
+                                                        <i
+                                                            className="fas fa-check-circle"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.75rem',
+                                                            }}
+                                                        ></i>
+                                                        Subido
+                                                    </span>
+                                                ) : (
+                                                    <span
                                                         style={{
-                                                            fontSize: '0.75rem',
+                                                            display:
+                                                                'inline-flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: '6px',
+                                                            padding: '6px 12px',
+                                                            background:
+                                                                'rgba(248, 150, 30, 0.1)',
+                                                            color: 'var(--warning)',
+                                                            borderRadius:
+                                                                '20px',
+                                                            fontSize: '0.85rem',
+                                                            fontWeight: '500',
+                                                            border: '1px solid rgba(248, 150, 30, 0.3)',
                                                         }}
-                                                    ></i>
-                                                    Pendiente
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '15px',
-                                                textAlign: 'center',
-                                            }}
-                                        >
-                                            {boletin ? (
-                                                <button
-                                                    onClick={() =>
-                                                        handleUploadClick(
-                                                            estudiante,
-                                                            selectedPeriodo
-                                                        )
-                                                    }
-                                                    style={{
-                                                        padding: '10px 20px',
-                                                        background:
-                                                            'var(--warning)',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius:
-                                                            'var(--border-radius)',
-                                                        fontSize: '0.9rem',
-                                                        fontWeight: '500',
-                                                        cursor: 'pointer',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent:
-                                                            'center',
-                                                        gap: '8px',
-                                                        transition:
-                                                            'var(--transition)',
-                                                        boxShadow:
-                                                            '0 4px 15px rgba(248, 150, 30, 0.3)',
-                                                        minWidth: '120px',
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.background =
-                                                            '#e0a800';
-                                                        e.currentTarget.style.transform =
-                                                            'translateY(-2px)';
-                                                        e.currentTarget.style.boxShadow =
-                                                            '0 6px 20px rgba(248, 150, 30, 0.4)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.background =
-                                                            'var(--warning)';
-                                                        e.currentTarget.style.transform =
-                                                            'translateY(0)';
-                                                        e.currentTarget.style.boxShadow =
-                                                            '0 4px 15px rgba(248, 150, 30, 0.3)';
-                                                    }}
-                                                >
-                                                    <i
-                                                        className="fas fa-edit"
+                                                    >
+                                                        <i
+                                                            className="fas fa-clock"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.75rem',
+                                                            }}
+                                                        ></i>
+                                                        Pendiente
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td
+                                                style={{
+                                                    padding: '15px',
+                                                    textAlign: 'center',
+                                                }}
+                                            >
+                                                {boletin ? (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleUploadClick(
+                                                                estudiante,
+                                                                selectedPeriodo
+                                                            )
+                                                        }
                                                         style={{
-                                                            fontSize: '0.8rem',
+                                                            padding:
+                                                                '10px 20px',
+                                                            background:
+                                                                'var(--warning)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius:
+                                                                'var(--border-radius)',
+                                                            fontSize: '0.9rem',
+                                                            fontWeight: '500',
+                                                            cursor: 'pointer',
                                                             display:
                                                                 'inline-flex',
                                                             alignItems:
                                                                 'center',
                                                             justifyContent:
                                                                 'center',
-                                                            lineHeight: '1',
+                                                            gap: '8px',
+                                                            transition:
+                                                                'var(--transition)',
+                                                            boxShadow:
+                                                                '0 4px 15px rgba(248, 150, 30, 0.3)',
+                                                            minWidth: '120px',
                                                         }}
-                                                    ></i>
-                                                    Actualizar
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() =>
-                                                        handleUploadClick(
-                                                            estudiante,
-                                                            selectedPeriodo
-                                                        )
-                                                    }
-                                                    style={{
-                                                        padding: '10px 20px',
-                                                        background:
-                                                            'var(--primary)',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius:
-                                                            'var(--border-radius)',
-                                                        fontSize: '0.9rem',
-                                                        fontWeight: '500',
-                                                        cursor: 'pointer',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent:
-                                                            'center',
-                                                        gap: '8px',
-                                                        transition:
-                                                            'var(--transition)',
-                                                        boxShadow:
-                                                            '0 4px 15px rgba(67, 97, 238, 0.3)',
-                                                        minWidth: '120px',
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.background =
-                                                            'var(--primary-dark)';
-                                                        e.currentTarget.style.transform =
-                                                            'translateY(-2px)';
-                                                        e.currentTarget.style.boxShadow =
-                                                            '0 6px 20px rgba(67, 97, 238, 0.4)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.background =
-                                                            'var(--primary)';
-                                                        e.currentTarget.style.transform =
-                                                            'translateY(0)';
-                                                        e.currentTarget.style.boxShadow =
-                                                            '0 4px 15px rgba(67, 97, 238, 0.3)';
-                                                    }}
-                                                >
-                                                    <i
-                                                        className="fas fa-upload"
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                '#e0a800';
+                                                            e.currentTarget.style.transform =
+                                                                'translateY(-2px)';
+                                                            e.currentTarget.style.boxShadow =
+                                                                '0 6px 20px rgba(248, 150, 30, 0.4)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                'var(--warning)';
+                                                            e.currentTarget.style.transform =
+                                                                'translateY(0)';
+                                                            e.currentTarget.style.boxShadow =
+                                                                '0 4px 15px rgba(248, 150, 30, 0.3)';
+                                                        }}
+                                                    >
+                                                        <i
+                                                            className="fas fa-edit"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.8rem',
+                                                                display:
+                                                                    'inline-flex',
+                                                                alignItems:
+                                                                    'center',
+                                                                justifyContent:
+                                                                    'center',
+                                                                lineHeight: '1',
+                                                            }}
+                                                        ></i>
+                                                        Actualizar
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleUploadClick(
+                                                                estudiante,
+                                                                selectedPeriodo
+                                                            )
+                                                        }
                                                         style={{
-                                                            fontSize: '0.8rem',
+                                                            padding:
+                                                                '10px 20px',
+                                                            background:
+                                                                'var(--primary)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius:
+                                                                'var(--border-radius)',
+                                                            fontSize: '0.9rem',
+                                                            fontWeight: '500',
+                                                            cursor: 'pointer',
                                                             display:
                                                                 'inline-flex',
                                                             alignItems:
                                                                 'center',
                                                             justifyContent:
                                                                 'center',
-                                                            lineHeight: '1',
+                                                            gap: '8px',
+                                                            transition:
+                                                                'var(--transition)',
+                                                            boxShadow:
+                                                                '0 4px 15px rgba(67, 97, 238, 0.3)',
+                                                            minWidth: '120px',
                                                         }}
-                                                    ></i>
-                                                    Subir PDF
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            }))}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                'var(--primary-dark)';
+                                                            e.currentTarget.style.transform =
+                                                                'translateY(-2px)';
+                                                            e.currentTarget.style.boxShadow =
+                                                                '0 6px 20px rgba(67, 97, 238, 0.4)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                'var(--primary)';
+                                                            e.currentTarget.style.transform =
+                                                                'translateY(0)';
+                                                            e.currentTarget.style.boxShadow =
+                                                                '0 4px 15px rgba(67, 97, 238, 0.3)';
+                                                        }}
+                                                    >
+                                                        <i
+                                                            className="fas fa-upload"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.8rem',
+                                                                display:
+                                                                    'inline-flex',
+                                                                alignItems:
+                                                                    'center',
+                                                                justifyContent:
+                                                                    'center',
+                                                                lineHeight: '1',
+                                                            }}
+                                                        ></i>
+                                                        Subir PDF
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                         </tbody>
                     </table>
                 </div>
