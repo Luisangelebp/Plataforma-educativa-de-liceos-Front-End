@@ -90,20 +90,6 @@ const DashboardRepresentante = () => {
                             <span className="nav-text">Boletines</span>
                         </Link>
                     </div>
-                    <div className="nav-item">
-                        <Link
-                            to="/representante/calendario"
-                            className={`nav-link ${
-                                location.pathname ===
-                                '/representante/calendario'
-                                    ? 'active'
-                                    : ''
-                            }`}
-                        >
-                            <i className="fas fa-calendar-alt"></i>
-                            <span className="nav-text">Calendario</span>
-                        </Link>
-                    </div>
                 </nav>
 
                 <div className="sidebar-footer">

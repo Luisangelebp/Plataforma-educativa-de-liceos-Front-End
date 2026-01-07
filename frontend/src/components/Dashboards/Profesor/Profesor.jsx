@@ -33,7 +33,11 @@ export function Profesor() {
         if (!user) return 'P';
         const nombre = user.nombre || user.nombres || '';
         const apellido = user.apellido || user.apellidos || '';
-        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'P';
+        return user.foto ? (
+            <img src={user.foto} alt="" />
+        ) : (
+            (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A'
+        );
     };
 
     const getUserName = () => {
@@ -144,19 +148,6 @@ export function Profesor() {
                         >
                             <i className="fas fa-file-pdf"></i>
                             <span className="nav-text">Boletines</span>
-                        </Link>
-                    </div>
-                    <div className="nav-item">
-                        <Link
-                            to="/profesor/calendario"
-                            className={`nav-link ${
-                                location.pathname === '/profesor/calendario'
-                                    ? 'active'
-                                    : ''
-                            }`}
-                        >
-                            <i className="fas fa-calendar-alt"></i>
-                            <span className="nav-text">Calendario</span>
                         </Link>
                     </div>
                 </nav>

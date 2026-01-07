@@ -577,9 +577,20 @@ body {
 }
 
 .role-icon {
+
     font-size: 1.8rem;
     margin-bottom: 10px;
     color: var(--primary);
+
+}
+
+.role-icon i {
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
 }
 
 /* ===== DASHBOARD GENERAL ===== */
@@ -1345,10 +1356,6 @@ body {
         max-width: 100%;
     }
     
-    .login-left {
-        display: none;
-    }
-    
     .sidebar {
         width: 100%;
         position: relative;
@@ -1370,4 +1377,19 @@ body {
     .form-grid {
         grid-template-columns: 1fr !important;
     }
+}
+
+@media (max-width: 950px) {
+
+    .login-left {
+        display: none;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .role-selector {
+        display: none;}
+
 }

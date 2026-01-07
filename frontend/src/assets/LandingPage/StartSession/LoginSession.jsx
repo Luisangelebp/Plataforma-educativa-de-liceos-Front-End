@@ -148,6 +148,8 @@ const LoginSession = ({ setShowLogin }) => {
                     ? 'Profesor'
                     : role === 'representante'
                     ? 'Representante'
+                    : role === 'admin'
+                    ? 'Administrador'
                     : '',
         }));
     };
@@ -442,6 +444,18 @@ const LoginSession = ({ setShowLogin }) => {
                                     <i className="fas fa-user-friends"></i>
                                 </div>
                                 <h4>Representante</h4>
+                                <p>Gestión de estudiantes</p>
+                            </div>
+                            <div
+                                className={`role-card ${
+                                    selectedRole === 'admin' ? 'active' : ''
+                                }`}
+                                onClick={() => selectRole('admin')}
+                            >
+                                <div className="role-icon">
+                                    <i className="fas fa-user-friends"></i>
+                                </div>
+                                <h4>Administrador</h4>
                                 <p>Gestión de estudiantes</p>
                             </div>
                         </div>

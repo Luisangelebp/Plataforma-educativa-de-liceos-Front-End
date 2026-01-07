@@ -38,7 +38,11 @@ export function Admin() {
         if (!user) return 'A';
         const nombre = user.nombre || user.nombres || '';
         const apellido = user.apellido || user.apellidos || '';
-        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A';
+        return user.foto ? (
+            <img src={user.foto} alt="" />
+        ) : (
+            (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A'
+        );
     };
 
     const getUserName = () => {
@@ -226,19 +230,6 @@ export function Admin() {
                                 </Link>
                             </div>
                         )}
-                    </div>
-                    <div className="nav-item">
-                        <Link
-                            to="/admin/calendario"
-                            className={`nav-link ${
-                                location.pathname === '/admin/calendario'
-                                    ? 'active'
-                                    : ''
-                            }`}
-                        >
-                            <i className="fas fa-calendar-alt"></i>
-                            <span className="nav-text">Calendario</span>
-                        </Link>
                     </div>
                 </nav>
 

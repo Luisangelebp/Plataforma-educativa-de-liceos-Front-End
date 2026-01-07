@@ -43,9 +43,6 @@ import { HorariosProfesor } from './components/Dashboards/Profesor/HorariosProfe
 import { Calificaciones } from './components/Dashboards/Profesor/Calificaciones.jsx';
 import CuentaProfesor from './components/Dashboards/Profesor/Cuenta.jsx';
 
-// Calendario
-import { Calendario } from './components/Dashboards/Calendario/Calendario.jsx';
-
 // Private Guard
 import { PrivateGuard } from './PrivateGuard.js';
 
@@ -81,8 +78,6 @@ function App() {
                             path="boletines/secundaria"
                             element={<BoletinesSecundaria />}
                         />
-                        {/*Calendario routes can be added here*/}
-                        <Route path="calendario" element={<Calendario />} />
                         {/*Cuenta routes can be added here*/}
                         <Route path="cuenta" element={<CuentaAdmin />} />
                     </Route>
@@ -98,7 +93,6 @@ function App() {
                             path="boletines"
                             element={<BoletinesRepresentante />}
                         />
-                        <Route path="calendario" element={<Calendario />} />
                         <Route
                             path="cuenta"
                             element={<CuentaRepresentante />}
@@ -134,7 +128,6 @@ function App() {
                             path="boletines"
                             element={<BoletinesProfesor />}
                         />
-                        <Route path="calendario" element={<Calendario />} />
                         <Route path="cuenta" element={<CuentaProfesor />} />
                     </Route>
                 </Route>
