@@ -60,10 +60,11 @@ class AdministradorListSerializer(serializers.ModelSerializer):
     nombre = serializers.CharField(source='usuario.nombre', read_only=True)
     apellido = serializers.CharField(source='usuario.apellido', read_only=True)
     email = serializers.EmailField(source='usuario.email', read_only=True)
+    foto = serializers.ImageField(source='usuario.foto', read_only=True)
 
     class Meta:
         model = Administrador
         fields = [
-            'id', 'usuario', 'nombre', 'apellido', 'email',
+            'id', 'usuario', 'nombre', 'apellido', 'email', 'foto',
             'fecha_creacion', 'fecha_actualizacion'
         ]
