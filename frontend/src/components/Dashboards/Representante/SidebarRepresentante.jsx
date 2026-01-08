@@ -13,9 +13,6 @@ const SidebarRepresentante = ({ onClose }) => {
             <Link to="/representante/representados" onClick={onClose}>Mis representados</Link>
           </li>
           <li>
-            <Link to="/representante/calendario" onClick={onClose}>Calendario de actividades</Link>
-          </li>
-          <li>
             <Link to="/representante/boletines" onClick={onClose}>Boletines</Link>
           </li>
         </ul>

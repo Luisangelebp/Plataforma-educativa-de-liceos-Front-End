@@ -10,18 +10,38 @@ export function Admin() {
     const [boletinesExpanded, setBoletinesExpanded] = useState(false);
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            try {
-                setUser(JSON.parse(userStr));
-            } catch (e) {
-                console.error('Error parsing user data:', e);
+        const loadUser = () => {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    setUser(JSON.parse(userStr));
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
             }
-        }
+        };
+        
+        loadUser();
+        
+        // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
+        const handleUserUpdate = (event) => {
+            if (event.detail) {
+                setUser(event.detail);
+            } else {
+                loadUser();
+            }
+        };
+        
+        window.addEventListener('userUpdated', handleUserUpdate);
+        
         // Expandir boletines si estamos en una ruta de boletines
         if (location.pathname.startsWith('/admin/boletines')) {
             setBoletinesExpanded(true);
         }
+        
+        return () => {
+            window.removeEventListener('userUpdated', handleUserUpdate);
+        };
     }, [location.pathname]);
 
     const handleLogout = () => {
@@ -38,11 +58,13 @@ export function Admin() {
         if (!user) return 'A';
         const nombre = user.nombre || user.nombres || '';
         const apellido = user.apellido || user.apellidos || '';
-        return user.foto ? (
-            <img src={user.foto} alt="" />
-        ) : (
-            (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A'
-        );
+        if (user.foto) {
+            const fotoUrl = user.foto.startsWith('http') 
+                ? user.foto 
+                : `${API_URL}${user.foto}`;
+            return <img src={fotoUrl} alt="" />;
+        }
+        return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase() || 'A';
     };
 
     const getUserName = () => {
@@ -96,9 +118,7 @@ export function Admin() {
                             }`}
                         >
                             <i className="fas fa-user-plus"></i>
-                            <span className="nav-text">
-                                Crear Nuevo Usuario
-                            </span>
+                            <span className="nav-text">Crear nuevo usuario</span>
                         </Link>
                     </div>
                     <div className="nav-item">

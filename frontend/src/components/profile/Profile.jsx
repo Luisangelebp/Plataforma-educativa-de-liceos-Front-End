@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './css/Profile.css';
 import { Link } from 'react-router-dom';
 export function Profile({ userImg }) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [currentImg, setCurrentImg] = useState(userImg);
+    
+    useEffect(() => {
+        setCurrentImg(userImg);
+    }, [userImg]);
+    
     const logout = () => {
         window.localStorage.clear();
         // Marcar que viene de logout para mostrar directamente el login
@@ -13,8 +19,8 @@ export function Profile({ userImg }) {
     return (
         <div className="profile">
             <div className="profile-avatar" onClick={() => setMenuOpen(true)}>
-                {userImg !== null ? (
-                    <img src={userImg} />
+                {currentImg !== null ? (
+                    <img src={currentImg} key={currentImg} alt="Perfil" />
                 ) : (
                     <i className="fas fa-user-circle fa-2x"></i>
                 )}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Listas.css';
 
@@ -47,6 +48,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 });
 
 export default function Cuenta() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [representante, setRepresentante] = useState(null);
     const [formData, setFormData] = useState({
@@ -63,42 +65,156 @@ export default function Cuenta() {
 
     useEffect(() => {
         cargarDatosUsuario();
+        
+        // Escuchar cambios en el usuario (ej: cuando admin actualiza la foto)
+        const handleUserUpdate = (event) => {
+            if (event.detail) {
+                const updatedUser = event.detail;
+                setUser(updatedUser);
+                // Actualizar preview de foto si existe
+                if (updatedUser.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = updatedUser.foto.startsWith('http') ? updatedUser.foto : `${baseUrl}${updatedUser.foto}`;
+                    setFotoPreview(fotoUrl);
+                }
+            }
+        };
+        
+        window.addEventListener('userUpdated', handleUserUpdate);
+        
+        return () => {
+            window.removeEventListener('userUpdated', handleUserUpdate);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const cargarDatosUsuario = async () => {
         try {
+            setLoading(true);
+            setErrors({});
             const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const userData = JSON.parse(userStr);
-                setUser(userData);
-                
-                // Obtener el perfil del representante
-                const response = await axiosInstance.get('usuarios/representante/');
-                const representanteData = Array.isArray(response.data) 
-                    ? response.data.find(r => r.usuario === userData.id)
-                    : response.data;
-                
-                if (representanteData) {
-                    setRepresentante(representanteData);
-                    setFormData({
-                        direccion: representanteData.direccion || '',
-                        telefono: representanteData.telefono || '',
-                        foto: null,
-                    });
-                    console.log('Datos del representante cargados:', {
-                        direccion: representanteData.direccion,
-                        telefono: representanteData.telefono
-                    });
-                    if (representanteData.foto) {
-                        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                        setFotoPreview(representanteData.foto.startsWith('http') ? representanteData.foto : `${baseUrl}${representanteData.foto}`);
+            if (!userStr) {
+                setErrors({ general: 'Error: No se encontró información del usuario. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            const userData = JSON.parse(userStr);
+            if (!userData || !userData.id) {
+                setErrors({ general: 'Error: Datos de usuario inválidos. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            setUser(userData);
+            
+            // Obtener el perfil del representante
+            const response = await axiosInstance.get('usuarios/representante/');
+            
+            if (!response.data) {
+                setErrors({ general: 'Error: No se recibieron datos del servidor. Por favor, intenta nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            let representanteData = null;
+            
+            // Debug temporal
+            console.log('🔍 Buscando representante:', {
+                userId: userData.id,
+                responseType: Array.isArray(response.data) ? 'array' : typeof response.data,
+                dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
+                firstItem: Array.isArray(response.data) && response.data.length > 0 ? {
+                    id: response.data[0].id,
+                    usuario: response.data[0].usuario,
+                    tipoUsuario: typeof response.data[0].usuario
+                } : response.data
+            });
+            
+            if (Array.isArray(response.data)) {
+                // Buscar usando el mismo patrón que ResumenRepresentante
+                // ResumenRepresentante usa: rep.id === user.id
+                // Pero también verificar por campo usuario
+                representanteData = response.data.find(r => {
+                    // Patrón de ResumenRepresentante: buscar por ID del representante
+                    if (r.id === userData.id) {
+                        console.log('✅ Encontrado por r.id === userData.id');
+                        return true;
                     }
-                } else {
-                    console.warn('No se encontró el perfil del representante para el usuario:', userData.id);
+                    // Patrón alternativo: buscar por campo usuario (puede ser ID o objeto)
+                    if (typeof r.usuario === 'number' && r.usuario === userData.id) {
+                        console.log('✅ Encontrado por r.usuario (number) === userData.id');
+                        return true;
+                    }
+                    if (typeof r.usuario === 'object' && r.usuario && r.usuario.id === userData.id) {
+                        console.log('✅ Encontrado por r.usuario.id === userData.id');
+                        return true;
+                    }
+                    return false;
+                });
+            } else if (response.data && typeof response.data === 'object') {
+                // Si es un solo objeto, verificar que pertenezca al usuario actual
+                const r = response.data;
+                if (
+                    r.id === userData.id ||
+                    (typeof r.usuario === 'number' && r.usuario === userData.id) ||
+                    (typeof r.usuario === 'object' && r.usuario && r.usuario.id === userData.id)
+                ) {
+                    representanteData = response.data;
                 }
+            }
+            
+            if (!representanteData) {
+                console.error('❌ No se encontró representante. Buscando userId:', userData.id);
+                if (Array.isArray(response.data)) {
+                    console.error('Representantes disponibles:', response.data.map(r => ({
+                        id: r.id,
+                        usuario: r.usuario,
+                        tipoUsuario: typeof r.usuario,
+                        nombre: r.nombre || 'N/A'
+                    })));
+                }
+            }
+            
+            if (representanteData && representanteData.id) {
+                setRepresentante(representanteData);
+                setFormData({
+                    direccion: representanteData.direccion || '',
+                    telefono: representanteData.telefono || '',
+                    foto: null,
+                });
+                
+                // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del representante
+                if (userData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(userData.foto.startsWith('http') ? userData.foto : `${baseUrl}${userData.foto}`);
+                } else if (representanteData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(representanteData.foto.startsWith('http') ? representanteData.foto : `${baseUrl}${representanteData.foto}`);
+                }
+            } else {
+                console.error('No se encontró representante. Datos recibidos:', {
+                    responseData: response.data,
+                    userDataId: userData.id,
+                    isArray: Array.isArray(response.data),
+                    dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
+                    primerRepresentante: Array.isArray(response.data) && response.data.length > 0 ? {
+                        id: response.data[0].id,
+                        usuario: response.data[0].usuario,
+                        tipoUsuario: typeof response.data[0].usuario
+                    } : null
+                });
+                // No establecer error aquí, el renderizado condicional lo manejará
             }
         } catch (error) {
             console.error('Error al cargar datos del usuario:', error);
+            if (error.response) {
+                setErrors({ general: `Error del servidor: ${error.response.status} - ${error.response.statusText}. Por favor, intenta nuevamente.` });
+            } else if (error.request) {
+                setErrors({ general: 'Error: No se pudo conectar con el servidor. Verifica tu conexión a internet.' });
+            } else {
+                setErrors({ general: 'Error al cargar la información. Por favor, recarga la página.' });
+            }
         } finally {
             setLoading(false);
         }
@@ -165,6 +281,12 @@ export default function Cuenta() {
             return;
         }
         
+        // Validar que el representante esté cargado antes de mostrar confirmación
+        if (!representante || !representante.id) {
+            setErrors({ general: 'Error: No se pudo cargar la información del representante. Por favor, recarga la página.' });
+            return;
+        }
+        
         setShowConfirm(true);
     };
 
@@ -172,38 +294,78 @@ export default function Cuenta() {
         setShowConfirm(false);
         setSaving(true);
         setSuccessMessage('');
+        setErrors({});
         
         try {
+            const userStr = localStorage.getItem('user');
+            const userData = JSON.parse(userStr);
+            
             let dataToSend;
             let axiosToUse;
             
-            // Siempre enviar los datos, incluso si no hay foto
+            // Si hay foto nueva, actualizar solo la foto en el usuario (como en Admin)
+            // Luego actualizar los datos del representante por separado
             if (formData.foto) {
-                dataToSend = new FormData();
-                dataToSend.append('direccion', formData.direccion || '');
-                dataToSend.append('telefono', formData.telefono || '');
-                dataToSend.append('foto', formData.foto);
-                axiosToUse = axiosInstanceFile;
+                // Actualizar foto del usuario primero (igual que Admin)
+                const fotoData = new FormData();
+                fotoData.append('foto', formData.foto);
+                
+                const fotoResponse = await axiosInstanceFile.patch(`usuario/${userData.id}/`, fotoData);
+                
+                // Actualizar el usuario en localStorage
+                const updatedUser = {
+                    ...userData,
+                    foto: fotoResponse.data.foto,
+                };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                
+                // Actualizar preview de foto
+                if (fotoResponse.data.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = fotoResponse.data.foto.startsWith('http') ? fotoResponse.data.foto : `${baseUrl}${fotoResponse.data.foto}`;
+                    setFotoPreview(fotoUrl);
+                }
+                
+                // Disparar evento personalizado para notificar a otros componentes
+                window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+                
+                // Ahora actualizar los datos del representante (direccion, telefono) si hay cambios
+                if (representante && representante.id && (formData.direccion !== (representante.direccion || '') || formData.telefono !== (representante.telefono || ''))) {
+                    const representanteData = {
+                        direccion: formData.direccion || '',
+                        telefono: formData.telefono || '',
+                    };
+                    const representanteResponse = await axiosInstance.patch(`usuarios/representante/${representante.id}/`, representanteData);
+                    setRepresentante(representanteResponse.data);
+                }
+                
+                setFormData(prev => ({ ...prev, foto: null }));
+                setSuccessMessage('Información actualizada correctamente');
+                setTimeout(() => setSuccessMessage(''), 5000);
+                setSaving(false);
+                return;
             } else {
+                // Si no hay foto, solo actualizar datos del representante
+                if (!representante || !representante.id) {
+                    setErrors({ general: 'Error: No se pudo cargar la información del representante. Por favor, recarga la página.' });
+                    setSaving(false);
+                    return;
+                }
+                
                 dataToSend = {
                     direccion: formData.direccion || '',
                     telefono: formData.telefono || '',
                 };
                 axiosToUse = axiosInstance;
+                
+                const response = await axiosToUse.patch(`usuarios/representante/${representante.id}/`, dataToSend);
+                setRepresentante(response.data);
+                setFormData(prev => ({ ...prev, foto: null }));
+                
+                setSuccessMessage('Información actualizada correctamente');
+                setTimeout(() => setSuccessMessage(''), 5000);
             }
-            
-            const response = await axiosToUse.patch(`usuarios/representante/${representante.id}/`, dataToSend);
-            
-            setRepresentante(response.data);
-            setFormData(prev => ({ ...prev, foto: null }));
-            
-            if (response.data.foto) {
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                setFotoPreview(response.data.foto.startsWith('http') ? response.data.foto : `${baseUrl}${response.data.foto}`);
-            }
-            
-            setSuccessMessage('Información actualizada correctamente');
-            setTimeout(() => setSuccessMessage(''), 5000);
         } catch (error) {
             console.error('Error al actualizar información:', error);
             if (error.response?.data) {
@@ -269,6 +431,46 @@ export default function Cuenta() {
                     </div>
                 )}
 
+                {(!representante || !representante.id) && !loading && (
+                    <div style={{
+                        backgroundColor: '#fff',
+                        padding: '2rem',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            padding: '1rem',
+                            marginBottom: '1rem',
+                            backgroundColor: errors.general ? '#fee2e2' : '#fef3c7',
+                            color: errors.general ? '#991b1b' : '#92400e',
+                            borderRadius: '8px',
+                            border: `1px solid ${errors.general ? '#ef4444' : '#fbbf24'}`
+                        }}>
+                            <i className={`fas ${errors.general ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}`}></i> {
+                                errors.general || 'No se pudo cargar tu información de representante. Por favor, intenta recargar o contacta al administrador.'
+                            }
+                        </div>
+                        <button
+                            type="button"
+                            onClick={cargarDatosUsuario}
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                backgroundColor: '#2563eb',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '1rem',
+                                fontWeight: '600'
+                            }}
+                        >
+                            <i className="fas fa-sync-alt"></i> Recargar
+                        </button>
+                    </div>
+                )}
+
+                {representante && representante.id && (
                 <form onSubmit={handleSubmit} style={{
                     backgroundColor: '#fff',
                     padding: '2rem',
@@ -364,9 +566,7 @@ export default function Cuenta() {
                         <button
                             type="button"
                             onClick={() => {
-                                cargarDatosUsuario();
-                                setErrors({});
-                                setSuccessMessage('');
+                                navigate('/representante');
                             }}
                             style={{
                                 padding: '0.75rem 1.5rem',
@@ -407,6 +607,7 @@ export default function Cuenta() {
                         </button>
                     </div>
                 </form>
+                )}
             </div>
 
             {/* Modal de confirmación */}

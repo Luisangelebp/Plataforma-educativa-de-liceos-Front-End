@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Listas.css';
 
@@ -47,6 +48,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 });
 
 export default function Cuenta() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [profesor, setProfesor] = useState(null);
     const [formData, setFormData] = useState({
@@ -218,14 +220,29 @@ export default function Cuenta() {
             setProfesor(response.data);
             setFormData((prev) => ({ ...prev, foto: null }));
 
+            // Actualizar la foto en localStorage si se actualizó
             if (response.data.foto) {
                 const baseUrl =
                     import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                setFotoPreview(
-                    response.data.foto.startsWith('http')
-                        ? response.data.foto
-                        : `${baseUrl}${response.data.foto}`
-                );
+                const fotoUrl = response.data.foto.startsWith('http')
+                    ? response.data.foto
+                    : `${baseUrl}${response.data.foto}`;
+                setFotoPreview(fotoUrl);
+                
+                // Actualizar el usuario en localStorage con la nueva foto
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const userData = JSON.parse(userStr);
+                    const updatedUser = {
+                        ...userData,
+                        foto: response.data.foto
+                    };
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    setUser(updatedUser);
+                    
+                    // Disparar evento personalizado para notificar a otros componentes
+                    window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+                }
             }
 
             setSuccessMessage('Información actualizada correctamente');
@@ -468,9 +485,7 @@ export default function Cuenta() {
                         <button
                             type="button"
                             onClick={() => {
-                                cargarDatosUsuario();
-                                setErrors({});
-                                setSuccessMessage('');
+                                navigate('/profesor');
                             }}
                             style={{
                                 padding: '0.75rem 1.5rem',

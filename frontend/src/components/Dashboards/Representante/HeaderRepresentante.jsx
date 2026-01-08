@@ -1,17 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Profile } from '../../profile/Profile.jsx';
 import logo from '../../../assets/img/Logo.png';
 import SidebarRepresentante from './SidebarRepresentante'; // ajusta la ruta si hace falta
 
 
-const API_URL = 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function HeaderRepresentante() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState({});
 
-  const rawUser = window.localStorage.getItem('user');
-  const user = rawUser ? JSON.parse(rawUser) : {};
+  useEffect(() => {
+    const loadUser = () => {
+      const rawUser = window.localStorage.getItem('user');
+      if (rawUser) {
+        try {
+          setUser(JSON.parse(rawUser));
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    };
+    
+    loadUser();
+    
+    // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
+    const handleUserUpdate = (event) => {
+      if (event.detail) {
+        setUser(event.detail);
+      } else {
+        loadUser();
+      }
+    };
+    
+    window.addEventListener('userUpdated', handleUserUpdate);
+    
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdate);
+    };
+  }, []);
 
   return (
     <header className="main-header">
@@ -42,11 +70,6 @@ export default function HeaderRepresentante() {
                       Boletines
                     </Link>
                   </li>
-                  <li>
-                    <Link to="/representante/calendario" className="menu-item" onClick={() => setMenuOpen(false)}>
-                      Calendario
-                    </Link>
-                  </li>
                 </ul>
               </details>
             </ul>
@@ -64,7 +87,7 @@ export default function HeaderRepresentante() {
       </div>
 
       <div className="profile-container">
-        <Profile userImg={user.foto ? `${API_URL}${user.foto}` : null} />
+        <Profile userImg={user.foto ? (user.foto.startsWith('http') ? user.foto : `${API_URL}${user.foto}`) : null} />
         <button className="logout-button">Cerrar Sesión</button>
       </div>
     </header>

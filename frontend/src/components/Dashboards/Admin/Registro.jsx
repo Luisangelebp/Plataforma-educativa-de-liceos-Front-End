@@ -1395,7 +1395,7 @@ export default function Registo() {
         <div className="">
             <div className="header">
                 <div className="page-title">
-                    <h1>Creación De Usuarios</h1>
+                    <h1>Creación de usuarios</h1>
                     <p>Seleccione el tipo de usuario que desea registrar</p>
                 </div>
             </div>

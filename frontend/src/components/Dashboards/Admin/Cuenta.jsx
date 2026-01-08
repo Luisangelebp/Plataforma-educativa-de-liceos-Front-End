@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
 
@@ -47,6 +48,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 });
 
 export default function Cuenta() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [formData, setFormData] = useState({
         foto: null,
@@ -176,6 +178,9 @@ export default function Cuenta() {
                     setFotoPreview(response.data.foto.startsWith('http') ? response.data.foto : `${baseUrl}${response.data.foto}`);
                 }
                 
+                // Disparar evento personalizado para notificar a otros componentes
+                window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+                
                 setSuccessMessage('Información actualizada correctamente');
                 setTimeout(() => setSuccessMessage(''), 5000);
                 setSaving(false);
@@ -302,9 +307,7 @@ export default function Cuenta() {
                         <button
                             type="button"
                             onClick={() => {
-                                cargarDatosUsuario();
-                                setErrors({});
-                                setSuccessMessage('');
+                                navigate('/admin');
                             }}
                             style={{
                                 padding: '0.75rem 1.5rem',

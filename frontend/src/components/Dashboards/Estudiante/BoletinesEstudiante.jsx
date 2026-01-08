@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Boletines.css';
 import './BoletinesEstudiante.css';
@@ -27,12 +28,26 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 export function BoletinesEstudiante() {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [boletines, setBoletines] = useState([]);
     const [calificaciones, setCalificaciones] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('calificaciones'); // 'calificaciones' o 'boletines'
+    // Determinar el tab activo basado en la ruta actual
+    const [activeTab, setActiveTab] = useState(
+        location.pathname === '/estudiante/boletines' ? 'boletines' : 'calificaciones'
+    );
     const [selectedLapso, setSelectedLapso] = useState('1');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Sincronizar el tab con la ruta cuando cambia la ubicación
+    useEffect(() => {
+        if (location.pathname === '/estudiante/boletines') {
+            setActiveTab('boletines');
+        } else if (location.pathname === '/estudiante') {
+            setActiveTab('calificaciones');
+        }
+    }, [location.pathname]);
 
     useEffect(() => {
         cargarDatos();
@@ -173,14 +188,20 @@ export function BoletinesEstudiante() {
             <div className="tabs-container">
                 <button
                     className={`tab-button ${activeTab === 'calificaciones' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('calificaciones')}
+                    onClick={() => {
+                        setActiveTab('calificaciones');
+                        navigate('/estudiante');
+                    }}
                 >
                     <i className="fas fa-clipboard-list"></i>
                     Calificaciones
                 </button>
                 <button
                     className={`tab-button ${activeTab === 'boletines' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('boletines')}
+                    onClick={() => {
+                        setActiveTab('boletines');
+                        navigate('/estudiante/boletines');
+                    }}
                 >
                     <i className="fas fa-file-pdf"></i>
                     Boletines Emitidos

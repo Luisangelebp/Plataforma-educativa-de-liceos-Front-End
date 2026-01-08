@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Listas.css';
 
@@ -47,6 +48,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 });
 
 export default function Cuenta() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [estudiante, setEstudiante] = useState(null);
     const [formData, setFormData] = useState({
@@ -62,38 +64,113 @@ export default function Cuenta() {
 
     useEffect(() => {
         cargarDatosUsuario();
+        
+        // Escuchar cambios en el usuario (ej: cuando admin actualiza la foto)
+        const handleUserUpdate = (event) => {
+            if (event.detail) {
+                const updatedUser = event.detail;
+                setUser(updatedUser);
+                // Actualizar preview de foto si existe
+                if (updatedUser.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = updatedUser.foto.startsWith('http') ? updatedUser.foto : `${baseUrl}${updatedUser.foto}`;
+                    setFotoPreview(fotoUrl);
+                }
+            }
+        };
+        
+        window.addEventListener('userUpdated', handleUserUpdate);
+        
+        return () => {
+            window.removeEventListener('userUpdated', handleUserUpdate);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const cargarDatosUsuario = async () => {
         try {
             const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const userData = JSON.parse(userStr);
-                setUser(userData);
-                
-                // Obtener el perfil del estudiante
-                const response = await axiosInstance.get('usuarios/estudiante/');
-                const estudianteData = response.data.find(e => e.usuario === userData.id);
-                
-                if (estudianteData) {
-                    setEstudiante(estudianteData);
-                    setFormData({
-                        direccion: estudianteData.direccion || '',
-                        foto: null,
-                    });
-                    console.log('Datos del estudiante cargados:', {
-                        direccion: estudianteData.direccion
-                    });
-                    if (estudianteData.foto) {
-                        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                        setFotoPreview(estudianteData.foto.startsWith('http') ? estudianteData.foto : `${baseUrl}${estudianteData.foto}`);
+            if (!userStr) {
+                setErrors({ general: 'Error: No se encontró información de usuario. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            const userData = JSON.parse(userStr);
+            if (!userData || !userData.id) {
+                setErrors({ general: 'Error: Datos de usuario inválidos. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            setUser(userData);
+            
+            // Obtener el perfil del estudiante
+            const response = await axiosInstance.get('usuarios/estudiante/');
+            
+            if (!response.data) {
+                setErrors({ general: 'Error: No se recibieron datos del servidor. Por favor, intenta nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            let estudianteData = null;
+            
+            if (Array.isArray(response.data)) {
+                // Buscar usando múltiples patrones (igual que Representante)
+                estudianteData = response.data.find(e => {
+                    // Buscar por ID del estudiante igual al ID del usuario
+                    if (e.id === userData.id) {
+                        return true;
                     }
-                } else {
-                    console.warn('No se encontró el perfil del estudiante para el usuario:', userData.id);
+                    // Buscar por campo usuario (puede ser ID o objeto)
+                    if (typeof e.usuario === 'number' && e.usuario === userData.id) {
+                        return true;
+                    }
+                    if (typeof e.usuario === 'object' && e.usuario && e.usuario.id === userData.id) {
+                        return true;
+                    }
+                    return false;
+                });
+            } else if (response.data && typeof response.data === 'object') {
+                // Si es un solo objeto, verificar que pertenezca al usuario actual
+                const e = response.data;
+                if (
+                    e.id === userData.id ||
+                    (typeof e.usuario === 'number' && e.usuario === userData.id) ||
+                    (typeof e.usuario === 'object' && e.usuario && e.usuario.id === userData.id)
+                ) {
+                    estudianteData = response.data;
                 }
+            }
+            
+            if (estudianteData && estudianteData.id) {
+                setEstudiante(estudianteData);
+                setFormData({
+                    direccion: estudianteData.direccion || '',
+                    foto: null,
+                });
+                
+                // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del estudiante
+                if (userData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(userData.foto.startsWith('http') ? userData.foto : `${baseUrl}${userData.foto}`);
+                } else if (estudianteData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(estudianteData.foto.startsWith('http') ? estudianteData.foto : `${baseUrl}${estudianteData.foto}`);
+                }
+            } else {
+                console.warn('No se encontró el perfil del estudiante para el usuario:', userData.id);
             }
         } catch (error) {
             console.error('Error al cargar datos del usuario:', error);
+            if (error.response) {
+                setErrors({ general: `Error del servidor: ${error.response.status} - ${error.response.statusText}. Por favor, intenta nuevamente.` });
+            } else if (error.request) {
+                setErrors({ general: 'Error: No se pudo conectar con el servidor. Verifica tu conexión a internet.' });
+            } else {
+                setErrors({ general: 'Error al cargar la información. Por favor, recarga la página.' });
+            }
         } finally {
             setLoading(false);
         }
@@ -162,36 +239,80 @@ export default function Cuenta() {
         setShowConfirm(false);
         setSaving(true);
         setSuccessMessage('');
+        setErrors({});
         
         try {
+            const userStr = localStorage.getItem('user');
+            const userData = JSON.parse(userStr);
+            
             let dataToSend;
             let axiosToUse;
             
-            // Siempre enviar los datos, incluso si no hay foto
+            // Validar que el estudiante esté cargado antes de proceder
+            if (!estudiante || !estudiante.id) {
+                setErrors({ general: 'Error: No se pudo cargar la información del estudiante. Por favor, recarga la página.' });
+                setSaving(false);
+                return;
+            }
+            
+            // Si hay foto nueva, actualizar directamente en el endpoint del estudiante
+            // (El estudiante no tiene permisos para actualizar directamente el endpoint de usuario)
             if (formData.foto) {
-                dataToSend = new FormData();
-                dataToSend.append('direccion', formData.direccion || '');
-                dataToSend.append('foto', formData.foto);
-                axiosToUse = axiosInstanceFile;
+                // Crear FormData con foto y dirección
+                const estudianteData = new FormData();
+                estudianteData.append('foto', formData.foto);
+                if (formData.direccion !== (estudiante.direccion || '')) {
+                    estudianteData.append('direccion', formData.direccion || '');
+                }
+                
+                // Actualizar foto en el endpoint del estudiante
+                const estudianteResponse = await axiosInstanceFile.patch(`usuarios/estudiante/${estudiante.id}/`, estudianteData);
+                setEstudiante(estudianteResponse.data);
+                
+                // Actualizar el usuario en localStorage con la foto del estudiante
+                // (asumiendo que la foto del estudiante se sincroniza con la del usuario)
+                const updatedUser = {
+                    ...userData,
+                    foto: estudianteResponse.data.foto,
+                };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                
+                // Actualizar preview de foto
+                if (estudianteResponse.data.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = estudianteResponse.data.foto.startsWith('http') ? estudianteResponse.data.foto : `${baseUrl}${estudianteResponse.data.foto}`;
+                    setFotoPreview(fotoUrl);
+                }
+                
+                // Disparar evento personalizado para notificar a otros componentes
+                window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+                
+                setFormData(prev => ({ ...prev, foto: null }));
+                setSuccessMessage('Información actualizada correctamente');
+                setTimeout(() => setSuccessMessage(''), 5000);
+                setSaving(false);
+                return;
             } else {
+                // Si no hay foto, solo actualizar datos del estudiante
+                if (!estudiante || !estudiante.id) {
+                    setErrors({ general: 'Error: No se pudo cargar la información del estudiante. Por favor, recarga la página.' });
+                    setSaving(false);
+                    return;
+                }
+                
                 dataToSend = {
                     direccion: formData.direccion || '',
                 };
                 axiosToUse = axiosInstance;
+                
+                const response = await axiosToUse.patch(`usuarios/estudiante/${estudiante.id}/`, dataToSend);
+                setEstudiante(response.data);
+                setFormData(prev => ({ ...prev, foto: null }));
+                
+                setSuccessMessage('Información actualizada correctamente');
+                setTimeout(() => setSuccessMessage(''), 5000);
             }
-            
-            const response = await axiosToUse.patch(`usuarios/estudiante/${estudiante.id}/`, dataToSend);
-            
-            setEstudiante(response.data);
-            setFormData(prev => ({ ...prev, foto: null }));
-            
-            if (response.data.foto) {
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                setFotoPreview(response.data.foto.startsWith('http') ? response.data.foto : `${baseUrl}${response.data.foto}`);
-            }
-            
-            setSuccessMessage('Información actualizada correctamente');
-            setTimeout(() => setSuccessMessage(''), 5000);
         } catch (error) {
             console.error('Error al actualizar información:', error);
             if (error.response?.data) {
@@ -330,9 +451,7 @@ export default function Cuenta() {
                         <button
                             type="button"
                             onClick={() => {
-                                cargarDatosUsuario();
-                                setErrors({});
-                                setSuccessMessage('');
+                                navigate('/estudiante');
                             }}
                             style={{
                                 padding: '0.75rem 1.5rem',

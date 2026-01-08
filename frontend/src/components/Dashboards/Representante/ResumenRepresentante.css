@@ -92,10 +92,6 @@
     background: linear-gradient(90deg, #dc3545, #c82333);
 }
 
-.card-calendario::before {
-    background: linear-gradient(90deg, #ffc107, #fd7e14);
-}
-
 .card-icon {
     width: 70px;
     height: 70px;
@@ -114,11 +110,6 @@
 
 .card-boletines .card-icon {
     background: linear-gradient(135deg, #dc3545, #c82333);
-    color: white;
-}
-
-.card-calendario .card-icon {
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
     color: white;
 }
 
@@ -187,15 +178,6 @@
 
 .card-boletines .card-button:hover {
     background: #c82333;
-}
-
-.card-calendario .card-button {
-    background: #ffc107;
-    color: #333;
-}
-
-.card-calendario .card-button:hover {
-    background: #e0a800;
 }
 
 .card-button:hover {

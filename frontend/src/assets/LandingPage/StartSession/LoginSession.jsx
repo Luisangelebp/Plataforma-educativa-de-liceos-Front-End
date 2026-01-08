@@ -452,7 +452,7 @@ const LoginSession = ({ setShowLogin }) => {
                                 onClick={() => selectRole('admin')}
                             >
                                 <div className="role-icon">
-                                    <i className="fas fa-user-friends"></i>
+                                    <i className="fas fa-user-shield"></i>
                                 </div>
                                 <h4>Administrador</h4>
                                 <p>Gestión de estudiantes</p>
