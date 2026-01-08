@@ -320,7 +320,12 @@ export default function Registo() {
                 // Materias se asignan desde la lista de profesores, no desde el registro
 
                 headers['Content-Type'] = 'application/json';
-            } else if ((typeU === 'representante' || typeU === 'estudiante' || typeU === 'administrador') && formData.foto) {
+            } else if (
+                (typeU === 'representante' ||
+                    typeU === 'estudiante' ||
+                    typeU === 'administrador') &&
+                formData.foto
+            ) {
                 // Si hay foto, usar FormData
                 const formDataObj = new FormData();
                 for (const key in formData) {
@@ -345,15 +350,17 @@ export default function Registo() {
                 dataToSend = { ...formData };
                 delete dataToSend.typeU;
                 delete dataToSend.foto;
-                
+
                 // Para estudiantes menores de 12 años, no enviar cédula
                 if (typeU === 'estudiante' && dataToSend.cedula) {
-                    const edad = formData.fecha_nacimiento ? calcularEdad(formData.fecha_nacimiento) : null;
+                    const edad = formData.fecha_nacimiento
+                        ? calcularEdad(formData.fecha_nacimiento)
+                        : null;
                     if (edad !== null && edad < 12) {
                         delete dataToSend.cedula;
                     }
                 }
-                
+
                 headers['Content-Type'] = 'application/json';
             }
 
@@ -1388,7 +1395,7 @@ export default function Registo() {
         <div className="">
             <div className="header">
                 <div className="page-title">
-                    <h1>Registro de Usuarios</h1>
+                    <h1>Creación De Usuarios</h1>
                     <p>Seleccione el tipo de usuario que desea registrar</p>
                 </div>
             </div>

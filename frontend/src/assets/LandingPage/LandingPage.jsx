@@ -85,7 +85,7 @@ export default function LandingPage() {
 
         return null;
     }
-
+    console.log(showLogin);
     // Si showLogin es true o shouldHideLanding es true, mostrar solo el formulario de login
     if (showLogin || shouldHideLanding) {
         return <LoginSession setShowLogin={setShowLogin} />;

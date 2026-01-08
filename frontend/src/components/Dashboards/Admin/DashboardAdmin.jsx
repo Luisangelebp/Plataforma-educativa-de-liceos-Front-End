@@ -96,7 +96,9 @@ export function Admin() {
                             }`}
                         >
                             <i className="fas fa-user-plus"></i>
-                            <span className="nav-text">Registrar Usuario</span>
+                            <span className="nav-text">
+                                Crear Nuevo Usuario
+                            </span>
                         </Link>
                     </div>
                     <div className="nav-item">

@@ -126,7 +126,6 @@ const LoginSession = ({ setShowLogin }) => {
             } else {
                 alert('Rol no reconocido');
             }
-            setShowLogin(false);
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             setErrors({
