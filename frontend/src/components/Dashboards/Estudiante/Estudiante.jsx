@@ -77,19 +77,6 @@ export function Estudiante() {
                             <span className="nav-text">Inicio</span>
                         </Link>
                     </div>
-                    <div className="nav-item">
-                        <Link
-                            to="/estudiante/boletines"
-                            className={`nav-link ${
-                                location.pathname === '/estudiante/boletines'
-                                    ? 'active'
-                                    : ''
-                            }`}
-                        >
-                            <i className="fas fa-file-pdf"></i>
-                            <span className="nav-text">Boletines</span>
-                        </Link>
-                    </div>
                 </nav>
 
                 <div className="sidebar-footer">

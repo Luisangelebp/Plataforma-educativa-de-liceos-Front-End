@@ -142,27 +142,6 @@ const ResumenRepresentante = () => {
                                 Ver Boletines
                             </button>
                         </div>
-
-                        <div className="resumen-card card-calendario">
-                            <div className="card-icon">
-                                <i className="fas fa-calendar-alt"></i>
-                            </div>
-                            <div className="card-content">
-                                <h3>Calendario</h3>
-                                <p className="card-label">
-                                    Actividades y eventos
-                                </p>
-                            </div>
-                            <button
-                                className="card-button"
-                                onClick={() =>
-                                    navigate('/representante/calendario')
-                                }
-                            >
-                                <i className="fas fa-arrow-right"></i>
-                                Ver Calendario
-                            </button>
-                        </div>
                     </div>
 
                     {/* Boletines Recientes */}
