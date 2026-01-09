@@ -129,7 +129,7 @@ const ResumenRepresentante = () => {
                                 <h3>Boletines Disponibles</h3>
                                 <p className="card-number">{totalBoletines}</p>
                                 <p className="card-label">
-                                    Boletín{totalBoletines !== 1 ? 'es' : ''}
+                                    Bolet{totalBoletines !== 1 ? 'ines' : 'ín'}
                                 </p>
                             </div>
                             <button

@@ -19,9 +19,9 @@ const DashboardRepresentante = () => {
                 }
             }
         };
-        
+
         loadUser();
-        
+
         // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
         const handleUserUpdate = (event) => {
             if (event.detail) {
@@ -30,9 +30,9 @@ const DashboardRepresentante = () => {
                 loadUser();
             }
         };
-        
+
         window.addEventListener('userUpdated', handleUserUpdate);
-        
+
         return () => {
             window.removeEventListener('userUpdated', handleUserUpdate);
         };
@@ -54,8 +54,8 @@ const DashboardRepresentante = () => {
         const apellido = user.apellido || user.apellidos || '';
         // Mostrar foto si existe, si no mostrar iniciales
         if (user.foto) {
-            const fotoUrl = user.foto.startsWith('http') 
-                ? user.foto 
+            const fotoUrl = user.foto.startsWith('http')
+                ? user.foto
                 : `${API_URL}${user.foto}`;
             return <img src={fotoUrl} alt="" />;
         }
@@ -115,7 +115,7 @@ const DashboardRepresentante = () => {
                             }`}
                         >
                             <i className="fas fa-file-pdf"></i>
-                            <span className="nav-text">Boletines</span>
+                            <span className="nav-text">Boletines Emitidos</span>
                         </Link>
                     </div>
                 </nav>

@@ -2,7 +2,8 @@ import axios from 'axios';
 import { useState, useEffect, use } from 'react';
 import './css/estadistica.css';
 export default function Estadisticas() {
-    const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
+    const API_URL =
+        (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
     const [numE, setnumE] = useState(0);
     const [numR, setnumR] = useState(0);
     const [numP, setnumP] = useState(0);
@@ -54,17 +55,17 @@ export default function Estadisticas() {
         <section className="content">
             <div className="card">
                 <i className="fas fa-user-graduate fa-2x"></i>
-                <p>Total de Represetantes:</p>
+                <p>Total de Representantes:</p>
                 <span className="numero">{numR}</span>
             </div>
             <div className="card">
                 <i className="fas fa-user-graduate fa-2x"></i>
-                <p>Total de estudiantes:</p>
+                <p>Total de Estudiantes:</p>
                 <span className="numero">{numE}</span>
             </div>
             <div className="card">
                 <i className="fas fa-chalkboard-teacher fa-2x"></i>
-                <p>Total de profesore:</p>
+                <p>Total de Profesores:</p>
                 <span className="numero">{numP} </span>
             </div>
             <div className="card">

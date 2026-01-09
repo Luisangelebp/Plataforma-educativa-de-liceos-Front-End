@@ -123,10 +123,12 @@
     font-size: 1.2rem;
     margin: 0 0 15px 0;
     font-weight: 600;
+    font-family: "Playfair Display", serif;
+
 }
 
 .card-number {
-    font-size: 3rem;
+    font-size: 3rem !important;
     font-weight: 700;
     color: #007bff;
     margin: 0;
