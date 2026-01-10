@@ -65,50 +65,116 @@ export default function Cuenta() {
 
     useEffect(() => {
         cargarDatosUsuario();
+        
+        // Escuchar cambios en el usuario (ej: cuando admin actualiza la foto)
+        const handleUserUpdate = (event) => {
+            if (event.detail) {
+                const updatedUser = event.detail;
+                setUser(updatedUser);
+                // Actualizar preview de foto si existe
+                if (updatedUser.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = updatedUser.foto.startsWith('http') ? updatedUser.foto : `${baseUrl}${updatedUser.foto}`;
+                    setFotoPreview(fotoUrl);
+                }
+            }
+        };
+        
+        window.addEventListener('userUpdated', handleUserUpdate);
+        
+        return () => {
+            window.removeEventListener('userUpdated', handleUserUpdate);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const cargarDatosUsuario = async () => {
         try {
+            setLoading(true);
+            setErrors({});
             const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const userData = JSON.parse(userStr);
-                setUser(userData);
-                // Obtener el perfil del profesor
-                const response = await axiosInstance.get('usuarios/profesor/');
-                const profesorData = response.data.find(
-                    (p) => p.usuario.id === userData.id
-                );
-                console.log('Datos del profesor obtenidos:', response.data);
-                if (profesorData) {
-                    setProfesor(profesorData);
-                    setFormData({
-                        direccion: profesorData.direccion || '',
-                        telefono: profesorData.telefono || '',
-                        foto: null,
-                    });
-                    console.log('Datos del profesor cargados:', {
-                        direccion: profesorData.direccion,
-                        telefono: profesorData.telefono,
-                    });
-                    if (profesorData.foto) {
-                        const baseUrl =
-                            import.meta.env.VITE_API_URL ||
-                            'http://localhost:8000';
-                        setFotoPreview(
-                            profesorData.foto.startsWith('http')
-                                ? profesorData.foto
-                                : `${baseUrl}${profesorData.foto}`
-                        );
+            if (!userStr) {
+                setErrors({ general: 'Error: No se encontró información del usuario. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            const userData = JSON.parse(userStr);
+            if (!userData || !userData.id) {
+                setErrors({ general: 'Error: Datos de usuario inválidos. Por favor, inicia sesión nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            setUser(userData);
+            
+            // Obtener el perfil del profesor
+            const response = await axiosInstance.get('usuarios/profesor/');
+            
+            if (!response.data) {
+                setErrors({ general: 'Error: No se recibieron datos del servidor. Por favor, intenta nuevamente.' });
+                setLoading(false);
+                return;
+            }
+            
+            let profesorData = null;
+            
+            if (Array.isArray(response.data)) {
+                // Buscar usando múltiples patrones (igual que Representante y Estudiante)
+                profesorData = response.data.find(p => {
+                    // Buscar por ID del profesor igual al ID del usuario
+                    if (p.id === userData.id) {
+                        return true;
                     }
-                } else {
-                    console.warn(
-                        'No se encontró el perfil del profesor para el usuario:',
-                        userData.id
-                    );
+                    // Buscar por campo usuario (puede ser ID o objeto)
+                    if (typeof p.usuario === 'number' && p.usuario === userData.id) {
+                        return true;
+                    }
+                    if (typeof p.usuario === 'object' && p.usuario && p.usuario.id === userData.id) {
+                        return true;
+                    }
+                    return false;
+                });
+            } else if (response.data && typeof response.data === 'object') {
+                // Si es un solo objeto, verificar que pertenezca al usuario actual
+                const p = response.data;
+                if (
+                    p.id === userData.id ||
+                    (typeof p.usuario === 'number' && p.usuario === userData.id) ||
+                    (typeof p.usuario === 'object' && p.usuario && p.usuario.id === userData.id)
+                ) {
+                    profesorData = response.data;
                 }
+            }
+            
+            if (profesorData && profesorData.id) {
+                setProfesor(profesorData);
+                setFormData({
+                    direccion: profesorData.direccion || '',
+                    telefono: profesorData.telefono || '',
+                    foto: null,
+                });
+                
+                // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del profesor
+                if (userData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(userData.foto.startsWith('http') ? userData.foto : `${baseUrl}${userData.foto}`);
+                } else if (profesorData.foto) {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(profesorData.foto.startsWith('http') ? profesorData.foto : `${baseUrl}${profesorData.foto}`);
+                }
+            } else {
+                console.warn('No se encontró el perfil del profesor para el usuario:', userData.id);
             }
         } catch (error) {
             console.error('Error al cargar datos del usuario:', error);
+            if (error.response) {
+                setErrors({ general: `Error del servidor: ${error.response.status} - ${error.response.statusText}. Por favor, intenta nuevamente.` });
+            } else if (error.request) {
+                setErrors({ general: 'Error: No se pudo conectar con el servidor. Verifica tu conexión a internet.' });
+            } else {
+                setErrors({ general: 'Error al cargar la información. Por favor, recarga la página.' });
+            }
         } finally {
             setLoading(false);
         }
@@ -185,6 +251,12 @@ export default function Cuenta() {
             return;
         }
 
+        // Validar que el profesor esté cargado antes de mostrar confirmación
+        if (!profesor || !profesor.id) {
+            setErrors({ general: 'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.' });
+            return;
+        }
+
         setShowConfirm(true);
     };
 
@@ -192,19 +264,38 @@ export default function Cuenta() {
         setShowConfirm(false);
         setSaving(true);
         setSuccessMessage('');
+        setErrors({});
 
         try {
+            const userStr = localStorage.getItem('user');
+            const userData = JSON.parse(userStr);
+            
+            // Validar que el profesor esté cargado antes de proceder
+            if (!profesor || !profesor.id) {
+                setErrors({ general: 'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.' });
+                setSaving(false);
+                return;
+            }
+
             let dataToSend;
             let axiosToUse;
 
-            // Siempre enviar los datos, incluso si no hay foto
+            // Si hay foto nueva, actualizar directamente en el endpoint del profesor
             if (formData.foto) {
-                dataToSend = new FormData();
-                dataToSend.append('direccion', formData.direccion || '');
-                dataToSend.append('telefono', formData.telefono || '');
-                dataToSend.append('foto', formData.foto);
+                // Crear FormData con foto, dirección y teléfono
+                const profesorData = new FormData();
+                profesorData.append('foto', formData.foto);
+                if (formData.direccion !== (profesor.direccion || '')) {
+                    profesorData.append('direccion', formData.direccion || '');
+                }
+                if (formData.telefono !== (profesor.telefono || '')) {
+                    profesorData.append('telefono', formData.telefono || '');
+                }
+                
                 axiosToUse = axiosInstanceFile;
+                dataToSend = profesorData;
             } else {
+                // Si no hay foto, solo actualizar datos del profesor
                 dataToSend = {
                     direccion: formData.direccion || '',
                     telefono: formData.telefono || '',
@@ -220,30 +311,27 @@ export default function Cuenta() {
             setProfesor(response.data);
             setFormData((prev) => ({ ...prev, foto: null }));
 
-            // Actualizar la foto en localStorage si se actualizó
+            // Actualizar el usuario en localStorage y disparar evento siempre que haya cambios
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            
+            // Actualizar preview de foto si se actualizó
             if (response.data.foto) {
-                const baseUrl =
-                    import.meta.env.VITE_API_URL || 'http://localhost:8000';
                 const fotoUrl = response.data.foto.startsWith('http')
                     ? response.data.foto
                     : `${baseUrl}${response.data.foto}`;
                 setFotoPreview(fotoUrl);
-                
-                // Actualizar el usuario en localStorage con la nueva foto
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    const userData = JSON.parse(userStr);
-                    const updatedUser = {
-                        ...userData,
-                        foto: response.data.foto
-                    };
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
-                    setUser(updatedUser);
-                    
-                    // Disparar evento personalizado para notificar a otros componentes
-                    window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
-                }
             }
+            
+            // Actualizar el usuario en localStorage con la nueva foto (si existe)
+            const updatedUser = {
+                ...userData,
+                foto: response.data.foto || userData.foto
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            
+            // Disparar evento personalizado para notificar a otros componentes
+            window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
 
             setSuccessMessage('Información actualizada correctamente');
             setTimeout(() => setSuccessMessage(''), 5000);

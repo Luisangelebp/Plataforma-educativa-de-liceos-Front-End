@@ -300,45 +300,48 @@ export default function Cuenta() {
             const userStr = localStorage.getItem('user');
             const userData = JSON.parse(userStr);
             
-            let dataToSend;
-            let axiosToUse;
+            // Validar que el representante esté cargado antes de proceder
+            if (!representante || !representante.id) {
+                setErrors({ general: 'Error: No se pudo cargar la información del representante. Por favor, recarga la página.' });
+                setSaving(false);
+                return;
+            }
             
-            // Si hay foto nueva, actualizar solo la foto en el usuario (como en Admin)
-            // Luego actualizar los datos del representante por separado
+            // Si hay foto nueva, actualizar directamente en el endpoint del representante
+            // (El representante no tiene permisos para actualizar directamente el endpoint de usuario)
             if (formData.foto) {
-                // Actualizar foto del usuario primero (igual que Admin)
-                const fotoData = new FormData();
-                fotoData.append('foto', formData.foto);
+                // Crear FormData con foto, dirección y teléfono
+                const representanteData = new FormData();
+                representanteData.append('foto', formData.foto);
+                if (formData.direccion !== (representante.direccion || '')) {
+                    representanteData.append('direccion', formData.direccion || '');
+                }
+                if (formData.telefono !== (representante.telefono || '')) {
+                    representanteData.append('telefono', formData.telefono || '');
+                }
                 
-                const fotoResponse = await axiosInstanceFile.patch(`usuario/${userData.id}/`, fotoData);
+                // Actualizar foto y datos en el endpoint del representante
+                const representanteResponse = await axiosInstanceFile.patch(`usuarios/representante/${representante.id}/`, representanteData);
+                setRepresentante(representanteResponse.data);
                 
-                // Actualizar el usuario en localStorage
+                // Actualizar el usuario en localStorage con la foto del representante
+                // (asumiendo que la foto del representante se sincroniza con la del usuario)
                 const updatedUser = {
                     ...userData,
-                    foto: fotoResponse.data.foto,
+                    foto: representanteResponse.data.foto,
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 setUser(updatedUser);
                 
                 // Actualizar preview de foto
-                if (fotoResponse.data.foto) {
+                if (representanteResponse.data.foto) {
                     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                    const fotoUrl = fotoResponse.data.foto.startsWith('http') ? fotoResponse.data.foto : `${baseUrl}${fotoResponse.data.foto}`;
+                    const fotoUrl = representanteResponse.data.foto.startsWith('http') ? representanteResponse.data.foto : `${baseUrl}${representanteResponse.data.foto}`;
                     setFotoPreview(fotoUrl);
                 }
                 
                 // Disparar evento personalizado para notificar a otros componentes
                 window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
-                
-                // Ahora actualizar los datos del representante (direccion, telefono) si hay cambios
-                if (representante && representante.id && (formData.direccion !== (representante.direccion || '') || formData.telefono !== (representante.telefono || ''))) {
-                    const representanteData = {
-                        direccion: formData.direccion || '',
-                        telefono: formData.telefono || '',
-                    };
-                    const representanteResponse = await axiosInstance.patch(`usuarios/representante/${representante.id}/`, representanteData);
-                    setRepresentante(representanteResponse.data);
-                }
                 
                 setFormData(prev => ({ ...prev, foto: null }));
                 setSuccessMessage('Información actualizada correctamente');
@@ -353,13 +356,12 @@ export default function Cuenta() {
                     return;
                 }
                 
-                dataToSend = {
+                const dataToSend = {
                     direccion: formData.direccion || '',
                     telefono: formData.telefono || '',
                 };
-                axiosToUse = axiosInstance;
                 
-                const response = await axiosToUse.patch(`usuarios/representante/${representante.id}/`, dataToSend);
+                const response = await axiosInstance.patch(`usuarios/representante/${representante.id}/`, dataToSend);
                 setRepresentante(response.data);
                 setFormData(prev => ({ ...prev, foto: null }));
                 
