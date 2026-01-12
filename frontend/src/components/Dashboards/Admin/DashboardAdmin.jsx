@@ -20,9 +20,9 @@ export function Admin() {
                 }
             }
         };
-        
+
         loadUser();
-        
+
         // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
         const handleUserUpdate = (event) => {
             if (event.detail) {
@@ -31,14 +31,14 @@ export function Admin() {
                 loadUser();
             }
         };
-        
+
         window.addEventListener('userUpdated', handleUserUpdate);
-        
+
         // Expandir boletines si estamos en una ruta de boletines
         if (location.pathname.startsWith('/admin/boletines')) {
             setBoletinesExpanded(true);
         }
-        
+
         return () => {
             window.removeEventListener('userUpdated', handleUserUpdate);
         };
@@ -59,8 +59,8 @@ export function Admin() {
         const nombre = user.nombre || user.nombres || '';
         const apellido = user.apellido || user.apellidos || '';
         if (user.foto) {
-            const fotoUrl = user.foto.startsWith('http') 
-                ? user.foto 
+            const fotoUrl = user.foto.startsWith('http')
+                ? user.foto
                 : `${API_URL}${user.foto}`;
             return <img src={fotoUrl} alt="" />;
         }
@@ -118,7 +118,9 @@ export function Admin() {
                             }`}
                         >
                             <i className="fas fa-user-plus"></i>
-                            <span className="nav-text">Crear nuevo usuario</span>
+                            <span className="nav-text">
+                                Crear nuevo usuario
+                            </span>
                         </Link>
                     </div>
                     <div className="nav-item">
@@ -170,7 +172,9 @@ export function Admin() {
                             }`}
                         >
                             <i className="fas fa-layer-group"></i>
-                            <span className="nav-text">Grados</span>
+                            <span className="nav-text">
+                                Grados / Años y secciones
+                            </span>
                         </Link>
                     </div>
                     <div className="nav-item">

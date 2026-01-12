@@ -654,7 +654,7 @@
 }
 
 .btn-plantilla.btn-subir {
-    background: #28a745;
+    background: #59c773;
     color: white;
 }
 
@@ -672,12 +672,20 @@
 }
 
 .btn-plantilla.btn-gestionar {
-    background: #6f42c1;
+    background: #7f61b8;
     color: white;
 }
 
 .btn-plantilla.btn-gestionar:hover {
     background: #5a32a3;
+}
+
+.btn-plantilla i{
+    font-size: 1rem;
+}
+
+.plantillas-grid {
+    display: grid;
 }
 
 .modal-header {
