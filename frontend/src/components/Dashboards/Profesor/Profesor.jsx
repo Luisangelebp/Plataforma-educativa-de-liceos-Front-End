@@ -19,9 +19,9 @@ export function Profesor() {
                 }
             }
         };
-        
+
         loadUser();
-        
+
         // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
         const handleUserUpdate = (event) => {
             if (event.detail) {
@@ -30,9 +30,9 @@ export function Profesor() {
                 loadUser();
             }
         };
-        
+
         window.addEventListener('userUpdated', handleUserUpdate);
-        
+
         return () => {
             window.removeEventListener('userUpdated', handleUserUpdate);
         };
@@ -53,8 +53,8 @@ export function Profesor() {
         const nombre = user.nombre || user.nombres || '';
         const apellido = user.apellido || user.apellidos || '';
         if (user.foto) {
-            const fotoUrl = user.foto.startsWith('http') 
-                ? user.foto 
+            const fotoUrl = user.foto.startsWith('http')
+                ? user.foto
                 : `${API_URL}${user.foto}`;
             return <img src={fotoUrl} alt="" />;
         }
@@ -63,7 +63,11 @@ export function Profesor() {
 
     const getUserName = () => {
         if (!user) return 'Profesor';
-        return user.nombre || user.nombres || 'Profesor';
+        return (
+            user.nombre + ' ' + user.apellido ||
+            user.nombres + ' ' + user.apellido ||
+            'Profesor'
+        );
     };
 
     return (
@@ -84,6 +88,7 @@ export function Profesor() {
                             </div>
                             <div className="user-info">
                                 <h4>{getUserName()}</h4>
+                                <p>{user ? user.cedula : 'V000000000'}</p>
                                 <p>Profesor</p>
                             </div>
                         </div>

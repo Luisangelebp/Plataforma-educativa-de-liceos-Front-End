@@ -329,7 +329,7 @@ export default function Main({ setShowLogin }) {
                                 </div>
                                 <div className="feature scroll-animate">
                                     <i className="fas fa-rocket"></i>
-                                    <h4>Alta Performance</h4>
+                                    <h4>Alto Rendimiento</h4>
                                     <p>
                                         Infraestructura escalable que soporta
                                         miles de usuarios simultáneos

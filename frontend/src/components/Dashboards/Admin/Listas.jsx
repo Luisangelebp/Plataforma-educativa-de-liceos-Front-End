@@ -892,7 +892,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 </div>
                 <form onSubmit={handleSubmit} className="edit-form">
                     <div className="form-group">
-                        <label>Nombre:</label>
+                        <label>Nombres:</label>
                         <input
                             type="text"
                             name="nombre"
@@ -905,7 +905,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         )}
                     </div>
                     <div className="form-group">
-                        <label>Apellido:</label>
+                        <label>Apellidos:</label>
                         <input
                             type="text"
                             name="apellido"
