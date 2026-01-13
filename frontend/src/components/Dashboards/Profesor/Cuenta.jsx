@@ -52,6 +52,7 @@ export default function Cuenta() {
     const [user, setUser] = useState(null);
     const [profesor, setProfesor] = useState(null);
     const [formData, setFormData] = useState({
+        password: '',
         direccion: '',
         telefono: '',
         foto: null,
@@ -65,7 +66,7 @@ export default function Cuenta() {
 
     useEffect(() => {
         cargarDatosUsuario();
-        
+
         // Escuchar cambios en el usuario (ej: cuando admin actualiza la foto)
         const handleUserUpdate = (event) => {
             if (event.detail) {
@@ -73,15 +74,18 @@ export default function Cuenta() {
                 setUser(updatedUser);
                 // Actualizar preview de foto si existe
                 if (updatedUser.foto) {
-                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                    const fotoUrl = updatedUser.foto.startsWith('http') ? updatedUser.foto : `${baseUrl}${updatedUser.foto}`;
+                    const baseUrl =
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    const fotoUrl = updatedUser.foto.startsWith('http')
+                        ? updatedUser.foto
+                        : `${baseUrl}${updatedUser.foto}`;
                     setFotoPreview(fotoUrl);
                 }
             }
         };
-        
+
         window.addEventListener('userUpdated', handleUserUpdate);
-        
+
         return () => {
             window.removeEventListener('userUpdated', handleUserUpdate);
         };
@@ -94,43 +98,59 @@ export default function Cuenta() {
             setErrors({});
             const userStr = localStorage.getItem('user');
             if (!userStr) {
-                setErrors({ general: 'Error: No se encontró información del usuario. Por favor, inicia sesión nuevamente.' });
+                setErrors({
+                    general:
+                        'Error: No se encontró información del usuario. Por favor, inicia sesión nuevamente.',
+                });
                 setLoading(false);
                 return;
             }
-            
+
             const userData = JSON.parse(userStr);
             if (!userData || !userData.id) {
-                setErrors({ general: 'Error: Datos de usuario inválidos. Por favor, inicia sesión nuevamente.' });
+                setErrors({
+                    general:
+                        'Error: Datos de usuario inválidos. Por favor, inicia sesión nuevamente.',
+                });
                 setLoading(false);
                 return;
             }
-            
+
             setUser(userData);
-            
+
             // Obtener el perfil del profesor
             const response = await axiosInstance.get('usuarios/profesor/');
-            
+
             if (!response.data) {
-                setErrors({ general: 'Error: No se recibieron datos del servidor. Por favor, intenta nuevamente.' });
+                setErrors({
+                    general:
+                        'Error: No se recibieron datos del servidor. Por favor, intenta nuevamente.',
+                });
                 setLoading(false);
                 return;
             }
-            
+
             let profesorData = null;
-            
+
             if (Array.isArray(response.data)) {
                 // Buscar usando múltiples patrones (igual que Representante y Estudiante)
-                profesorData = response.data.find(p => {
+                profesorData = response.data.find((p) => {
                     // Buscar por ID del profesor igual al ID del usuario
                     if (p.id === userData.id) {
                         return true;
                     }
                     // Buscar por campo usuario (puede ser ID o objeto)
-                    if (typeof p.usuario === 'number' && p.usuario === userData.id) {
+                    if (
+                        typeof p.usuario === 'number' &&
+                        p.usuario === userData.id
+                    ) {
                         return true;
                     }
-                    if (typeof p.usuario === 'object' && p.usuario && p.usuario.id === userData.id) {
+                    if (
+                        typeof p.usuario === 'object' &&
+                        p.usuario &&
+                        p.usuario.id === userData.id
+                    ) {
                         return true;
                     }
                     return false;
@@ -140,40 +160,65 @@ export default function Cuenta() {
                 const p = response.data;
                 if (
                     p.id === userData.id ||
-                    (typeof p.usuario === 'number' && p.usuario === userData.id) ||
-                    (typeof p.usuario === 'object' && p.usuario && p.usuario.id === userData.id)
+                    (typeof p.usuario === 'number' &&
+                        p.usuario === userData.id) ||
+                    (typeof p.usuario === 'object' &&
+                        p.usuario &&
+                        p.usuario.id === userData.id)
                 ) {
                     profesorData = response.data;
                 }
             }
-            
+
             if (profesorData && profesorData.id) {
                 setProfesor(profesorData);
                 setFormData({
+                    password: '',
                     direccion: profesorData.direccion || '',
                     telefono: profesorData.telefono || '',
                     foto: null,
                 });
-                
+
                 // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del profesor
                 if (userData.foto) {
-                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                    setFotoPreview(userData.foto.startsWith('http') ? userData.foto : `${baseUrl}${userData.foto}`);
+                    const baseUrl =
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(
+                        userData.foto.startsWith('http')
+                            ? userData.foto
+                            : `${baseUrl}${userData.foto}`
+                    );
                 } else if (profesorData.foto) {
-                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                    setFotoPreview(profesorData.foto.startsWith('http') ? profesorData.foto : `${baseUrl}${profesorData.foto}`);
+                    const baseUrl =
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    setFotoPreview(
+                        profesorData.foto.startsWith('http')
+                            ? profesorData.foto
+                            : `${baseUrl}${profesorData.foto}`
+                    );
                 }
             } else {
-                console.warn('No se encontró el perfil del profesor para el usuario:', userData.id);
+                console.warn(
+                    'No se encontró el perfil del profesor para el usuario:',
+                    userData.id
+                );
             }
         } catch (error) {
             console.error('Error al cargar datos del usuario:', error);
             if (error.response) {
-                setErrors({ general: `Error del servidor: ${error.response.status} - ${error.response.statusText}. Por favor, intenta nuevamente.` });
+                setErrors({
+                    general: `Error del servidor: ${error.response.status} - ${error.response.statusText}. Por favor, intenta nuevamente.`,
+                });
             } else if (error.request) {
-                setErrors({ general: 'Error: No se pudo conectar con el servidor. Verifica tu conexión a internet.' });
+                setErrors({
+                    general:
+                        'Error: No se pudo conectar con el servidor. Verifica tu conexión a internet.',
+                });
             } else {
-                setErrors({ general: 'Error al cargar la información. Por favor, recarga la página.' });
+                setErrors({
+                    general:
+                        'Error al cargar la información. Por favor, recarga la página.',
+                });
             }
         } finally {
             setLoading(false);
@@ -231,7 +276,6 @@ export default function Cuenta() {
     const validateForm = () => {
         const newErrors = {};
 
-        // Solo validar formato si el campo tiene contenido
         if (
             formData.telefono &&
             formData.telefono.trim() &&
@@ -253,7 +297,10 @@ export default function Cuenta() {
 
         // Validar que el profesor esté cargado antes de mostrar confirmación
         if (!profesor || !profesor.id) {
-            setErrors({ general: 'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.' });
+            setErrors({
+                general:
+                    'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.',
+            });
             return;
         }
 
@@ -269,10 +316,13 @@ export default function Cuenta() {
         try {
             const userStr = localStorage.getItem('user');
             const userData = JSON.parse(userStr);
-            
+
             // Validar que el profesor esté cargado antes de proceder
             if (!profesor || !profesor.id) {
-                setErrors({ general: 'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.' });
+                setErrors({
+                    general:
+                        'Error: No se pudo cargar la información del profesor. Por favor, recarga la página.',
+                });
                 setSaving(false);
                 return;
             }
@@ -291,7 +341,10 @@ export default function Cuenta() {
                 if (formData.telefono !== (profesor.telefono || '')) {
                     profesorData.append('telefono', formData.telefono || '');
                 }
-                
+                if (formData.password !== '') {
+                    profesorData.append('password', formData.password || '');
+                }
+
                 axiosToUse = axiosInstanceFile;
                 dataToSend = profesorData;
             } else {
@@ -299,6 +352,7 @@ export default function Cuenta() {
                 dataToSend = {
                     direccion: formData.direccion || '',
                     telefono: formData.telefono || '',
+                    password: formData.password || '',
                 };
                 axiosToUse = axiosInstance;
             }
@@ -312,8 +366,9 @@ export default function Cuenta() {
             setFormData((prev) => ({ ...prev, foto: null }));
 
             // Actualizar el usuario en localStorage y disparar evento siempre que haya cambios
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            
+            const baseUrl =
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
             // Actualizar preview de foto si se actualizó
             if (response.data.foto) {
                 const fotoUrl = response.data.foto.startsWith('http')
@@ -321,17 +376,19 @@ export default function Cuenta() {
                     : `${baseUrl}${response.data.foto}`;
                 setFotoPreview(fotoUrl);
             }
-            
+
             // Actualizar el usuario en localStorage con la nueva foto (si existe)
             const updatedUser = {
                 ...userData,
-                foto: response.data.foto || userData.foto
+                foto: response.data.foto || userData.foto,
             };
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
-            
+
             // Disparar evento personalizado para notificar a otros componentes
-            window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+            window.dispatchEvent(
+                new CustomEvent('userUpdated', { detail: updatedUser })
+            );
 
             setSuccessMessage('Información actualizada correctamente');
             setTimeout(() => setSuccessMessage(''), 5000);
@@ -429,6 +486,42 @@ export default function Cuenta() {
                         </h3>
 
                         <div style={{ marginBottom: '1rem' }}>
+                            <label
+                                style={{
+                                    display: 'block',
+                                    marginBottom: '0.5rem',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                }}
+                            >
+                                Cambiar contraseña *
+                            </label>
+                            <input
+                                type="password"
+                                name="contrasena"
+                                value={formData.password}
+                                onChange={handleChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: `1px solid ${
+                                        errors.password ? '#ef4444' : '#d1d5db'
+                                    }`,
+                                    borderRadius: '6px',
+                                    fontSize: '1rem',
+                                }}
+                            />
+                            {errors.password && (
+                                <span
+                                    style={{
+                                        color: '#ef4444',
+                                        fontSize: '0.875rem',
+                                    }}
+                                >
+                                    {errors.password}
+                                </span>
+                            )}
+
                             <label
                                 style={{
                                     display: 'block',
