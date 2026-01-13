@@ -5,6 +5,16 @@ import '../Admin/css/Listas.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rol');
+    // Marcar que viene de logout para mostrar directamente el login
+    sessionStorage.setItem('fromLogout', 'true');
+    document.location.href = '/';
+};
+
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
     return {
@@ -52,10 +62,12 @@ export default function Cuenta() {
     const [user, setUser] = useState(null);
     const [profesor, setProfesor] = useState(null);
     const [formData, setFormData] = useState({
-        password: '',
         direccion: '',
         telefono: '',
         foto: null,
+    });
+    const [pass, setpass] = useState({
+        password: '',
     });
     const [fotoPreview, setFotoPreview] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -173,7 +185,6 @@ export default function Cuenta() {
             if (profesorData && profesorData.id) {
                 setProfesor(profesorData);
                 setFormData({
-                    password: '',
                     direccion: profesorData.direccion || '',
                     telefono: profesorData.telefono || '',
                     foto: null,
@@ -227,10 +238,14 @@ export default function Cuenta() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        if (name === 'password') {
+            setpass({ password: value });
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
         if (errors[name]) {
             setErrors((prev) => {
                 const newErrors = { ...prev };
@@ -276,6 +291,11 @@ export default function Cuenta() {
     const validateForm = () => {
         const newErrors = {};
 
+        if (pass.password.length < 7) {
+            newErrors.password =
+                'La contraseña debe tener al menos 7 caracteres';
+        }
+
         if (
             formData.telefono &&
             formData.telefono.trim() &&
@@ -312,7 +332,7 @@ export default function Cuenta() {
         setSaving(true);
         setSuccessMessage('');
         setErrors({});
-
+        console.log(pass);
         try {
             const userStr = localStorage.getItem('user');
             const userData = JSON.parse(userStr);
@@ -329,10 +349,11 @@ export default function Cuenta() {
 
             let dataToSend;
             let axiosToUse;
-
+            let passSend;
             // Si hay foto nueva, actualizar directamente en el endpoint del profesor
             if (formData.foto) {
                 // Crear FormData con foto, dirección y teléfono
+                const passwordToSend = new FormData();
                 const profesorData = new FormData();
                 profesorData.append('foto', formData.foto);
                 if (formData.direccion !== (profesor.direccion || '')) {
@@ -341,10 +362,10 @@ export default function Cuenta() {
                 if (formData.telefono !== (profesor.telefono || '')) {
                     profesorData.append('telefono', formData.telefono || '');
                 }
-                if (formData.password !== '') {
-                    profesorData.append('password', formData.password || '');
+                if (pass.password !== '') {
+                    passwordToSend.append('password', pass.password);
                 }
-
+                passSend = passwordToSend;
                 axiosToUse = axiosInstanceFile;
                 dataToSend = profesorData;
             } else {
@@ -352,11 +373,29 @@ export default function Cuenta() {
                 dataToSend = {
                     direccion: formData.direccion || '',
                     telefono: formData.telefono || '',
-                    password: formData.password || '',
                 };
+                if (pass.password !== '') {
+                    passSend = { password: pass.password };
+                }
                 axiosToUse = axiosInstance;
             }
-
+            console.log(pass);
+            console.log(passSend);
+            if (passSend !== null) {
+                const responsePass = await axiosToUse.patch(
+                    `usuario/${profesor.usuario}/`,
+                    passSend
+                );
+                console.log(responsePass);
+                if (responsePass.status == 200) {
+                    alert(
+                        'Contraseña actualizada correctamente, inicie sesión nuevamente.'
+                    );
+                    handleLogout();
+                } else {
+                    alert('Error al actualizar la contraseña.');
+                }
+            }
             const response = await axiosToUse.patch(
                 `usuarios/profesor/${profesor.id}/`,
                 dataToSend
@@ -498,8 +537,8 @@ export default function Cuenta() {
                             </label>
                             <input
                                 type="password"
-                                name="contrasena"
-                                value={formData.password}
+                                name="password"
+                                value={pass.password}
                                 onChange={handleChange}
                                 style={{
                                     width: '100%',

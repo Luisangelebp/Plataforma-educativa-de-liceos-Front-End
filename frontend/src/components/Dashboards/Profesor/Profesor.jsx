@@ -89,7 +89,7 @@ export function Profesor() {
                             <div className="user-info">
                                 <h4>{getUserName()}</h4>
                                 <p>{user ? user.cedula : 'V000000000'}</p>
-                                <p>Profesor</p>
+                                <p style={{ marginLeft: '5px' }}>Profesor</p>
                             </div>
                         </div>
                     </Link>
