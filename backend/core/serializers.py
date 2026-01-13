@@ -57,7 +57,7 @@ class LoginSerializer(serializers.Serializer):
         if not rol:
             raise serializers.ValidationError("Rol inválido.")
 
-        usuario = authenticate(email=email, password=password)
+        usuario = authenticate(username=email, password=password)
 
         if not usuario:
             raise serializers.ValidationError("Credenciales inválidas")
