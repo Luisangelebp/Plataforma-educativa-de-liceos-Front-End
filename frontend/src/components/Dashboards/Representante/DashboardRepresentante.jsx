@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const DashboardRepresentante = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState({});
 
     useEffect(() => {
         const loadUser = () => {
@@ -64,7 +64,11 @@ const DashboardRepresentante = () => {
 
     const getUserName = () => {
         if (!user) return 'Representante';
-        return user.nombre || user.nombres || 'Representante';
+        return (
+            user.nombre + ' ' + user.apellido ||
+            user.nombres + ' ' + user.apellido ||
+            'Representante'
+        );
     };
 
     return (
@@ -85,7 +89,10 @@ const DashboardRepresentante = () => {
                             </div>
                             <div className="user-info">
                                 <h4>{getUserName()}</h4>
-                                <p>Representante</p>
+                                <p>{user.cedula ? user.cedula : 'V00000000'}</p>
+                                <p style={{ marginLeft: '5px' }}>
+                                    Representante
+                                </p>
                             </div>
                         </div>
                     </Link>

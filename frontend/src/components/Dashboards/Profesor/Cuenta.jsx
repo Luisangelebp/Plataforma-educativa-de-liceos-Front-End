@@ -291,7 +291,7 @@ export default function Cuenta() {
     const validateForm = () => {
         const newErrors = {};
 
-        if (pass.password.length < 7) {
+        if (pass.password.length > 0 && pass.password.length < 7) {
             newErrors.password =
                 'La contraseña debe tener al menos 7 caracteres';
         }
@@ -332,7 +332,6 @@ export default function Cuenta() {
         setSaving(true);
         setSuccessMessage('');
         setErrors({});
-        console.log(pass);
         try {
             const userStr = localStorage.getItem('user');
             const userData = JSON.parse(userStr);
@@ -381,7 +380,11 @@ export default function Cuenta() {
             }
             console.log(pass);
             console.log(passSend);
-            if (passSend !== null) {
+            const response = await axiosToUse.patch(
+                `usuarios/profesor/${profesor.id}/`,
+                dataToSend
+            );
+            if (passSend !== undefined) {
                 const responsePass = await axiosToUse.patch(
                     `usuario/${profesor.usuario}/`,
                     passSend
@@ -389,17 +392,13 @@ export default function Cuenta() {
                 console.log(responsePass);
                 if (responsePass.status == 200) {
                     alert(
-                        'Contraseña actualizada correctamente, inicie sesión nuevamente.'
+                        `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}" Por favor recuerdela, inicie sesión nuevamente.`
                     );
                     handleLogout();
                 } else {
                     alert('Error al actualizar la contraseña.');
                 }
             }
-            const response = await axiosToUse.patch(
-                `usuarios/profesor/${profesor.id}/`,
-                dataToSend
-            );
 
             setProfesor(response.data);
             setFormData((prev) => ({ ...prev, foto: null }));

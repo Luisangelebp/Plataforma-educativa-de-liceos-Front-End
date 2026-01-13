@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export function Estudiante() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState({});
 
     useEffect(() => {
         const loadUser = () => {
@@ -19,9 +19,9 @@ export function Estudiante() {
                 }
             }
         };
-        
+
         loadUser();
-        
+
         // Escuchar cambios en el usuario (ej: cuando se actualiza la foto)
         const handleUserUpdate = (event) => {
             if (event.detail) {
@@ -30,14 +30,13 @@ export function Estudiante() {
                 loadUser();
             }
         };
-        
+
         window.addEventListener('userUpdated', handleUserUpdate);
-        
+
         return () => {
             window.removeEventListener('userUpdated', handleUserUpdate);
         };
     }, []);
-
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -54,8 +53,8 @@ export function Estudiante() {
         const apellido = user.apellido || user.apellidos || '';
         // Mostrar foto si existe, si no mostrar iniciales
         if (user.foto) {
-            const fotoUrl = user.foto.startsWith('http') 
-                ? user.foto 
+            const fotoUrl = user.foto.startsWith('http')
+                ? user.foto
                 : `${API_URL}${user.foto}`;
             return <img src={fotoUrl} alt="" />;
         }
@@ -64,7 +63,11 @@ export function Estudiante() {
 
     const getUserName = () => {
         if (!user) return 'Estudiante';
-        return user.nombre || user.nombres || 'Estudiante';
+        return (
+            user.nombre + ' ' + user.apellido ||
+            user.nombres + ' ' + user.apellido ||
+            'Estudiante'
+        );
     };
 
     return (
@@ -85,7 +88,8 @@ export function Estudiante() {
                             </div>
                             <div className="user-info">
                                 <h4>{getUserName()}</h4>
-                                <p>Estudiante</p>
+                                <p>{user.cedula ? user.cedula : 'V00000000'}</p>
+                                <p style={{ marginLeft: '5px' }}>Estudiante</p>
                             </div>
                         </div>
                     </Link>
