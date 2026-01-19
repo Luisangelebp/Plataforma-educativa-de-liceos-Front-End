@@ -31,6 +31,7 @@ export function HorariosProfesor() {
     const profesorId = JSON.parse(localStorage.getItem('user')).id;
     const [selectedGrado, setSelectedGrado] = useState();
     const [gradosSecciones, setGradosSecciones] = useState([]);
+    const [materias, setMaterias] = useState([]);
 
     // useEffect(() => {
     //     cargarDatosProfesor();
@@ -39,12 +40,22 @@ export function HorariosProfesor() {
     useEffect(() => {
         if (profesorId) {
             cargarHorarios();
+            cargarMaterias();
         }
     }, [profesorId, selectedGrado]);
 
     useEffect(() => {
         cargarGradosSecciones();
     }, []);
+
+    const cargarMaterias = async (materiasId) => {
+        try {
+            const response = await axiosInstance.get('horarios/materias/');
+            setMaterias(response.data);
+        } catch (error) {
+            console.error('Error al cargar materias:', error);
+        }
+    };
 
     // const cargarDatosProfesor = async () => {
     //     try {
@@ -69,14 +80,15 @@ export function HorariosProfesor() {
         try {
             const response = await axiosInstance.get('horarios/');
             let horariosFiltrados = response.data.filter(
-                (h) => h.profesor === profesorId
+                (h) => h.profesor === profesorId,
             );
 
             if (selectedGrado) {
                 horariosFiltrados = horariosFiltrados.filter(
-                    (h) => h.grado_seccion === parseInt(selectedGrado)
+                    (h) => h.grado_seccion === parseInt(selectedGrado),
                 );
             }
+            console.log(horariosFiltrados);
 
             // Ordenar por día de la semana y hora
             const ordenDias = {
@@ -345,7 +357,7 @@ export function HorariosProfesor() {
                                                 gradosSecciones.find(
                                                     (g) =>
                                                         g.id ==
-                                                        horario.grado_seccion
+                                                        horario.grado_seccion,
                                                 );
                                             return (
                                                 <div
@@ -380,7 +392,11 @@ export function HorariosProfesor() {
                                                                     color: 'var(--dark)',
                                                                 }}
                                                             >
-                                                                {horario.materia_nombre ||
+                                                                {materias.find(
+                                                                    (m) =>
+                                                                        m.id ===
+                                                                        horario.materia,
+                                                                )?.nombre ||
                                                                     horario.materia}
                                                             </p>
                                                             {gradoSeccion && (
@@ -420,13 +436,13 @@ export function HorariosProfesor() {
                                                         >
                                                             {horario.hora_inicio?.substring(
                                                                 0,
-                                                                5
+                                                                5,
                                                             ) ||
                                                                 horario.hora_inicio}{' '}
                                                             -{' '}
                                                             {horario.hora_fin?.substring(
                                                                 0,
-                                                                5
+                                                                5,
                                                             ) ||
                                                                 horario.hora_fin}
                                                         </div>

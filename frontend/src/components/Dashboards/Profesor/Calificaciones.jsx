@@ -41,7 +41,7 @@ export function Calificaciones() {
 
     useEffect(() => {
         if (profesorId) {
-            cargarMaterias();
+            cargarHorarios();
         }
     }, [profesorId]);
 
@@ -52,10 +52,29 @@ export function Calificaciones() {
         }
     }, [selectedMateria, selectedLapso]);
 
-    const cargarMaterias = async () => {
+    const cargarHorarios = async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get('horarios/');
+            let horariosFiltrados = response.data.filter(
+                (h) => h.profesor === profesorId,
+            );
+            let materiasId = horariosFiltrados.map((h) => h.materia);
+            cargarMaterias(materiasId);
+        } catch (error) {
+            console.error('Error al cargar horarios:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const cargarMaterias = async (materiasId) => {
         try {
             const response = await axiosInstance.get('horarios/materias/');
-            setMaterias(response.data);
+            let materiasFitred = response.data.filter((materia) =>
+                materiasId.includes(materia.id),
+            );
+            setMaterias(materiasFitred);
         } catch (error) {
             console.error('Error al cargar materias:', error);
         }

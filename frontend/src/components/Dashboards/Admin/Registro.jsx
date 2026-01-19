@@ -197,8 +197,8 @@ export default function Registo() {
             // Si cambia la fecha de nacimiento y es estudiante, calcular edad
             if (name === 'fecha_nacimiento' && openModal === 'estudiante') {
                 const edad = calcularEdad(value);
-                if (edad !== null && edad < 12) {
-                    // Si es menor de 12, limpiar la cédula
+                if (edad !== null && edad < 9) {
+                    // Si es menor de 9, limpiar la cédula
                     newData.cedula = '';
                 }
             }
@@ -358,12 +358,12 @@ export default function Registo() {
                 const formDataObj = new FormData();
                 for (const key in formData) {
                     if (key !== 'typeU' && key !== 'foto') {
-                        // Para estudiantes menores de 12 años, no enviar cédula
+                        // Para estudiantes menores de 9 años, no enviar cédula
                         if (typeU === 'estudiante' && key === 'cedula') {
                             const edad = formData.fecha_nacimiento
                                 ? calcularEdad(formData.fecha_nacimiento)
                                 : null;
-                            if (edad !== null && edad < 12) {
+                            if (edad !== null && edad < 9) {
                                 // No agregar cédula si es menor de 12 años
                                 continue;
                             }
@@ -379,12 +379,12 @@ export default function Registo() {
                 delete dataToSend.typeU;
                 delete dataToSend.foto;
 
-                // Para estudiantes menores de 12 años, no enviar cédula
+                // Para estudiantes menores de 9 años, no enviar cédula
                 if (typeU === 'estudiante' && dataToSend.cedula) {
                     const edad = formData.fecha_nacimiento
                         ? calcularEdad(formData.fecha_nacimiento)
                         : null;
-                    if (edad !== null && edad < 12) {
+                    if (edad !== null && edad < 9) {
                         delete dataToSend.cedula;
                     }
                 }
@@ -739,7 +739,7 @@ export default function Registo() {
                             {!(
                                 openModal === 'estudiante' &&
                                 formData.fecha_nacimiento &&
-                                calcularEdad(formData.fecha_nacimiento) < 12
+                                calcularEdad(formData.fecha_nacimiento) < 9
                             ) && (
                                 <>
                                     <label

@@ -11,30 +11,27 @@ export function Materias() {
     const [profesores, setProfesores] = useState([]);
     const [profesoresSeleccionados, setProfesoresSeleccionados] = useState([]);
     const [loadingProfesores, setLoadingProfesores] = useState(false);
-        const [materias, setMaterias] = useState([]);
-        const [loading, setLoading] = useState(true);
+    const [materias, setMaterias] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-        useEffect(() => {
+    useEffect(() => {
         fetchMaterias();
     }, []);
 
-            const fetchMaterias = async () => {
-                setLoading(true);
-                try {
+    const fetchMaterias = async () => {
+        setLoading(true);
+        try {
             const token = localStorage.getItem('accessToken');
-                    const response = await axios.get(
-                `${API_URL}/horarios/materias/`,
-                {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
-                }
-                    );
-                    setMaterias(response.data);
-                } catch (error) {
-                    console.error('Error fetching materias:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
+            const response = await axios.get(`${API_URL}/horarios/materias/`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            setMaterias(response.data);
+        } catch (error) {
+            console.error('Error fetching materias:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDelete = async (materia) => {
         if (confirm(`¿Eliminar la materia ${materia.nombre}?`)) {
@@ -43,11 +40,13 @@ export function Materias() {
                 await axios.delete(
                     `${API_URL}/horarios/materias/${materia.id}/`,
                     {
-                        headers: token ? { Authorization: `Bearer ${token}` } : {}
-                    }
+                        headers: token
+                            ? { Authorization: `Bearer ${token}` }
+                            : {},
+                    },
                 );
                 alert('Materia eliminada correctamente.');
-            fetchMaterias();
+                fetchMaterias();
             } catch (error) {
                 console.error('Error al eliminar la materia:', error);
                 alert('Error al eliminar la materia.');
@@ -64,29 +63,37 @@ export function Materias() {
         setMateriaAsignando(materia);
         setShowAsignarProfesores(true);
         setLoadingProfesores(true);
-        
+
         try {
             const token = localStorage.getItem('accessToken');
             // Cargar profesores
             const responseProfesores = await axios.get(
                 `${API_URL}/usuarios/profesor/`,
                 {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
-                }
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
             );
             setProfesores(responseProfesores.data || []);
-            
+
             // Cargar profesores ya asignados a esta materia
             const responseMateria = await axios.get(
                 `${API_URL}/horarios/materias/${materia.id}/`,
                 {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
-                }
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
             );
             // Si la materia tiene profesores asignados, marcarlos como seleccionados
-            if (responseMateria.data.profesores_detalle && responseMateria.data.profesores_detalle.length > 0) {
-                setProfesoresSeleccionados(responseMateria.data.profesores_detalle.map(p => p.id));
-            } else if (responseMateria.data.profesores && responseMateria.data.profesores.length > 0) {
+            if (
+                responseMateria.data.profesores_detalle &&
+                responseMateria.data.profesores_detalle.length > 0
+            ) {
+                setProfesoresSeleccionados(
+                    responseMateria.data.profesores_detalle.map((p) => p.id),
+                );
+            } else if (
+                responseMateria.data.profesores &&
+                responseMateria.data.profesores.length > 0
+            ) {
                 // Si viene como array de IDs
                 setProfesoresSeleccionados(responseMateria.data.profesores);
             } else {
@@ -102,9 +109,9 @@ export function Materias() {
     };
 
     const toggleProfesor = (profesorId) => {
-        setProfesoresSeleccionados(prev => {
+        setProfesoresSeleccionados((prev) => {
             if (prev.includes(profesorId)) {
-                return prev.filter(id => id !== profesorId);
+                return prev.filter((id) => id !== profesorId);
             } else {
                 return [...prev, profesorId];
             }
@@ -113,7 +120,7 @@ export function Materias() {
 
     const guardarAsignacionProfesores = async () => {
         if (!materiaAsignando) return;
-        
+
         try {
             const token = localStorage.getItem('accessToken');
             // Actualizar la materia con los profesores seleccionados
@@ -121,8 +128,8 @@ export function Materias() {
                 `${API_URL}/horarios/materias/${materiaAsignando.id}/`,
                 { profesores: profesoresSeleccionados },
                 {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
-                }
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
             );
             alert('Profesores asignados correctamente.');
             setShowAsignarProfesores(false);
@@ -131,21 +138,24 @@ export function Materias() {
             fetchMaterias();
         } catch (error) {
             console.error('Error al asignar profesores:', error);
-            alert('Error al asignar profesores. Verifique que el backend soporte esta funcionalidad.');
+            alert(
+                'Error al asignar profesores. Verifique que el backend soporte esta funcionalidad.',
+            );
         }
     };
 
     const ListaMaterias = () => {
-
         if (loading) {
             return (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '50px',
-                    color: 'var(--gray)'
-                }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '50px',
+                        color: 'var(--gray)',
+                    }}
+                >
                     Cargando materias...
                 </div>
             );
@@ -154,89 +164,115 @@ export function Materias() {
         return (
             <>
                 {materias.length === 0 ? (
-                    <div className="section-card" style={{textAlign: 'center', padding: '40px'}}>
-                        <p style={{color: 'var(--gray)', fontSize: '1rem'}}>No hay materias registradas.</p>
+                    <div
+                        className="section-card"
+                        style={{ textAlign: 'center', padding: '40px' }}
+                    >
+                        <p style={{ color: 'var(--gray)', fontSize: '1rem' }}>
+                            No hay materias registradas.
+                        </p>
                     </div>
                 ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '20px'
-                    }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '20px',
+                        }}
+                    >
                         {materias.map((materia) => (
-                            <div 
-                                key={materia.id} 
+                            <div
+                                key={materia.id}
                                 style={{
                                     background: 'white',
                                     border: '1px solid var(--light-gray)',
                                     borderRadius: 'var(--border-radius)',
                                     padding: '20px',
                                     transition: 'var(--transition)',
-                                    position: 'relative'
+                                    position: 'relative',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.boxShadow = 'var(--box-shadow)';
-                                    e.currentTarget.style.transform = 'translateY(-3px)';
+                                    e.currentTarget.style.boxShadow =
+                                        'var(--box-shadow)';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-3px)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.boxShadow = 'none';
-                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
                                 }}
                             >
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justifyContent: 'space-between',
-                                    marginBottom: '15px'
-                                }}>
-                                    <div style={{flex: 1}}>
-                                        <h3 style={{
-                                            fontSize: '1.2rem',
-                                            fontWeight: '600',
-                                            color: 'var(--dark)',
-                                            marginBottom: '10px'
-                                        }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        justifyContent: 'space-between',
+                                        marginBottom: '15px',
+                                    }}
+                                >
+                                    <div style={{ flex: 1 }}>
+                                        <h3
+                                            style={{
+                                                fontSize: '1.2rem',
+                                                fontWeight: '600',
+                                                color: 'var(--dark)',
+                                                marginBottom: '10px',
+                                            }}
+                                        >
                                             {materia.nombre}
                                         </h3>
-                                        <p style={{
-                                            color: 'var(--gray)',
-                                            fontSize: '0.9rem',
-                                            margin: 0,
-                                            lineHeight: '1.5'
-                                        }}>
-                                            {materia.descripcion || 'Sin descripción'}
+                                        <p
+                                            style={{
+                                                color: 'var(--gray)',
+                                                fontSize: '0.9rem',
+                                                margin: 0,
+                                                lineHeight: '1.5',
+                                            }}
+                                        >
+                                            {materia.descripcion ||
+                                                'Sin descripción'}
                                         </p>
                                     </div>
-                                    <div style={{
-                                        width: '45px',
-                                        height: '45px',
-                                        borderRadius: '12px',
-                                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        flexShrink: 0,
-                                        marginLeft: '15px',
-                                        lineHeight: '1'
-                                    }}>
-                                        <i className="fas fa-book" style={{
-                                            fontSize: '0.85rem',
-                                            display: 'inline-flex',
+                                    <div
+                                        style={{
+                                            width: '45px',
+                                            height: '45px',
+                                            borderRadius: '12px',
+                                            background:
+                                                'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                            display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
+                                            color: 'white',
+                                            flexShrink: 0,
+                                            marginLeft: '15px',
                                             lineHeight: '1',
-                                            margin: '0',
-                                            padding: '0'
-                                        }}></i>
+                                        }}
+                                    >
+                                        <i
+                                            className="fas fa-book"
+                                            style={{
+                                                fontSize: '0.85rem',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                lineHeight: '1',
+                                                margin: '0',
+                                                padding: '0',
+                                            }}
+                                        ></i>
                                     </div>
                                 </div>
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '8px',
-                                    marginTop: '15px',
-                                    justifyContent: 'flex-end'
-                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: '8px',
+                                        marginTop: '15px',
+                                        justifyContent: 'flex-end',
+                                    }}
+                                >
                                     {/* Botón de asignar profesores oculto - se asigna desde la lista de profesores */}
                                     {/* 
                                     <button
@@ -290,35 +326,43 @@ export function Materias() {
                                             background: 'var(--info)',
                                             color: 'white',
                                             border: 'none',
-                                            borderRadius: 'var(--border-radius-sm)',
+                                            borderRadius:
+                                                'var(--border-radius-sm)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             transition: 'var(--transition)',
                                             flexShrink: 0,
-                                            lineHeight: '1'
+                                            lineHeight: '1',
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = '#3a7bd5';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                            e.currentTarget.style.background =
+                                                '#3a7bd5';
+                                            e.currentTarget.style.transform =
+                                                'translateY(-2px)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--info)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
+                                            e.currentTarget.style.background =
+                                                'var(--info)';
+                                            e.currentTarget.style.transform =
+                                                'translateY(0)';
                                         }}
                                     >
-                                        <i className="fas fa-edit" style={{
-                                            fontSize: '0.7rem',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            lineHeight: '1',
-                                            margin: '0',
-                                            padding: '0'
-                                        }}></i>
+                                        <i
+                                            className="fas fa-edit"
+                                            style={{
+                                                fontSize: '0.7rem',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                lineHeight: '1',
+                                                margin: '0',
+                                                padding: '0',
+                                            }}
+                                        ></i>
                                     </button>
-                            <button
+                                    <button
                                         onClick={() => handleDelete(materia)}
                                         title="Eliminar materia"
                                         style={{
@@ -329,37 +373,47 @@ export function Materias() {
                                             background: 'var(--danger)',
                                             color: 'white',
                                             border: 'none',
-                                            borderRadius: 'var(--border-radius-sm)',
+                                            borderRadius:
+                                                'var(--border-radius-sm)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             transition: 'var(--transition)',
                                             flexShrink: 0,
-                                            lineHeight: '1'
+                                            lineHeight: '1',
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = '#d81b60';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(247, 37, 133, 0.3)';
+                                            e.currentTarget.style.background =
+                                                '#d81b60';
+                                            e.currentTarget.style.transform =
+                                                'translateY(-2px)';
+                                            e.currentTarget.style.boxShadow =
+                                                '0 4px 12px rgba(247, 37, 133, 0.3)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--danger)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = 'none';
+                                            e.currentTarget.style.background =
+                                                'var(--danger)';
+                                            e.currentTarget.style.transform =
+                                                'translateY(0)';
+                                            e.currentTarget.style.boxShadow =
+                                                'none';
                                         }}
                                     >
-                                        <i className="fas fa-trash" style={{
-                                            fontSize: '0.7rem',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            lineHeight: '1',
-                                            margin: '0',
-                                            padding: '0'
-                                        }}></i>
-                            </button>
-                        </div>
+                                        <i
+                                            className="fas fa-trash"
+                                            style={{
+                                                fontSize: '0.7rem',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                lineHeight: '1',
+                                                margin: '0',
+                                                padding: '0',
+                                            }}
+                                        ></i>
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -371,7 +425,7 @@ export function Materias() {
     const RegistrarMateria = ({ isOpen, onClose, materia }) => {
         const [formData, setFormData] = useState({
             nombre: '',
-            descripcion: ''
+            descripcion: '',
         });
         const [isLoading, setIsLoading] = useState(false);
 
@@ -379,7 +433,7 @@ export function Materias() {
             if (materia) {
                 setFormData({
                     nombre: materia.nombre || '',
-                    descripcion: materia.descripcion || ''
+                    descripcion: materia.descripcion || '',
                 });
             } else {
                 setFormData({ nombre: '', descripcion: '' });
@@ -398,7 +452,7 @@ export function Materias() {
             e.preventDefault();
             setIsLoading(true);
             const token = localStorage.getItem('accessToken');
-            
+
             try {
                 if (materia) {
                     // Actualizar
@@ -406,8 +460,10 @@ export function Materias() {
                         `${API_URL}/horarios/materias/${materia.id}/`,
                         formData,
                         {
-                            headers: token ? { Authorization: `Bearer ${token}` } : {}
-                        }
+                            headers: token
+                                ? { Authorization: `Bearer ${token}` }
+                                : {},
+                        },
                     );
                     alert('Materia actualizada correctamente.');
                 } else {
@@ -416,8 +472,10 @@ export function Materias() {
                         `${API_URL}/horarios/materias/`,
                         formData,
                         {
-                            headers: token ? { Authorization: `Bearer ${token}` } : {}
-                        }
+                            headers: token
+                                ? { Authorization: `Bearer ${token}` }
+                                : {},
+                        },
                     );
                     alert('Materia registrada correctamente.');
                 }
@@ -434,97 +492,140 @@ export function Materias() {
         if (!isOpen) return null;
         return (
             <div className="modal" onClick={onClose}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div
+                    className="modal-content"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="modal-header">
                         <h3 className="modal-title">
-                            {materia ? 'Editar Materia' : 'Registrar Nueva Materia'}
+                            {materia
+                                ? 'Editar Materia'
+                                : 'Registrar Nueva Materia'}
                         </h3>
-                        <button className="close-modal" onClick={onClose}>&times;</button>
+                        <button className="close-modal" onClick={onClose}>
+                            &times;
+                        </button>
                     </div>
                     <div className="modal-body">
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label htmlFor="nombre" style={{fontSize: '0.95rem'}}>
+                                <label
+                                    htmlFor="nombre"
+                                    style={{ fontSize: '0.95rem' }}
+                                >
                                     Nombre de la Materia *
                                 </label>
                                 <div className="input-with-icon">
-                                    <i className="fas fa-book" style={{fontSize: '0.8rem'}}></i>
-                                <input
-                                    type="text"
+                                    <i
+                                        className="fas fa-book"
+                                        style={{ fontSize: '0.8rem' }}
+                                    ></i>
+                                    <input
+                                        type="text"
                                         id="nombre"
-                                    name="nombre"
-                                    value={formData.nombre}
+                                        name="nombre"
+                                        value={formData.nombre}
                                         onChange={handleInputChange}
                                         placeholder="Ej: Matemáticas"
-                                    required
-                                />
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
 
                             <div className="form-group">
-                                <label htmlFor="descripcion" style={{fontSize: '0.95rem'}}>
+                                <label
+                                    htmlFor="descripcion"
+                                    style={{ fontSize: '0.95rem' }}
+                                >
                                     Descripción *
                                 </label>
-                                <div style={{position: 'relative'}}>
-                                    <i className="fas fa-align-left" style={{
-                                        position: 'absolute',
-                                        left: '15px',
-                                        top: '15px',
-                                        color: 'var(--gray)',
-                                        fontSize: '0.8rem',
-                                        zIndex: 1
-                                    }}></i>
+                                <div style={{ position: 'relative' }}>
+                                    <i
+                                        className="fas fa-align-left"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '15px',
+                                            top: '15px',
+                                            color: 'var(--gray)',
+                                            fontSize: '0.8rem',
+                                            zIndex: 1,
+                                        }}
+                                    ></i>
                                     <textarea
                                         id="descripcion"
-                                    name="descripcion"
-                                    value={formData.descripcion}
+                                        name="descripcion"
+                                        value={formData.descripcion}
                                         onChange={handleInputChange}
                                         placeholder="Descripción de la materia"
-                                    required
+                                        required
                                         rows="4"
                                         style={{
                                             width: '100%',
                                             padding: '12px 15px 12px 40px',
                                             border: '2px solid var(--light-gray)',
-                                            borderRadius: 'var(--border-radius)',
+                                            borderRadius:
+                                                'var(--border-radius)',
                                             fontSize: '0.95rem',
                                             transition: 'var(--transition)',
                                             background: 'white',
                                             color: 'var(--dark)',
                                             fontFamily: 'inherit',
-                                            resize: 'vertical'
+                                            resize: 'vertical',
                                         }}
                                         onFocus={(e) => {
-                                            e.currentTarget.style.borderColor = 'var(--primary)';
-                                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(67, 97, 238, 0.1)';
+                                            e.currentTarget.style.borderColor =
+                                                'var(--primary)';
+                                            e.currentTarget.style.boxShadow =
+                                                '0 0 0 3px rgba(67, 97, 238, 0.1)';
                                         }}
                                         onBlur={(e) => {
-                                            e.currentTarget.style.borderColor = 'var(--light-gray)';
-                                            e.currentTarget.style.boxShadow = 'none';
+                                            e.currentTarget.style.borderColor =
+                                                'var(--light-gray)';
+                                            e.currentTarget.style.boxShadow =
+                                                'none';
                                         }}
                                     />
+                                </div>
                             </div>
-                        </div>
 
-                            <div style={{marginTop: '25px', display: 'flex', justifyContent: 'flex-end', gap: '12px'}}>
-                                <button 
-                                    type="button" 
+                            <div
+                                style={{
+                                    marginTop: '25px',
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    gap: '12px',
+                                }}
+                            >
+                                <button
+                                    type="button"
                                     className="btn btn-secondary"
                                     onClick={onClose}
-                                    style={{width: 'auto', padding: '12px 24px', fontSize: '0.9rem'}}
+                                    style={{
+                                        width: 'auto',
+                                        padding: '12px 24px',
+                                        fontSize: '0.9rem',
+                                    }}
                                 >
                                     Cancelar
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary"
                                     disabled={isLoading}
-                                    style={{width: 'auto', padding: '12px 30px', fontSize: '0.9rem'}}
+                                    style={{
+                                        width: 'auto',
+                                        padding: '12px 30px',
+                                        fontSize: '0.9rem',
+                                    }}
                                 >
-                                    {isLoading ? 'Guardando...' : (materia ? 'Actualizar' : 'Registrar')}
-                        </button>
+                                    {isLoading
+                                        ? 'Guardando...'
+                                        : materia
+                                          ? 'Actualizar'
+                                          : 'Registrar'}
+                                </button>
                             </div>
-                    </form>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -539,15 +640,15 @@ export function Materias() {
                     <p>Gestiona las materias del sistema educativo</p>
                 </div>
                 <div className="header-actions">
-                    <button 
+                    <button
                         className="btn"
                         onClick={() => {
                             setMateriaEditando(null);
                             setShowRegistrar(true);
                         }}
                         style={{
-                            width: 'auto', 
-                            padding: '12px 24px', 
+                            width: 'auto',
+                            padding: '12px 24px',
                             fontSize: '0.9rem',
                             background: 'var(--primary)',
                             color: 'white',
@@ -558,27 +659,34 @@ export function Materias() {
                             alignItems: 'center',
                             gap: '8px',
                             transition: 'var(--transition)',
-                            boxShadow: '0 4px 15px rgba(67, 97, 238, 0.3)'
+                            boxShadow: '0 4px 15px rgba(67, 97, 238, 0.3)',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--primary-dark)';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(67, 97, 238, 0.4)';
+                            e.currentTarget.style.background =
+                                'var(--primary-dark)';
+                            e.currentTarget.style.transform =
+                                'translateY(-2px)';
+                            e.currentTarget.style.boxShadow =
+                                '0 6px 20px rgba(67, 97, 238, 0.4)';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.background = 'var(--primary)';
                             e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(67, 97, 238, 0.3)';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 15px rgba(67, 97, 238, 0.3)';
                         }}
                     >
-                        <i className="fas fa-plus" style={{fontSize: '0.85rem'}}></i>
-                Registrar Materia
-            </button>
+                        <i
+                            className="fas fa-plus"
+                            style={{ fontSize: '0.85rem' }}
+                        ></i>
+                        Registrar Materia
+                    </button>
                 </div>
             </div>
 
             <ListaMaterias />
-            
+
             <RegistrarMateria
                 isOpen={showRegistrar}
                 onClose={() => {
