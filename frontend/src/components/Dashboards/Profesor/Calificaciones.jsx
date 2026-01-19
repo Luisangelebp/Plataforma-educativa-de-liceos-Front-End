@@ -31,6 +31,7 @@ export function Calificaciones() {
     const [selectedLapso, setSelectedLapso] = useState('1');
     const [calificaciones, setCalificaciones] = useState({});
     const [loading, setLoading] = useState(false);
+    const profesorInfo = JSON.parse(localStorage.getItem('user'));
     const profesorId = JSON.parse(localStorage.getItem('user')).id;
     const lapsoOptions = [
         { value: '1', label: 'Primer Lapso' },
@@ -61,22 +62,75 @@ export function Calificaciones() {
     };
 
     const cargarEstudiantes = async () => {
-        setLoading(true);
         try {
-            // Obtener estudiantes de los grados asignados al profesor
-            const response = await axiosInstance.get('usuarios/estudiante/');
-            setEstudiantes(response.data);
+            // Si el profesor no tiene grado_secciones asignados, no mostrar estudiantes
+            if (!profesorInfo) {
+                console.log('No hay información del profesor aún');
+                setEstudiantes([]);
+                return;
+            }
+
+            if (
+                !profesorInfo.grado_secciones ||
+                profesorInfo.grado_secciones.length === 0
+            ) {
+                console.log('El profesor no tiene grado_secciones asignados');
+                setEstudiantes([]);
+                return;
+            }
+
+            // Obtener los IDs de los grado_secciones del profesor
+            const gradoSeccionesIds = profesorInfo.grado_secciones
+                .map((gs) => {
+                    if (typeof gs === 'object' && gs.id) {
+                        return gs.id;
+                    }
+                    return gs;
+                })
+                .filter((id) => id != null);
+
+            console.log(
+                'IDs de grado_secciones del profesor:',
+                gradoSeccionesIds,
+            );
+
+            if (gradoSeccionesIds.length === 0) {
+                console.log(
+                    'No se pudieron extraer IDs válidos de grado_secciones',
+                );
+                setEstudiantes([]);
+                return;
+            }
+
+            // Construir parámetros de consulta para filtrar estudiantes por grado_seccion
+            let params = new URLSearchParams();
+            gradoSeccionesIds.forEach((id) => {
+                params.append('grado_seccion_id', id);
+            });
+
+            console.log('Parámetros de búsqueda:', params.toString());
+
+            // Obtener estudiantes que pertenecen a los grado_secciones del profesor
+            const url = `usuarios/estudiante/?${params.toString()}`;
+            console.log('URL de búsqueda de estudiantes:', url);
+            const response = await axiosInstance.get(url);
+            console.log('Respuesta completa:', response);
+            console.log(
+                'Estudiantes encontrados:',
+                response.data?.length || 0,
+                response.data,
+            );
+            setEstudiantes(response.data || []);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
-        } finally {
-            setLoading(false);
+            setEstudiantes([]);
         }
     };
 
     const cargarCalificaciones = async () => {
         try {
             const response = await axiosInstance.get(
-                `calificaciones/?materia=${selectedMateria}&lapso=${selectedLapso}`
+                `calificaciones/?materia=${selectedMateria}&lapso=${selectedLapso}`,
             );
             const calificacionesData = {};
 
@@ -111,12 +165,12 @@ export function Calificaciones() {
 
     const calcularPromedio = (notas) => {
         const notasValidas = notas.filter(
-            (n) => n !== null && n !== undefined && n !== ''
+            (n) => n !== null && n !== undefined && n !== '',
         );
         if (notasValidas.length === 0) return 0;
         const suma = notasValidas.reduce(
             (acc, nota) => acc + parseFloat(nota),
-            0
+            0,
         );
         return (suma / notasValidas.length).toFixed(2);
     };
@@ -183,7 +237,7 @@ export function Calificaciones() {
                 // Actualizar calificación existente
                 await axiosInstance.put(
                     `calificaciones/${calificacion.id}/`,
-                    data
+                    data,
                 );
             } else {
                 // Crear nueva calificación
@@ -206,7 +260,7 @@ export function Calificaciones() {
     const enviarCalificacionesFinales = async () => {
         if (
             !window.confirm(
-                '¿Está seguro de enviar las calificaciones finales? Esta acción no se puede deshacer y las calificaciones no podrán ser modificadas.'
+                '¿Está seguro de enviar las calificaciones finales? Esta acción no se puede deshacer y las calificaciones no podrán ser modificadas.',
             )
         ) {
             return;
@@ -218,13 +272,13 @@ export function Calificaciones() {
                 {
                     materia: selectedMateria,
                     lapso: selectedLapso,
-                }
+                },
             );
 
             alert(
                 `Calificaciones finales enviadas exitosamente. ${
                     response.data.calificaciones_enviadas || 0
-                } calificaciones fueron enviadas.`
+                } calificaciones fueron enviadas.`,
             );
 
             // Recargar calificaciones para actualizar el estado
@@ -654,7 +708,7 @@ export function Calificaciones() {
                                                             handleNotaChange(
                                                                 estudiante.id,
                                                                 index,
-                                                                e.target.value
+                                                                e.target.value,
                                                             )
                                                         }
                                                         placeholder="0-20"
@@ -709,14 +763,14 @@ export function Calificaciones() {
                                                         10
                                                             ? 'var(--success)'
                                                             : calificacion.promedio >
-                                                              0
-                                                            ? 'var(--warning)'
-                                                            : 'var(--gray)',
+                                                                0
+                                                              ? 'var(--warning)'
+                                                              : 'var(--gray)',
                                                 }}
                                             >
                                                 {calificacion.promedio > 0
                                                     ? calificacion.promedio.toFixed(
-                                                          2
+                                                          2,
                                                       )
                                                     : '—'}
                                             </td>
@@ -757,7 +811,7 @@ export function Calificaciones() {
                                                     <button
                                                         onClick={() =>
                                                             guardarCalificacion(
-                                                                estudiante.id
+                                                                estudiante.id,
                                                             )
                                                         }
                                                         style={{

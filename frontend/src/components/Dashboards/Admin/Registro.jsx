@@ -157,7 +157,7 @@ export default function Registo() {
                 `${API_URL_BASE}/horarios/materias/`,
                 {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
-                }
+                },
             );
             setMaterias(response.data || []);
         } catch (error) {
@@ -210,6 +210,34 @@ export default function Registo() {
                 ...prev,
                 [name]: '',
             }));
+        }
+        if (name === 'cedula') {
+            if (value[0] !== 'V' && value[0] !== 'E') {
+                setErrors({ cedula: 'Cedula debe comenzar con V o E' });
+            }
+        }
+        if (name === 'password') {
+            if (value.length < 8) {
+                setErrors({ password: 'Mínimo 8 caracteres' });
+            }
+            // Al menos una mayúscula
+            if (!/[A-Z]/.test(value)) {
+                setErrors({
+                    password: 'Debe contener al menos una letra mayúscula.',
+                });
+            }
+
+            // Al menos una minúscula
+            if (!/[a-z]/.test(value)) {
+                setErrors({
+                    password: 'Debe contener al menos una letra minúscula.',
+                });
+            }
+
+            // Al menos un número
+            if (!/[0-9]/.test(value)) {
+                setErrors({ password: 'Debe contener al menos un número.' });
+            }
         }
     };
 
@@ -291,11 +319,11 @@ export default function Registo() {
                             nivel: gs.nivel,
                             grado: gs.grado,
                             seccion: gs.seccion,
-                        })
+                        }),
                     );
                     formDataObj.append(
                         'grado_secciones',
-                        JSON.stringify(gradoSeccionesData)
+                        JSON.stringify(gradoSeccionesData),
                     );
                 }
 
@@ -313,7 +341,7 @@ export default function Registo() {
                             nivel: gs.nivel,
                             grado: gs.grado,
                             seccion: gs.seccion,
-                        })
+                        }),
                     );
                 }
 
@@ -367,7 +395,7 @@ export default function Registo() {
             const response = await axios.post(
                 `${API_URL}/${typeU}/registro/`,
                 dataToSend,
-                { headers }
+                { headers },
             );
             console.log('Usuario registrado con éxito:', response.data);
             alert('Usuario registrado con éxito');
@@ -688,6 +716,18 @@ export default function Registo() {
                                         color: 'var(--dark)',
                                     }}
                                 />
+                                {errors.password && (
+                                    <span
+                                        style={{
+                                            color: 'var(--danger)',
+                                            fontSize: '0.85rem',
+                                            marginTop: '5px',
+                                            display: 'block',
+                                        }}
+                                    >
+                                        {errors.password}
+                                    </span>
+                                )}
                             </div>
                         </>
                     )}
@@ -734,12 +774,12 @@ export default function Registo() {
                                         name="cedula"
                                         value={formData.cedula || ''}
                                         onChange={(e) => handleInputChange(e)}
-                                        placeholder="V-12345678"
+                                        placeholder="V12345678"
                                         required={
                                             openModal !== 'estudiante' ||
                                             !formData.fecha_nacimiento ||
                                             calcularEdad(
-                                                formData.fecha_nacimiento
+                                                formData.fecha_nacimiento,
                                             ) >= 12
                                         }
                                         style={{
@@ -753,6 +793,18 @@ export default function Registo() {
                                             color: 'var(--dark)',
                                         }}
                                     />
+                                    {errors.cedula && (
+                                        <span
+                                            style={{
+                                                color: 'var(--danger)',
+                                                fontSize: '0.85rem',
+                                                marginTop: '5px',
+                                                display: 'block',
+                                            }}
+                                        >
+                                            {errors.cedula}
+                                        </span>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -961,8 +1013,8 @@ export default function Registo() {
                                 {formData.nivel === 'primaria'
                                     ? 'Grado *'
                                     : formData.nivel === 'secundaria'
-                                    ? 'Año *'
-                                    : 'Grado/Año *'}
+                                      ? 'Año *'
+                                      : 'Grado/Año *'}
                             </label>
                             <select
                                 id="grado"
@@ -990,8 +1042,8 @@ export default function Registo() {
                                     {formData.nivel === 'primaria'
                                         ? 'Seleccione el grado'
                                         : formData.nivel === 'secundaria'
-                                        ? 'Seleccione el año'
-                                        : 'Seleccione primero el nivel'}
+                                          ? 'Seleccione el año'
+                                          : 'Seleccione primero el nivel'}
                                 </option>
                                 {formData.nivel === 'primaria' ? (
                                     <>
