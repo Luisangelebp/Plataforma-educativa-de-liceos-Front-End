@@ -5,26 +5,26 @@ import './ResumenRepresentante.css';
 
 const API_URL = import.meta.env.VITE_API_URL + '/' || 'http://localhost:8000/';
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    return {
-        Authorization: token ? `Bearer ${token}` : '',
-    };
-};
+// const getAuthHeaders = () => {
+//     const token = localStorage.getItem('accessToken');
+//     return {
+//         Authorization: token ? `Bearer ${token}` : '',
+//     };
+// };
 
-const axiosInstance = axios.create({
-    baseURL: API_URL,
-});
+// const axiosInstance = axios.create({
+//     baseURL: API_URL,
+// });
 
-axiosInstance.interceptors.request.use((config) => {
-    const authHeaders = getAuthHeaders();
-    config.headers = {
-        ...config.headers,
-        ...authHeaders,
-        'Content-Type': 'application/json',
-    };
-    return config;
-});
+// axiosInstance.interceptors.request.use((config) => {
+//     const authHeaders = getAuthHeaders();
+//     config.headers = {
+//         ...config.headers,
+//         ...authHeaders,
+//         'Content-Type': 'application/json',
+//     };
+//     return config;
+// });
 
 const ListaEstudiantes = ({ isOpen, onClose, estudiantes }) => {
     if (!isOpen) return null;
@@ -103,7 +103,12 @@ const ResumenRepresentante = () => {
 
     const cargarEstudiantes = async () => {
         try {
-            const response = await axiosInstance.get('usuarios/representante/');
+            const response = await axios.get(
+                `${API_URL}usuarios/representante/`,
+                {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+            );
             response.data.find((rep) => rep.id === repreId) &&
                 setEstudiantes(
                     response.data.find((rep) => rep.id === repreId)
@@ -116,7 +121,9 @@ const ResumenRepresentante = () => {
 
     const cargarBoletines = async () => {
         try {
-            const response = await axiosInstance.get('boletines/');
+            const response = await axios.get(`${API_URL}boletines/`, {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            });
             setBoletines(response.data || []);
         } catch (error) {
             console.error('Error al cargar boletines:', error);
@@ -124,7 +131,6 @@ const ResumenRepresentante = () => {
     };
 
     const totalEstudiantes = estudiantes.length || 0;
-    console.log(estudiantes);
     const totalBoletines = boletines.length || 0;
     const boletinesRecientes = boletines.slice(0, 3);
 
