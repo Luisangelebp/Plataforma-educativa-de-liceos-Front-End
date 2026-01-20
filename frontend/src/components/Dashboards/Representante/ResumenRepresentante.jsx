@@ -26,10 +26,63 @@ axiosInstance.interceptors.request.use((config) => {
     return config;
 });
 
+const ListaEstudiantes = ({ isOpen, onClose, estudiantes }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h2>Mis Representados</h2>
+                    <button className="modal-close" onClick={onClose}>
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+                <div className="modal-body">
+                    {estudiantes.length > 0 ? (
+                        <ul className="estudiantes-lista">
+                            {estudiantes.map((estudiante) => (
+                                <li
+                                    key={estudiante.id}
+                                    className="estudiante-item"
+                                >
+                                    <div className="estudiante-info">
+                                        <i className="fas fa-user-circle"></i>
+                                        <span>
+                                            {estudiante.nombre}{' '}
+                                            {estudiante.apellido} -- Cedula:{' '}
+                                            {estudiante.cedula_mostrada}{' '}
+                                        </span>
+                                    </div>
+                                    <span className="estudiante-grado">
+                                        {estudiante.grado_o_año}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No tienes estudiantes representados.</p>
+                    )}
+                </div>
+                <div className="modal-footer">
+                    <button
+                        type="button"
+                        className="btn-cancel"
+                        onClick={onClose}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ResumenRepresentante = () => {
     const [estudiantes, setEstudiantes] = useState([]);
     const [boletines, setBoletines] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
     const repreId = JSON.parse(localStorage.getItem('user')).id;
 
@@ -54,7 +107,7 @@ const ResumenRepresentante = () => {
             response.data.find((rep) => rep.id === repreId) &&
                 setEstudiantes(
                     response.data.find((rep) => rep.id === repreId)
-                        .estudiantes || []
+                        .estudiantes || [],
                 );
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
@@ -71,6 +124,7 @@ const ResumenRepresentante = () => {
     };
 
     const totalEstudiantes = estudiantes.length || 0;
+    console.log(estudiantes);
     const totalBoletines = boletines.length || 0;
     const boletinesRecientes = boletines.slice(0, 3);
 
@@ -112,9 +166,7 @@ const ResumenRepresentante = () => {
                             </div>
                             <button
                                 className="card-button"
-                                onClick={() =>
-                                    navigate('/representante/boletines')
-                                }
+                                onClick={() => setIsModalOpen(true)}
                             >
                                 <i className="fas fa-arrow-right"></i>
                                 Ver Detalles
@@ -165,7 +217,7 @@ const ResumenRepresentante = () => {
                                             {boletin.promedio_general && (
                                                 <span className="promedio-badge">
                                                     {parseFloat(
-                                                        boletin.promedio_general
+                                                        boletin.promedio_general,
                                                     ).toFixed(2)}
                                                 </span>
                                             )}
@@ -179,7 +231,7 @@ const ResumenRepresentante = () => {
                                             <p>
                                                 <i className="fas fa-calendar"></i>
                                                 {new Date(
-                                                    boletin.fecha_emision
+                                                    boletin.fecha_emision,
                                                 ).toLocaleDateString('es-ES', {
                                                     year: 'numeric',
                                                     month: 'short',
@@ -191,7 +243,7 @@ const ResumenRepresentante = () => {
                                             className="btn-ver-boletin"
                                             onClick={() =>
                                                 navigate(
-                                                    '/representante/boletines'
+                                                    '/representante/boletines',
                                                 )
                                             }
                                         >
@@ -205,6 +257,11 @@ const ResumenRepresentante = () => {
                     )}
                 </>
             )}
+            <ListaEstudiantes
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                estudiantes={estudiantes}
+            />
         </div>
     );
 };

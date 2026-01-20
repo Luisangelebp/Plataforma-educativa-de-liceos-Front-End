@@ -105,19 +105,6 @@ export function Profesor() {
                                     : ''
                             }`}
                         >
-                            <i className="fas fa-home"></i>
-                            <span className="nav-text">Inicio</span>
-                        </Link>
-                    </div>
-                    <div className="nav-item">
-                        <Link
-                            to="/profesor/listaE"
-                            className={`nav-link ${
-                                location.pathname === '/profesor/listaE'
-                                    ? 'active'
-                                    : ''
-                            }`}
-                        >
                             <i className="fas fa-users"></i>
                             <span className="nav-text">
                                 Lista de Estudiantes

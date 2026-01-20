@@ -113,11 +113,7 @@ function App() {
 
                 <Route element={<PrivateGuard RouteRol="profesor" />}>
                     <Route path="/profesor" element={<Profesor />}>
-                        <Route index element={<BoletinesProfesor />} />
-                        <Route
-                            path="listaE"
-                            element={<ListaEstudiantesProfesor />}
-                        />
+                        <Route index element={<ListaEstudiantesProfesor />} />
                         <Route path="horarios" element={<HorariosProfesor />} />
                         <Route
                             path="calificaciones"
