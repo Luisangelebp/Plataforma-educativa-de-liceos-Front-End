@@ -150,7 +150,7 @@ AUTHENTICATION_BACKENDS = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://liceo-render-1.onrender.com',
+    'https://liceo-publico-1.onrender.com',
 ]
 
 # ¡AGREGA ESTA LÍNEA CRÍTICA!
