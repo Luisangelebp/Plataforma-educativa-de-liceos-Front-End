@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .serializers import UsuarioSerializer, LoginSerializer, GradoSeccionSerializer
+from .serializers import UsuarioSerializer, LoginSerializer, GradoSeccionSerializer, AdminSetUserPasswordSerializer
 from core.models import GradoSeccion, Usuario
 
 # Importar los serializers de cada rol
@@ -114,3 +115,25 @@ class UsuarioUpdateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminSetUserPasswordView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        if getattr(request.user, 'rol', None) != 'admin':
+            return Response({'error': 'No tienes permiso para realizar esta acción'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            usuario = Usuario.objects.get(pk=pk)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AdminSetUserPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        usuario.set_password(serializer.validated_data['password'])
+        usuario.save()
+
+        return Response({'mensaje': 'Contraseña actualizada correctamente'}, status=status.HTTP_200_OK)
