@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ResumenRepresentante.css';
 
-const API_URL = import.meta.env.VITE_API_URL + '/' || 'http://localhost:8000/';
+const API_URL = import.meta.env.VITE_API_URL + '/' || 'https://liceo-publico.onrender.com/';
 
 // const getAuthHeaders = () => {
 //     const token = localStorage.getItem('accessToken');

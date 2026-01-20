@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './css/Asistencia.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
 
 export function Asistencia() {
     const [materias, setMaterias] = useState([]);

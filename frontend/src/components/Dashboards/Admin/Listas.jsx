@@ -4,7 +4,7 @@ import axios from 'axios';
 import './css/Listas.css';
 
 const API_URL = `${
-    import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com'
 }/usuarios/`;
 
 // Componente de Ficha/Card
@@ -20,7 +20,7 @@ const UserCard = ({
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
         return `${baseUrl}${foto}`;
     };
     return (
@@ -175,7 +175,7 @@ const UserRow = ({
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
         return `${baseUrl}${foto}`;
     };
 
@@ -320,7 +320,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
         return `${baseUrl}${foto}`;
     };
 
@@ -593,7 +593,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const baseUrl =
-                import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
             const response = await axios.get(`${baseUrl}/grado-seccion/`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -634,7 +634,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const baseUrl =
-                import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
             const response = await axios.get(`${baseUrl}/horarios/materias/`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -740,7 +740,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     return;
                 }
 
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                const baseUrl = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                 try {
                     await axios.patch(
                         `${baseUrl}/usuario/${user.usuario}/password/`,

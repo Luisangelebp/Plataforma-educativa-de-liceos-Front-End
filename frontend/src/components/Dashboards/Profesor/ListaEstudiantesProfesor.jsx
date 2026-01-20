@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../css/dashboards.css';
 
-const API_URL = 'http://localhost:8000/';
+const API_URL = 'https://liceo-publico.onrender.com/';
 
 // Modal para ver detalles del estudiante
 const DetailModal = ({ user, isOpen, onClose }) => {

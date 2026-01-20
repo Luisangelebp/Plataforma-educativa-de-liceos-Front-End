@@ -5,7 +5,7 @@ import logo from '../../../assets/img/Logo.png';
 import SidebarRepresentante from './SidebarRepresentante'; // ajusta la ruta si hace falta
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
 
 export default function HeaderRepresentante() {
   const [menuOpen, setMenuOpen] = useState(false);

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './css/Listas.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
@@ -88,7 +88,7 @@ export default function Cuenta() {
                 });
                 if (userData.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     setFotoPreview(
                         userData.foto.startsWith('http')
                             ? userData.foto
@@ -224,7 +224,7 @@ export default function Cuenta() {
 
                 if (response.data.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     setFotoPreview(
                         response.data.foto.startsWith('http')
                             ? response.data.foto
