@@ -3,7 +3,7 @@ import { useState, useEffect, use } from 'react';
 import './css/estadistica.css';
 export default function Estadisticas() {
     const API_URL =
-        (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
+        (import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com') + '/';
     const [numE, setnumE] = useState(0);
     const [numR, setnumR] = useState(0);
     const [numP, setnumP] = useState(0);

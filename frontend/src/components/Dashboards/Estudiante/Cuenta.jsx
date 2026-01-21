@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Listas.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
 
 const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -85,7 +85,7 @@ export default function Cuenta() {
                 // Actualizar preview de foto si existe
                 if (updatedUser.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     const fotoUrl = updatedUser.foto.startsWith('http')
                         ? updatedUser.foto
                         : `${baseUrl}${updatedUser.foto}`;
@@ -188,7 +188,7 @@ export default function Cuenta() {
                 // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del estudiante
                 if (userData.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     setFotoPreview(
                         userData.foto.startsWith('http')
                             ? userData.foto
@@ -196,7 +196,7 @@ export default function Cuenta() {
                     );
                 } else if (estudianteData.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     setFotoPreview(
                         estudianteData.foto.startsWith('http')
                             ? estudianteData.foto
@@ -381,7 +381,7 @@ export default function Cuenta() {
                 // Actualizar preview de foto
                 if (estudianteResponse.data.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
                     const fotoUrl = estudianteResponse.data.foto.startsWith(
                         'http'
                     )

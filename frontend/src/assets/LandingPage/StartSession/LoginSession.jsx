@@ -98,7 +98,7 @@ const LoginSession = ({ setShowLogin }) => {
 
         try {
             const API_URL =
-                import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
             const response = await axios.post(`${API_URL}/login/`, {
                 email: formData.username,
                 password: formData.password,
