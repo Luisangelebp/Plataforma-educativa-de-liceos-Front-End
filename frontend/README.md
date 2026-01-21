@@ -3,7 +3,7 @@
 Para su ejecucion se debe crear un archivo ".env" en el directorio frontend/
 ahi se debe poner la siguiente linea:
 
-`VITE_API_URL=https://liceo-publico.onrender.com`
+`VITE_API_URL=http://localhost:8000`
 
 # React + Vite
 

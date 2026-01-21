@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 axios.defaults.baseURL =
-    import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+    import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Interceptor de request
 axios.interceptors.request.use((config) => {

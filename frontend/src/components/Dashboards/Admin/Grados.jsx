@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function ListaGrados({ setShowHorario }) {
     const [grados, setGrados] = useState([]);

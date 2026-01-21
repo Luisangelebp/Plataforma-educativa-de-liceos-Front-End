@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import axios from 'axios';
 
-const API_URL_BASE = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+const API_URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Componente Modal fuera del componente principal para evitar recreaciones
 const Modal = memo(({ isOpen, onClose, title, children, roleIcon }) => {
@@ -280,7 +280,7 @@ export default function Registo() {
     }, []);
 
     const API_URL = `${
-        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com'
+        import.meta.env.VITE_API_URL || 'http://localhost:8000'
     }/usuarios`;
 
     const handleSubmit = async (e) => {

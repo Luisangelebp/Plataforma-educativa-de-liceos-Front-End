@@ -3,7 +3,7 @@ import axios from 'axios';
 import './css/Listas.css';
 import './css/Boletines.css';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com') + '/';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
 
 // Función para obtener el token actual
 const getAuthHeaders = () => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Admin/css/Boletines.css';
 
-const API_URL = 'https://liceo-publico.onrender.com/';
+const API_URL = 'http://localhost:8000/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');

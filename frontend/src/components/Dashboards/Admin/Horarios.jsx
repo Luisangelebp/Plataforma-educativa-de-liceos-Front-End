@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function ListaMaterias({ setShowAsignarHorario, setMateria }) {
     const [materias, setMaterias] = useState([]);

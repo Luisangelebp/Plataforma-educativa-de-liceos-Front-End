@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Admin/css/Listas.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -87,7 +87,7 @@ export default function Cuenta() {
                 // Actualizar preview de foto si existe
                 if (updatedUser.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
                     const fotoUrl = updatedUser.foto.startsWith('http')
                         ? updatedUser.foto
                         : `${baseUrl}${updatedUser.foto}`;
@@ -193,7 +193,7 @@ export default function Cuenta() {
                 // Mostrar foto del usuario (de localStorage) si existe, si no mostrar la del profesor
                 if (userData.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
                     setFotoPreview(
                         userData.foto.startsWith('http')
                             ? userData.foto
@@ -201,7 +201,7 @@ export default function Cuenta() {
                     );
                 } else if (profesorData.foto) {
                     const baseUrl =
-                        import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
                     setFotoPreview(
                         profesorData.foto.startsWith('http')
                             ? profesorData.foto
@@ -405,7 +405,7 @@ export default function Cuenta() {
 
             // Actualizar el usuario en localStorage y disparar evento siempre que haya cambios
             const baseUrl =
-                import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com';
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
             // Actualizar preview de foto si se actualizó
             if (response.data.foto) {

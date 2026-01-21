@@ -4,7 +4,7 @@ import axios from 'axios';
 import './css/Listas.css';
 
 const API_URL = `${
-    import.meta.env.VITE_API_URL || 'https://liceo-publico.onrender.com'
+    import.meta.env.VITE_API_URL || 'http://localhost:8000'
 }/usuarios/`;
 
 // Componente de Ficha/Card
@@ -20,9 +20,7 @@ const UserCard = ({
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl =
-            import.meta.env.VITE_API_URL ||
-            'https://liceo-publico.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         return `${baseUrl}${foto}`;
     };
     return (
@@ -48,8 +46,8 @@ const UserCard = ({
                                 {user.grado_seccion?.nivel === 'primaria'
                                     ? 'Grado'
                                     : user.grado_seccion?.nivel === 'secundaria'
-                                      ? 'Año'
-                                      : 'Grado/Año'}
+                                    ? 'Año'
+                                    : 'Grado/Año'}
                                 :
                             </strong>{' '}
                             {user.grado_seccion?.grado
@@ -57,9 +55,9 @@ const UserCard = ({
                                       user.grado_seccion.nivel === 'primaria'
                                           ? 'Grado'
                                           : user.grado_seccion.nivel ===
-                                              'secundaria'
-                                            ? 'Año'
-                                            : ''
+                                            'secundaria'
+                                          ? 'Año'
+                                          : ''
                                   }`
                                 : user.grado || 'N/A'}
                         </p>
@@ -92,7 +90,7 @@ const UserCard = ({
                                                   gs.nivel === 'primaria'
                                                       ? 'Grado'
                                                       : 'Año'
-                                              } ${gs.seccion}`,
+                                              } ${gs.seccion}`
                                       )
                                       .join(', ')
                                 : user.grado_asignado || 'Sin asignar'}
@@ -177,9 +175,7 @@ const UserRow = ({
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl =
-            import.meta.env.VITE_API_URL ||
-            'https://liceo-publico.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         return `${baseUrl}${foto}`;
     };
 
@@ -324,9 +320,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
     const getPhotoUrl = (foto) => {
         if (!foto) return '/default-avatar.png';
         if (foto.startsWith('http')) return foto;
-        const baseUrl =
-            import.meta.env.VITE_API_URL ||
-            'https://liceo-publico.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         return `${baseUrl}${foto}`;
     };
 
@@ -378,7 +372,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                             <strong>Fecha de Nacimiento:</strong>
                             <span>
                                 {new Date(
-                                    user.fecha_nacimiento,
+                                    user.fecha_nacimiento
                                 ).toLocaleDateString('es-ES')}
                             </span>
                         </div>
@@ -435,7 +429,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                                               'primaria'
                                                                   ? 'Grado'
                                                                   : 'Año'
-                                                          } ${gs.seccion}`,
+                                                          } ${gs.seccion}`
                                                   )
                                                   .join(', ')
                                             : 'Sin asignar'}
@@ -449,7 +443,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
                                                 .map((m) =>
                                                     typeof m === 'object'
                                                         ? m.nombre
-                                                        : m,
+                                                        : m
                                                 )
                                                 .join(', ')}
                                         </span>
@@ -599,8 +593,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const baseUrl =
-                import.meta.env.VITE_API_URL ||
-                'https://liceo-publico.onrender.com';
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await axios.get(`${baseUrl}/grado-seccion/`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -622,7 +615,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     } else if (typeof user.grado_secciones[0] === 'number') {
                         // Son IDs, buscar los objetos correspondientes
                         const gradosSeleccionados = response.data.filter((gs) =>
-                            user.grado_secciones.includes(gs.id),
+                            user.grado_secciones.includes(gs.id)
                         );
                         setSelectedGradosSecciones(gradosSeleccionados);
                     }
@@ -641,8 +634,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         try {
             const token = localStorage.getItem('accessToken');
             const baseUrl =
-                import.meta.env.VITE_API_URL ||
-                'https://liceo-publico.onrender.com';
+                import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await axios.get(`${baseUrl}/horarios/materias/`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -660,7 +652,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                     } else if (typeof user.materias[0] === 'number') {
                         // Son IDs, buscar los objetos correspondientes
                         const materiasSeleccionadas = response.data.filter(
-                            (m) => user.materias.includes(m.id),
+                            (m) => user.materias.includes(m.id)
                         );
                         setSelectedMaterias(materiasSeleccionadas);
                     }
@@ -743,16 +735,12 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
 
             if (newPassword) {
                 if (!user.usuario) {
-                    setPasswordError(
-                        'Este perfil no tiene un usuario asociado para cambiar la contraseña',
-                    );
+                    setPasswordError('Este perfil no tiene un usuario asociado para cambiar la contraseña');
                     setIsLoading(false);
                     return;
                 }
 
-                const baseUrl =
-                    import.meta.env.VITE_API_URL ||
-                    'https://liceo-publico.onrender.com';
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
                 try {
                     await axios.patch(
                         `${baseUrl}/usuario/${user.usuario}/password/`,
@@ -764,7 +752,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     : {}),
                                 'Content-Type': 'application/json',
                             },
-                        },
+                        }
                     );
                     setNewPassword('');
                 } catch (err) {
@@ -773,7 +761,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         setPasswordError(
                             Array.isArray(data.password)
                                 ? data.password.join(', ')
-                                : data.password,
+                                : data.password
                         );
                     } else if (data?.error) {
                         setPasswordError(data.error);
@@ -822,11 +810,11 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         nivel: gs.nivel,
                         grado: gs.grado,
                         seccion: gs.seccion,
-                    }),
+                    })
                 );
                 formDataObj.append(
                     'grado_secciones',
-                    JSON.stringify(gradoSeccionesData),
+                    JSON.stringify(gradoSeccionesData)
                 );
 
                 // Agregar materias como JSON string (similar a cómo funciona en Materias.jsx)
@@ -837,7 +825,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         return id != null ? Number(id) : null;
                     })
                     .filter(
-                        (id) => id !== null && id !== undefined && !isNaN(id),
+                        (id) => id !== null && id !== undefined && !isNaN(id)
                     );
                 formDataObj.append('materias', JSON.stringify(materiasIds));
 
@@ -858,7 +846,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             nivel: gs.nivel,
                             grado: gs.grado,
                             seccion: gs.seccion,
-                        }),
+                        })
                     );
                 } else {
                     dataToSend.grado_secciones = [];
@@ -874,7 +862,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         })
                         .filter(
                             (id) =>
-                                id !== null && id !== undefined && !isNaN(id),
+                                id !== null && id !== undefined && !isNaN(id)
                         );
                 }
                 // Si no hay materias, no enviar el campo (el backend lo manejará correctamente)
@@ -1044,9 +1032,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                         autoComplete="new-password"
                                     />
                                     {passwordError && (
-                                        <span className="error">
-                                            {passwordError}
-                                        </span>
+                                        <span className="error">{passwordError}</span>
                                     )}
                                 </div>
                             )}
@@ -1078,8 +1064,8 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     {formData.nivel === 'primaria'
                                         ? 'Grado:'
                                         : formData.nivel === 'secundaria'
-                                          ? 'Año:'
-                                          : 'Grado/Año:'}
+                                        ? 'Año:'
+                                        : 'Grado/Año:'}
                                 </label>
                                 <select
                                     name="grado"
@@ -1091,8 +1077,8 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                         {formData.nivel === 'primaria'
                                             ? 'Seleccione el grado'
                                             : formData.nivel === 'secundaria'
-                                              ? 'Seleccione el año'
-                                              : 'Seleccione primero el nivel'}
+                                            ? 'Seleccione el año'
+                                            : 'Seleccione primero el nivel'}
                                     </option>
                                     {formData.nivel === 'primaria' ? (
                                         <>
@@ -1481,11 +1467,11 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
     const ITEMS_PER_PAGE = 5;
     const [currentPage, setCurrentPage] = useState(0);
     const totalPages = Math.ceil(
-        filteredRepresentantes.length / ITEMS_PER_PAGE,
+        filteredRepresentantes.length / ITEMS_PER_PAGE
     );
     const paginatedRepresentantes = filteredRepresentantes.slice(
         currentPage * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE
     );
 
     useEffect(() => {
@@ -1558,7 +1544,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                                 <button
                                     onClick={() =>
                                         setCurrentPage((prev) =>
-                                            Math.max(prev - 1, 0),
+                                            Math.max(prev - 1, 0)
                                         )
                                     }
                                     disabled={currentPage === 0}
@@ -1573,7 +1559,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
                                 <button
                                     onClick={() =>
                                         setCurrentPage((prev) =>
-                                            Math.min(prev + 1, totalPages - 1),
+                                            Math.min(prev + 1, totalPages - 1)
                                         )
                                     }
                                     disabled={currentPage === totalPages - 1}
@@ -1624,7 +1610,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
     const fetchCursos = async () => {
         try {
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/grado-seccion/`,
+                `${import.meta.env.VITE_API_URL}/grado-seccion/`
             );
             setCursos(response.data);
         } catch (error) {
@@ -1665,7 +1651,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
     const totalPages = Math.ceil(filteredCursos.length / ITEMS_PER_PAGE);
     const paginatedCursos = filteredCursos.slice(
         currentPage * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE
     );
 
     useEffect(() => {
@@ -1713,7 +1699,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
                                         setSelectedCurso((prev) => {
                                             if (prev.includes(curso.id)) {
                                                 return prev.filter(
-                                                    (id) => id !== curso.id,
+                                                    (id) => id !== curso.id
                                                 );
                                             } else {
                                                 return [...prev, curso.id];
@@ -1734,7 +1720,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
                                 <button
                                     onClick={() =>
                                         setCurrentPage((prev) =>
-                                            Math.max(prev - 1, 0),
+                                            Math.max(prev - 1, 0)
                                         )
                                     }
                                     disabled={currentPage === 0}
@@ -1749,7 +1735,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
                                 <button
                                     onClick={() =>
                                         setCurrentPage((prev) =>
-                                            Math.min(prev + 1, totalPages - 1),
+                                            Math.min(prev + 1, totalPages - 1)
                                         )
                                     }
                                     disabled={currentPage === totalPages - 1}
@@ -1828,14 +1814,14 @@ export function ListaE() {
                     est.apellido?.toLowerCase().includes(search) ||
                     est.cedula?.toLowerCase().includes(search) ||
                     est.grado_seccion?.grado?.toString().includes(search) ||
-                    est.grado_seccion?.seccion?.toLowerCase().includes(search),
+                    est.grado_seccion?.seccion?.toLowerCase().includes(search)
             );
         }
 
         // Filtro por nivel
         if (filtroNivel) {
             filtered = filtered.filter(
-                (est) => est.grado_seccion?.nivel === filtroNivel,
+                (est) => est.grado_seccion?.nivel === filtroNivel
             );
         }
 
@@ -1860,7 +1846,7 @@ export function ListaE() {
     const handleDelete = async (user) => {
         if (
             !window.confirm(
-                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`,
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
             )
         ) {
             return;
@@ -2086,7 +2072,7 @@ export function ListaR() {
                     rep.nombre?.toLowerCase().includes(search) ||
                     rep.apellido?.toLowerCase().includes(search) ||
                     rep.cedula?.toLowerCase().includes(search) ||
-                    rep.telefono?.toLowerCase().includes(search),
+                    rep.telefono?.toLowerCase().includes(search)
             );
         }
 
@@ -2106,7 +2092,7 @@ export function ListaR() {
     const handleDelete = async (user) => {
         if (
             !window.confirm(
-                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`,
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
             )
         ) {
             return;
@@ -2304,7 +2290,7 @@ export function ListaP() {
                             tipo_grado_secciones: typeof prof.grado_secciones,
                             es_array: Array.isArray(prof.grado_secciones),
                             longitud: prof.grado_secciones?.length,
-                        },
+                        }
                     );
                 });
             }
@@ -2328,14 +2314,14 @@ export function ListaP() {
                     prof.nombre?.toLowerCase().includes(search) ||
                     prof.apellido?.toLowerCase().includes(search) ||
                     prof.cedula?.toLowerCase().includes(search) ||
-                    prof.tipo_profesor?.toLowerCase().includes(search),
+                    prof.tipo_profesor?.toLowerCase().includes(search)
             );
         }
 
         // Filtro por tipo de profesor
         if (filtroTipo) {
             filtered = filtered.filter(
-                (prof) => prof.tipo_profesor === filtroTipo,
+                (prof) => prof.tipo_profesor === filtroTipo
             );
         }
 
@@ -2360,7 +2346,7 @@ export function ListaP() {
     const handleDelete = async (user) => {
         if (
             !window.confirm(
-                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`,
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`
             )
         ) {
             return;
