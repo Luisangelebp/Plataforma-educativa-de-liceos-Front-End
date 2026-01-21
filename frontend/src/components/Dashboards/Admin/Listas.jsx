@@ -502,6 +502,8 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
 const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
+    const [newPassword, setNewPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [gradosSecciones, setGradosSecciones] = useState([]);
     const [materias, setMaterias] = useState([]);
@@ -540,6 +542,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 tipo_profesor: user.tipo_profesor || '',
                 representante: user.representante || '',
             });
+
+            setNewPassword('');
+            setPasswordError('');
 
             // Si es profesor, cargar asignaciones actuales
             if (type === 'profesor') {
@@ -712,6 +717,13 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
         setIsLoading(true);
         setErrors({});
 
+        if (newPassword && newPassword.length < 8) {
+            setPasswordError('La contraseña debe tener al menos 8 caracteres');
+            setIsLoading(false);
+            return;
+        }
+        setPasswordError('');
+
         try {
             let dataToSend;
             let headers = {};
@@ -719,6 +731,46 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
             const token = localStorage.getItem('accessToken');
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            if (newPassword) {
+                if (!user.usuario) {
+                    setPasswordError('Este perfil no tiene un usuario asociado para cambiar la contraseña');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                try {
+                    await axios.patch(
+                        `${baseUrl}/usuario/${user.usuario}/password/`,
+                        { password: newPassword },
+                        {
+                            headers: {
+                                ...(token
+                                    ? { Authorization: `Bearer ${token}` }
+                                    : {}),
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    setNewPassword('');
+                } catch (err) {
+                    const data = err.response?.data;
+                    if (data?.password) {
+                        setPasswordError(
+                            Array.isArray(data.password)
+                                ? data.password.join(', ')
+                                : data.password
+                        );
+                    } else if (data?.error) {
+                        setPasswordError(data.error);
+                    } else {
+                        setPasswordError('Error al actualizar la contraseña');
+                    }
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Si es profesor y tiene foto, grados o materias, usar FormData (materias como JSON string)
@@ -964,6 +1016,26 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                                     </span>
                                 )}
                             </div>
+
+                            {user?.usuario && (
+                                <div className="form-group">
+                                    <label>Nueva contraseña (opcional):</label>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => {
+                                            setNewPassword(e.target.value);
+                                            if (passwordError) {
+                                                setPasswordError('');
+                                            }
+                                        }}
+                                        autoComplete="new-password"
+                                    />
+                                    {passwordError && (
+                                        <span className="error">{passwordError}</span>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                     {type === 'estudiante' && (
