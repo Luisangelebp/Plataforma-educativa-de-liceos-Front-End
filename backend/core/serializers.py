@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from core.models import Usuario, GradoSeccion
 
 
@@ -109,3 +111,14 @@ class GradoSeccionSerializer(serializers.ModelSerializer):
             })
 
         return data
+
+
+class AdminSetUserPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        return value
