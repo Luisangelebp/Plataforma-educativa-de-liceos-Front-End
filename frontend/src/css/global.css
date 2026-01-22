@@ -1359,6 +1359,10 @@ body {
     user-select: none;
 }
 
+#typeUSelectLogin{
+    display: none;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .login-card {
@@ -1402,4 +1406,97 @@ body {
     .role-selector {
         display: none;}
 
+    #typeUSelectLogin{
+        display: block;
+    }
+}
+
+/* ===== ESTILOS PARA EL CARRUSEL DEL MODAL ===== */
+.carousel-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+    width: 100%;
+    flex-shrink: 0; /* Evita que los slides se encojan */
+    box-sizing: border-box;
+    padding: 0 15px; /* Más espacio lateral */
+}
+
+.carousel-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 0;
+    border-top: 1px solid var(--light-gray);
+}
+
+.carousel-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--light-gray);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.carousel-dot.active {
+    background: var(--primary);
+    transform: scale(1.2);
+}
+
+.carousel-button {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.carousel-button:disabled {
+    background: var(--gray-light);
+    cursor: not-allowed;
+}
+
+.carousel-button:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+/* Estilos para los campos dentro del carrusel */
+.carousel-slide .form-group {
+    margin-bottom: 15px;
+}
+
+/* Responsive para el carrusel */
+@media (max-width: 768px) {
+    .carousel-slide {
+        padding: 0 5px;
+    }
+
+    .carousel-navigation {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .carousel-button {
+        width: 100%;
+        justify-content: center;
+    }
 }

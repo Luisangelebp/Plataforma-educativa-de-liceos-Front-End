@@ -144,12 +144,12 @@ const LoginSession = ({ setShowLogin }) => {
                 role === 'estudiante'
                     ? 'Estudiante'
                     : role === 'profesor'
-                    ? 'Profesor'
-                    : role === 'representante'
-                    ? 'Representante'
-                    : role === 'admin'
-                    ? 'Administrador'
-                    : '',
+                      ? 'Profesor'
+                      : role === 'representante'
+                        ? 'Representante'
+                        : role === 'admin'
+                          ? 'Administrador'
+                          : '',
         }));
     };
 
@@ -328,7 +328,7 @@ const LoginSession = ({ setShowLogin }) => {
                             )}
                         </div>
 
-                        <div className="form-group">
+                        <div className="form-group" id="typeUSelectLogin">
                             <label htmlFor="typeU">Tipo de Usuario</label>
                             <div className="input-with-icon">
                                 <i className="fas fa-user-tag"></i>
