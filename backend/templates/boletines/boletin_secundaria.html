@@ -6,94 +6,141 @@
         @page { size: letter; margin: 1.5cm; }
         body { font-family: 'Helvetica', sans-serif; color: #333; font-size: 11px; line-height: 1.4; }
         .text-center { text-align: center; }
-        .header { text-transform: uppercase; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header { text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         
-        .info-estudiante { margin-bottom: 20px; width: 100%; }
-        .info-estudiante td { border: none; text-align: left; padding: 2px; }
+        .info-estudiante { margin-bottom: 15px; width: 100%; border-collapse: collapse; }
+        .info-estudiante td { padding: 3px; font-size: 10px; }
 
-        table.tabla-notas { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .tabla-notas th, .tabla-notas td { border: 1px solid #000; padding: 6px; text-align: center; }
-        th { background-color: #f2f2f2; text-transform: uppercase; font-size: 10px; }
-        .materia-td { text-align: left; font-weight: bold; width: 45%; }
-        
-        .promedio-seccion { margin-top: 15px; font-size: 13px; text-align: right; padding-right: 10px; }
-        .obs-box { 
-            margin-top: 20px; border: 1px solid #000; padding: 10px; 
-            min-height: 80px; background-color: #fafafa;
+        table.tabla-notas { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            table-layout: fixed; 
         }
         
-        .firmas { margin-top: 50px; width: 100%; border: none; }
-        .firmas td { border: none; width: 50%; padding-top: 40px; text-align: center; }
-        .linea { border-top: 1px solid #000; width: 70%; margin: 0 auto; margin-bottom: 5px; }
+        .tabla-notas th, .tabla-notas td { 
+            border: 1px solid #000; 
+            padding: 4px; 
+            text-align: center; 
+            vertical-align: middle;
+            word-wrap: break-word; 
+        }
+
+        th { background-color: #f2f2f2; text-transform: uppercase; font-size: 8px; }
+
+        .materia-td { 
+            text-align: left; 
+            font-weight: bold; 
+            width: 40%; 
+            font-size: 9px; 
+            line-height: 1.1;
+        }
+
+        .col-nota { width: 15%; }
+        
+        /* Resaltado de la columna del lapso que se está emitiendo */
+        .nota-actual { font-weight: bold; background-color: #f9f9f9; font-size: 12px; }
+        
+        .resumen-final { margin-top: 15px; width: 100%; overflow: hidden; }
+        
+        .promedio-box { 
+            float: right; 
+            border: 2px solid #000; 
+            padding: 8px 15px; 
+            font-size: 11px; 
+            font-weight: bold; 
+            background-color: #eee;
+            text-transform: uppercase;
+        }
+        
+        .obs-box { 
+            margin-top: 20px; border: 1px solid #000; padding: 8px; 
+            min-height: 60px; clear: both; font-size: 10px;
+        }
+        
+        .firmas { margin-top: 50px; width: 100%; }
+        .firmas td { width: 50%; text-align: center; vertical-align: bottom; font-size: 10px; }
+        .linea { border-top: 1px solid #000; width: 70%; margin: 0 auto 5px auto; }
         
         .watermark {
-            position: absolute; top: 40%; left: 15%; font-size: 80px;
-            color: rgba(200, 200, 200, 0.2); transform: rotate(-45deg);
-            z-index: -1; pointer-events: none;
+            position: absolute; top: 45%; left: 10%; font-size: 70px;
+            color: rgba(200, 200, 200, 0.2); transform: rotate(-45deg); z-index: -1;
         }
     </style>
 </head>
 <body>
-    {% if es_vista_previa %}
-    <div class="watermark">VISTA PREVIA</div>
-    {% endif %}
+    {% if es_vista_previa %}<div class="watermark">VISTA PREVIA</div>{% endif %}
 
     <div class="header text-center">
         <strong>República Bolivariana de Venezuela</strong><br>
         <strong>Ministerio del Poder Popular para la Educación</strong><br>
         <strong>U.E. Liceo Nacional "Simón Bolívar"</strong><br>
-        <span style="font-size: 14px;">Boletín de Calificaciones - Lapso {{ lapso }}</span><br>
-        Año Escolar {{ periodo }}
+        <span style="font-size: 13px; letter-spacing: 1px;">INFORME INTEGRAL DE EVALUACIÓN</span><br>
+        Año Escolar {{ periodo }} | <strong>Lapso: {{ lapso }}</strong>
     </div>
 
     <table class="info-estudiante">
         <tr>
-            <td><strong>Estudiante:</strong> {{ estudiante.nombre }} {{ estudiante.apellido }}</td>
-            <td><strong>Cédula:</strong> {{ cedula }}</td>
+            <td><strong>ESTUDIANTE:</strong> {{ estudiante.nombre }} {{ estudiante.apellido }}</td>
+            <td><strong>CÉDULA:</strong> {{ cedula }}</td>
         </tr>
         <tr>
-            <td><strong>Ubicación Académica:</strong> {{ grado_obj }}</td>
-            <td><strong>Fecha de Emisión:</strong> {{ fecha_emision|date:"d/m/Y" }}</td>
+            <td><strong>GRADO/AÑO Y SECCIÓN:</strong> {{ grado_obj }}</td>
+            <td><strong>FECHA EMISIÓN:</strong> {{ fecha_emision|date:"d/m/Y" }}</td>
         </tr>
     </table>
 
     <table class="tabla-notas">
         <thead>
             <tr>
-                <th>Asignatura / Área de Formación</th>
-                {% if not es_primaria %}
-                <th>Calificación Numérica</th>
-                {% endif %}
-                <th>Resultado Final ({% if es_primaria %}Literal{% else %}Nota{% endif %})</th>
+                <th rowspan="2" class="materia-td">Asignatura / Áreas de Formación</th>
+                <th colspan="3">Calificaciones por Lapso</th>
+                <th rowspan="2" class="col-nota">Definitiva</th>
+            </tr>
+            <tr>
+                <th class="col-nota">1º Lapso</th>
+                <th class="col-nota">2º Lapso</th>
+                <th class="col-nota">3º Lapso</th>
             </tr>
         </thead>
         <tbody>
             {% for materia in materias %}
             <tr>
                 <td class="materia-td">{{ materia.materia_nombre }}</td>
-                {% if not es_primaria %}
-                <td>{{ materia.promedio_lapso }}</td>
-                {% endif %}
-                <td><strong>{{ materia.nota_display }}</strong></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">No hay calificaciones registradas o enviadas en este lapso.</td>
+                
+                <td class="col-nota {% if lapso == '1' %}nota-actual{% endif %}">
+                    {{ materia.nota_l1 }}
+                </td>
+                
+                <td class="col-nota {% if lapso == '2' %}nota-actual{% endif %}">
+                    {{ materia.nota_l2 }}
+                </td>
+                
+                <td class="col-nota {% if lapso == '3' %}nota-actual{% endif %}">
+                    {{ materia.nota_l3 }}
+                </td>
+
+                <td class="col-nota" style="background-color: #f2f2f2; font-weight: bold;">
+                    {{ materia.definitiva }}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="promedio-seccion">
-        <strong>PROMEDIO GENERAL DEL LAPSO:</strong> 
-        <span style="font-size: 15px; border: 2px solid #000; padding: 4px 12px; margin-left: 10px;">
-            {{ promedio_general }}
-        </span>
+    <div class="resumen-final">
+        <div class="promedio-box">
+            {% if lapso == '3' %}
+                PROMEDIO FINAL AÑO ESCOLAR: {{ promedio_general }}
+            {% else %}
+                PROMEDIO GENERAL {{ lapso }}º LAPSO: {{ promedio_general }}
+            {% endif %}
+        </div>
     </div>
 
     <div class="obs-box">
-        <strong>OBSERVACIONES Y APRECIACIONES:</strong><br>
-        <p style="margin-top: 5px;">{{ observaciones|default:"Sin observaciones adicionales por parte de la institución." }}</p>
+        <strong>OBSERVACIONES Y RECOMENDACIONES:</strong><br>
+        <p style="margin-top: 5px;">{{ observaciones|default:"El estudiante mantiene un rendimiento acorde a las competencias exigidas para el lapso actual." }}</p>
     </div>
 
     <table class="firmas">
@@ -101,19 +148,14 @@
             <td>
                 <div class="linea"></div>
                 <strong>Director(a)</strong><br>
-                Firma y Sello
+                Sello del Plantel
             </td>
             <td>
                 <div class="linea"></div>
                 <strong>Control de Estudios</strong><br>
-                Sello de la Institución
+                Firma y Cédula
             </td>
         </tr>
     </table>
-
-    <div style="margin-top: 40px; font-size: 9px; text-align: center; color: #777; border-top: 1px dashed #ccc; padding-top: 5px;">
-        Este documento es una representación oficial emitida por el sistema de gestión escolar. 
-        Cualquier enmienda o tachadura lo anula.
-    </div>
 </body>
 </html>

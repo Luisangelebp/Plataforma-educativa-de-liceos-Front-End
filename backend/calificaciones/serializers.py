@@ -1,48 +1,60 @@
 from rest_framework import serializers
-from .models import Calificacion
+from .models import Calificacion, Evaluacion
+
+class EvaluacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evaluacion
+        fields = ['id', 'nombre', 'nota', 'fecha_creacion']
 
 class CalificacionSerializer(serializers.ModelSerializer):
-    # Usamos los campos que están DIRECTAMENTE en el modelo Estudiante
+    # Relaciones de lectura para el frontend
     estudiante_nombre = serializers.CharField(source='estudiante.nombre', read_only=True)
     estudiante_apellido = serializers.CharField(source='estudiante.apellido', read_only=True)
-    
     materia_nombre = serializers.CharField(source='materia.nombre', read_only=True)
     
-    # Para el profesor, saltamos al modelo Usuario de Core usando la relación 'usuario'
-    profesor_nombre = serializers.CharField(source='profesor.usuario.nombre', read_only=True)
-    profesor_apellido = serializers.CharField(source='profesor.usuario.apellido', read_only=True)
-    
-    promedio_lapso = serializers.SerializerMethodField()
+    # Traemos las evaluaciones dinámicas anidadas
+    evaluaciones = EvaluacionSerializer(many=True, read_only=True)
     
     class Meta:
         model = Calificacion
         fields = [
             'id', 'estudiante', 'estudiante_nombre', 'estudiante_apellido',
-            'materia', 'materia_nombre', 'profesor', 'profesor_nombre', 'profesor_apellido',
-            'lapso', 'nota1', 'nota2', 'nota3', 'nota4', 
-            'promedio', 'promedio_lapso', 'enviado',
+            'materia', 'materia_nombre', 'profesor', 'lapso', 
+            'promedio', 'evaluaciones', 'enviado',
             'fecha_creacion', 'fecha_actualizacion',
         ]
-        read_only_fields = ['promedio', 'promedio_lapso', 'fecha_creacion', 'fecha_actualizacion']
-    
-    def get_promedio_lapso(self, obj):
-        # Llama a la lógica del modelo que unifica Primaria y Secundaria
-        val = obj.promedio_lapso(obj.lapso)
-        return float(val) if val is not None else 0.0
+        read_only_fields = ['promedio', 'fecha_creacion', 'fecha_actualizacion']
 
-    def validate(self, data):
-        # Validación de rango para las notas (Escala 0-20)
-        notas_parciales = ['nota1', 'nota2', 'nota3', 'nota4']
-        for campo in notas_parciales:
-            valor = data.get(campo)
-            if valor is not None and (valor < 0 or valor > 20):
-                raise serializers.ValidationError({
-                    campo: "La calificación debe estar entre 0 y 20."
-                })
-        return data
+    def create(self, validated_data):
+        """
+        Al crear la calificación, si es Primaria, generamos las 4 notas base.
+        """
+        calificacion = Calificacion.objects.create(**validated_data)
+        estudiante = validated_data.get('estudiante')
+
+        # Lógica de autogeneración para Primaria
+        # Asumiendo que en tu modelo Estudiante tienes acceso al nivel educativo
+        if estudiante.grado_seccion.nivel == 'primaria':
+            for i in range(1, 5):
+                Evaluacion.objects.create(
+                    calificacion=calificacion,
+                    nombre=f"Nota {i}",
+                    nota=0.00
+                )
+        return calificacion
+
+    def update(self, instance, validated_data):
+        # Bloqueo de edición si ya fue enviado al boletín
+        if instance.enviado:
+            raise serializers.ValidationError(
+                "Esta calificación está bloqueada porque ya fue enviada al boletín."
+            )
+        return super().update(instance, validated_data)
 
     def validate_enviado(self, value):
-        # Una vez enviada (bloqueada), el profesor no puede volver a ponerla en False
+        # Impedir que el profesor desmarque 'enviado' una vez que lo confirmó
         if self.instance and self.instance.enviado and value is False:
-            raise serializers.ValidationError("No se puede revertir el estado de una calificación ya enviada.")
+            raise serializers.ValidationError(
+                "No se puede revertir el estado de una calificación ya enviada."
+            )
         return value

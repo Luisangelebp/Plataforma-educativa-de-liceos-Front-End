@@ -2,17 +2,18 @@ from rest_framework import serializers
 from .models import Boletin
 
 class BoletinSerializer(serializers.ModelSerializer):
-    # Usamos los campos directos del modelo Estudiante que ya tienes
+    # Acceso a campos del estudiante
     estudiante_nombre = serializers.SerializerMethodField()
     estudiante_cedula = serializers.CharField(source='estudiante.cedula', read_only=True)
     
-    # Representación legible del grado histórico guardado en el boletín
+    # Representación del grado y nivel (Ej: "1er Grado A - primaria")
     grado_display = serializers.CharField(source='grado_seccion.__str__', read_only=True)
+    nivel = serializers.CharField(source='grado_seccion.nivel', read_only=True)
     
-    # Información de quién generó el boletín (Admin)
+    # Información del Administrador que lo generó
     generado_por_nombre = serializers.SerializerMethodField()
     
-    # Texto del lapso (ej: "Primer Lapso" en vez de "1")
+    # Texto descriptivo del lapso (Ej: "Primer Lapso")
     lapso_display = serializers.CharField(source='get_lapso_display', read_only=True)
     
     class Meta:
@@ -25,6 +26,7 @@ class BoletinSerializer(serializers.ModelSerializer):
             'periodo_escolar',
             'grado_seccion',
             'grado_display',
+            'nivel',
             'lapso',
             'lapso_display',
             'archivo_pdf',
@@ -45,41 +47,35 @@ class BoletinSerializer(serializers.ModelSerializer):
         ]
     
     def get_estudiante_nombre(self, obj):
-        # Acceso directo a los campos del modelo Estudiante
+        # Aseguramos que tome nombre y apellido del modelo Estudiante
         return f"{obj.estudiante.nombre} {obj.estudiante.apellido}"
     
     def get_generado_por_nombre(self, obj):
-        # Acceso a través de la relación usuario para el administrador
+        # Accedemos al modelo Usuario a través del campo generado_por
         if obj.generado_por:
-            return f"{obj.generado_por.nombre} {obj.generado_por.apellido}"
-        return "Sistema"
+            # Si tu modelo de Usuario tiene nombre y apellido:
+            nombre = getattr(obj.generado_por, 'nombre', '')
+            apellido = getattr(obj.generado_por, 'apellido', '')
+            if nombre or apellido:
+                return f"{nombre} {apellido}".strip()
+            return obj.generado_por.username
+        return "Sistema/Automático"
 
     def validate(self, data):
         """
-        Validación integral: Evita duplicados para el mismo Estudiante + Lapso + Periodo.
+        Evita duplicados: Un boletín único por Estudiante + Lapso + Periodo.
         """
-        estudiante = data.get('estudiante')
-        lapso = data.get('lapso')
-        periodo = data.get('periodo_escolar')
-        
-        # Lógica para actualizaciones (PATCH/PUT)
-        if self.instance:
-            estudiante = estudiante or self.instance.estudiante
-            lapso = lapso or self.instance.lapso
-            periodo = periodo or self.instance.periodo_escolar
+        estudiante = data.get('estudiante', getattr(self.instance, 'estudiante', None))
+        lapso = data.get('lapso', getattr(self.instance, 'lapso', None))
+        periodo = data.get('periodo_escolar', getattr(self.instance, 'periodo_escolar', None))
 
-        if estudiante and lapso and periodo:
-            existing = Boletin.objects.filter(
+        if not self.instance:  # Solo validar duplicados al crear nuevo
+            if Boletin.objects.filter(
                 estudiante=estudiante, 
                 lapso=lapso, 
                 periodo_escolar=periodo
-            )
-            
-            if self.instance:
-                existing = existing.exclude(id=self.instance.id)
-                
-            if existing.exists():
+            ).exists():
                 raise serializers.ValidationError(
-                    f"Ya existe un boletín registrado para este estudiante en el {lapso}º lapso del periodo {periodo}."
+                    f"Ya existe un boletín para este estudiante en el lapso {lapso} ({periodo})."
                 )
         return data

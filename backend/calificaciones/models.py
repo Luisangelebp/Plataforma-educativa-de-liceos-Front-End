@@ -12,126 +12,56 @@ class Calificacion(models.Model):
         ('3', 'Tercer Lapso'),
     ]
 
-    estudiante = models.ForeignKey(
-        Estudiante,
-        on_delete=models.CASCADE,
-        related_name='calificaciones'
-    )
-    materia = models.ForeignKey(
-        Materia,
-        on_delete=models.CASCADE,
-        related_name='calificaciones'
-    )
-    profesor = models.ForeignKey(
-        Profesor,
-        on_delete=models.CASCADE,
-        related_name='calificaciones_registradas'
-    )
+    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name='calificaciones')
+    materia = models.ForeignKey(Materia, on_delete=models.CASCADE, related_name='calificaciones')
+    profesor = models.ForeignKey(Profesor, on_delete=models.CASCADE, related_name='calificaciones_registradas')
     lapso = models.CharField(max_length=1, choices=LAPSO_OPCIONES)
     
-    # Notas parciales (Primaria)
-    nota1 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="0-20")
-    nota2 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="0-20")
-    nota3 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="0-20")
-    nota4 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="0-20")
-    
-    promedio = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        null=True, 
-        blank=True, 
-        help_text="Calculado automáticamente"
-    )
-    
-    enviado = models.BooleanField(
-        default=False,
-        help_text="Si es True, el registro queda bloqueado para edición"
-    )
+    # Único campo de resultado. Se llena sumando sus "Evaluaciones"
+    promedio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    enviado = models.BooleanField(default=False)
     
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-fecha_actualizacion']
         unique_together = ['estudiante', 'materia', 'lapso']
-        verbose_name = 'Calificación'
-        verbose_name_plural = 'Calificaciones'
+        verbose_name = 'Control de Nota'
 
-    def calcular_promedio_fijo(self):
-        """Calcula el promedio de las notas nota1..nota4 (Para Primaria)"""
-        notas = [self.nota1, self.nota2, self.nota3, self.nota4]
-        notas_validas = [n for n in notas if n is not None]
-        if not notas_validas:
-            return None
-        return round(sum(notas_validas) / len(notas_validas), 2)
-
-    def promedio_lapso(self, lapso):
-        """
-        Retorna el promedio del lapso. 
-        Si hay evaluaciones dinámicas (Secundaria), las promedia.
-        Si no, usa el promedio de notas fijas (Primaria).
-        """
-        evaluaciones = self.evaluaciones.filter(lapso=lapso)
-        if evaluaciones.exists():
-            notas = [ev.nota for ev in evaluaciones]
-            return round(sum(notas) / len(notas), 2)
-        return self.promedio
-
-    def promedio_general(self):
-        """Promedio histórico de todos los lapsos registrados"""
-        promedios = []
-        for lapso_cod, _ in self.LAPSO_OPCIONES:
-            p_lapso = self.promedio_lapso(lapso_cod)
-            if p_lapso is not None:
-                promedios.append(float(p_lapso))
-        
-        if not promedios:
-            return None
-        return round(sum(promedios) / len(promedios), 2)
+    def calcular_promedio(self):
+        """Suma todas las evaluaciones dinámicas y saca el promedio"""
+        evals = self.evaluaciones.all()
+        if evals.exists():
+            # Filtramos solo las que tengan nota numérica válida
+            notas = [float(e.nota) for e in evals if e.nota]
+            return round(sum(notas) / len(notas), 2) if notas else 0
+        return 0
 
     def save(self, *args, **kwargs):
-        # Si no hay evaluaciones dinámicas, calculamos el promedio fijo
-        if not self.pk or not self.evaluaciones.exists():
-            self.promedio = self.calcular_promedio_fijo()
+        # El promedio se recalcula siempre al guardar el padre
+        if self.pk:
+            self.promedio = self.calcular_promedio()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.estudiante} - {self.materia} - Lapso {self.lapso}"
+        return f"{self.estudiante} - {self.materia} (Lapso {self.lapso})"
 
 
 class Evaluacion(models.Model):
-    """Modelo para evaluaciones dinámicas (Secundaria)"""
-    calificacion = models.ForeignKey(
-        Calificacion,
-        on_delete=models.CASCADE,
-        related_name="evaluaciones"
-    )
-    lapso = models.CharField(max_length=1, choices=Calificacion.LAPSO_OPCIONES)
-    nombre = models.CharField(max_length=100)
+    calificacion = models.ForeignKey(Calificacion, on_delete=models.CASCADE, related_name="evaluaciones")
+    nombre = models.CharField(max_length=100) # Ej: "Nota 1", "Examen", etc.
     nota = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['lapso', 'fecha_creacion']
-        verbose_name = "Evaluación"
-        verbose_name_plural = "Evaluaciones"
+        ordering = ['fecha_creacion']
 
     def save(self, *args, **kwargs):
-        # Bloqueo: No se puede editar si la nota ya se envió al boletín
         if self.calificacion.enviado:
-            raise ValidationError("No se puede modificar evaluaciones de una materia ya finalizada.")
+            raise ValidationError("No puedes editar notas de un lapso ya cerrado/enviado.")
         super().save(*args, **kwargs)
-        self.calificacion.save()  # Dispara el recalculo en el padre
-
-    def delete(self, *args, **kwargs):
-        # Bloqueo: No se puede eliminar si la nota ya se envió al boletín
-        if self.calificacion.enviado:
-            raise ValidationError("No se puede eliminar evaluaciones de una materia ya finalizada.")
-        calificacion = self.calificacion
-        super().delete(*args, **kwargs)
-        calificacion.save()
+        # Importante: Esto actualiza el promedio en el modelo Calificacion
+        self.calificacion.save()
 
     def __str__(self):
-        return f"{self.nombre} - {self.nota} ({self.calificacion.estudiante})"
+        return f"{self.nombre}: {self.nota}"

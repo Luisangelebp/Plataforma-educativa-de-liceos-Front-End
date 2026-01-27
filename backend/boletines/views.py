@@ -2,8 +2,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import render, get_object_or_404
-from django.http import FileResponse, Http404
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -14,145 +15,119 @@ from .models import Boletin
 from .serializers import BoletinSerializer
 from Usuarios.estudiante.models import Estudiante
 from calificaciones.models import Calificacion
-from calificaciones.serializers import CalificacionSerializer
 
-# --- GESTIÓN DE BOLETINES (Exclusivo Admin) ---
+# --- HELPER DE DATOS ACUMULATIVO E INTEGRAL ---
 
-class BoletinListCreateView(APIView):
-    """Listar boletines generados para control administrativo."""
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
-        if request.user.rol != 'admin':
-            return Response({'error': 'No autorizado'}, status=403)
-        boletines = Boletin.objects.all().order_by('-fecha_emision')
-        serializer = BoletinSerializer(boletines, many=True)
-        return Response(serializer.data)
-
-class DescargarBoletinView(APIView):
-    """Descarga del PDF físico guardado en el servidor."""
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request, pk):
-        boletin = get_object_or_404(Boletin, pk=pk)
-        user = request.user
-        
-        # Lógica de permisos: Admin o el propio Estudiante
-        es_dueno = (user.rol == 'estudiante' and hasattr(user, 'estudiante_profile') and user.estudiante_profile == boletin.estudiante)
-
-        if user.rol != 'admin' and not es_dueno:
-            return Response({'error': 'No autorizado para ver este documento'}, status=403)
-            
-        if not boletin.archivo_pdf:
-            raise Http404("El archivo PDF no ha sido generado")
-        
-        return FileResponse(
-            open(boletin.archivo_pdf.path, 'rb'),
-            as_attachment=True,
-            filename=f"BOLETIN_{boletin.estudiante.cedula}_{boletin.periodo_escolar}_L{boletin.lapso}.pdf"
-        )
-
-# --- MOTOR DE GENERACIÓN DUAL ---
-
-class GenerarBoletinView(APIView):
+def procesar_data_boletin(estudiante, lapso, periodo, observaciones=""):
     """
-    POST: Genera, guarda en base de datos y crea el archivo PDF oficial.
+    Carga notas del lapso actual, recupera las anteriores y calcula 
+    la definitiva por materia y el promedio general anual si es Lapso 3.
     """
-    permission_classes = [IsAuthenticated]
+    # 1. Obtenemos las notas enviadas del estudiante en el periodo actual
+    # Traemos todo el histórico para poder llenar las columnas L1 y L2 aunque estemos en el L3
+    calificaciones_qs = Calificacion.objects.filter(
+        estudiante=estudiante, 
+        enviado=True
+    ).select_related('materia')
 
-    def obtener_literal_venezuela(self, promedio):
-        """Convierte escala numérica a literal para Primaria (Escala A-E)."""
-        try:
-            p = float(promedio)
-            if p >= 19: return "A"
-            if p >= 14: return "B"
-            if p >= 10: return "C"
-            if p >= 6:  return "D"
-            return "E"
-        except (ValueError, TypeError):
-            return "S/C"
+    if not calificaciones_qs.exists():
+        return None
 
-    def post(self, request, estudiante_id, lapso):
-        if request.user.rol != 'admin':
-            return Response({'error': 'Solo el administrador puede generar documentos oficiales'}, status=403)
-
-        estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
-        periodo = request.data.get('periodo_escolar', '2025-2026')
+    es_primaria = (estudiante.grado_seccion.nivel == 'primaria') if estudiante.grado_seccion else False
+    materias_dict = {}
+    
+    # Organizamos la data por materia
+    for cal in calificaciones_qs:
+        m_id = cal.materia.id
+        if m_id not in materias_dict:
+            materias_dict[m_id] = {
+                'nombre': cal.materia.nombre,
+                'l1': '-', 'l2': '-', 'l3': '-',
+                'nums': {} # Para cálculos internos
+            }
         
-        # Filtro: Solo notas que el profesor ya bloqueó/envió
-        calificaciones_qs = Calificacion.objects.filter(
-            estudiante=estudiante, lapso=lapso, enviado=True
-        ).select_related('materia', 'profesor')
-
-        if not calificaciones_qs.exists():
-            return Response({'error': 'No hay calificaciones definitivas enviadas para este lapso'}, status=404)
-
-        # 1. Procesamiento de datos mediante el Serializer de Calificaciones
-        serializer = CalificacionSerializer(calificaciones_qs, many=True)
-        materias_data = serializer.data
+        valor = float(cal.promedio or 0)
+        materias_dict[m_id]['nums'][str(cal.lapso)] = valor
         
-        es_primaria = False
-        if estudiante.grado_seccion:
-            es_primaria = estudiante.grado_seccion.nivel == 'primaria'
+        # Formateo visual según nivel
+        if es_primaria:
+            if valor >= 18: txt = "A"
+            elif valor >= 14: txt = "B"
+            elif valor >= 10: txt = "C"
+            elif valor >= 6:  txt = "D"
+            else: txt = "E"
+        else:
+            txt = f"{int(valor):02d}"
         
-        promedios_lista = []
-        for m in materias_data:
-            # Obtenemos el promedio calculado del SerializerMethodField
-            nota_num = float(m.get('promedio_lapso', 0))
-            promedios_lista.append(nota_num)
-            m['nota_display'] = self.obtener_literal_venezuela(nota_num) if es_primaria else nota_num
+        materias_dict[m_id][f'l{cal.lapso}'] = txt
 
-        # 2. Cálculo de Promedio General del Lapso
-        promedio_num = round(sum(promedios_lista) / len(promedios_lista), 2) if promedios_lista else 0
-        promedio_final_pdf = self.obtener_literal_venezuela(promedio_num) if es_primaria else promedio_num
+    materias_finales = []
+    suma_definitivas_anuales = 0 
 
-        # 3. Preparación del Contexto para el Template HTML
-        context = {
-            "estudiante": estudiante,
-            "cedula": estudiante.cedula,
-            "grado_obj": estudiante.grado_seccion,
-            "materias": materias_data,
-            "lapso": lapso,
-            "es_primaria": es_primaria,
-            "promedio_general": promedio_final_pdf,
-            "periodo": periodo,
-            "fecha_emision": timezone.now().date(),
-            "observaciones": request.data.get('observaciones', '')
-        }
+    for m_id, data in materias_dict.items():
+        def_val = "-"
+        
+        # Lógica de Definitiva: Solo se calcula/muestra en el reporte del Lapso 3
+        if str(lapso) == '3':
+            # Promedio de los 3 lapsos para la materia
+            valores = data['nums'].values()
+            # Dividimos entre 3 (o el número de lapsos que existan si el colegio permite cierre parcial)
+            prom_materia = sum(valores) / 3 
+            suma_definitivas_anuales += prom_materia
+            
+            if es_primaria:
+                if prom_materia >= 18: def_val = "A"
+                elif prom_materia >= 14: def_val = "B"
+                elif prom_materia >= 10: def_val = "C"
+                elif prom_materia >= 6:  def_val = "D"
+                else: def_val = "E"
+            else:
+                def_val = f"{int(prom_materia):02d}"
 
-        try:
-            # 4. Generación del PDF con WeasyPrint
-            html_string = render_to_string("boletines/boletin_secundaria.html", context)
-            pdf_file = BytesIO()
-            HTML(string=html_string).write_pdf(pdf_file)
-            
-            # 5. Guardado en BD (update_or_create para evitar duplicados Estudiante+Lapso+Periodo)
-            boletin, created = Boletin.objects.update_or_create(
-                estudiante=estudiante, 
-                lapso=lapso,
-                periodo_escolar=periodo,
-                defaults={
-                    'grado_seccion': estudiante.grado_seccion,
-                    'promedio_general': promedio_num,
-                    'generado_por': request.user,
-                    'observaciones': context['observaciones'],
-                    'es_definitivo': True
-                }
-            )
-            
-            # 6. Guardar el archivo físico
-            nombre_archivo = f"boletin_{estudiante.cedula}_{periodo}_L{lapso}.pdf"
-            boletin.archivo_pdf.save(nombre_archivo, ContentFile(pdf_file.getvalue()), save=True)
-            
-            return Response(BoletinSerializer(boletin).data, status=status.HTTP_201_CREATED)
-            
-        except Exception as e:
-            return Response({'error': f'Error en motor PDF: {str(e)}'}, status=500)
+        materias_finales.append({
+            'materia_nombre': data['nombre'],
+            'nota_l1': data['l1'],
+            'nota_l2': data['l2'],
+            'nota_l3': data['l3'],
+            'definitiva': def_val
+        })
+
+    # LÓGICA DEL PROMEDIO GENERAL (El cuadro grande)
+    if str(lapso) == '3':
+        # PROMEDIO GENERAL DE TODAS LAS DEFINITIVAS
+        promedio_final_num = suma_definitivas_anuales / len(materias_finales) if materias_finales else 0
+    else:
+        # PROMEDIO ÚNICAMENTE DEL LAPSO ACTUAL
+        notas_este_lapso = [v for m in materias_dict.values() for k, v in m['nums'].items() if k == str(lapso)]
+        promedio_final_num = sum(notas_este_lapso) / len(notas_este_lapso) if notas_este_lapso else 0
+
+    # Formateo del promedio general
+    if es_primaria:
+        if promedio_final_num >= 18: promedio_display = "A"
+        elif promedio_final_num >= 14: promedio_display = "B"
+        elif promedio_final_num >= 10: promedio_display = "C"
+        elif promedio_final_num >= 6:  promedio_display = "D"
+        else: promedio_display = "E"
+    else:
+        promedio_display = f"{promedio_final_num:.2f}"
+
+    return {
+        "estudiante": estudiante,
+        "cedula": estudiante.cedula,
+        "grado_obj": estudiante.grado_seccion,
+        "materias": materias_finales,
+        "lapso": str(lapso), 
+        "promedio_general": promedio_display,
+        "periodo": periodo,
+        "fecha_emision": timezone.now(),
+        "observaciones": observaciones,
+        "es_vista_previa": False
+    }
+
+# --- VISTAS ---
 
 class VistaPreviaBoletinView(APIView):
-    """
-    GET: Renderiza el boletín en el navegador (HTML) sin guardar archivos en disco.
-    """
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, estudiante_id, lapso):
@@ -160,40 +135,86 @@ class VistaPreviaBoletinView(APIView):
             return Response({'error': 'No autorizado'}, status=403)
 
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
-        calificaciones = Calificacion.objects.filter(estudiante=estudiante, lapso=lapso, enviado=True)
+        periodo = request.query_params.get('periodo', '2024-2025')
         
-        if not calificaciones.exists():
-            return Response({'error': 'No hay notas enviadas para generar vista previa'}, status=404)
+        context = procesar_data_boletin(estudiante, lapso, periodo)
+        if not context:
+            return Response({'error': 'No hay notas enviadas para el lapso solicitado'}, status=404)
 
-        serializer = CalificacionSerializer(calificaciones, many=True)
-        materias_data = serializer.data
+        context['es_vista_previa'] = True
         
-        es_primaria = (estudiante.grado_seccion.nivel == 'primaria') if estudiante.grado_seccion else False
-        
-        # Reutilizamos la lógica de conversión
-        engine = GenerarBoletinView()
-        promedios_lista = []
-        
-        for m in materias_data:
-            val = float(m.get('promedio_lapso', 0))
-            promedios_lista.append(val)
-            m['nota_display'] = engine.obtener_literal_venezuela(val) if es_primaria else val
+        try:
+            html_string = render_to_string("boletines/boletin_secundaria.html", context)
+            pdf_bytes = HTML(string=html_string).write_pdf()
+            
+            response = HttpResponse(pdf_bytes, content_type='application/pdf')
+            if request.GET.get('download') == '1':
+                filename = f"Boletin_{estudiante.cedula}_L{lapso}.pdf"
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            else:
+                response['Content-Disposition'] = 'inline; filename="vista_previa.pdf"'
+            return response
+        except Exception as e:
+            return Response({'error': f'Error render: {str(e)}'}, status=500)
 
-        promedio_num = round(sum(promedios_lista) / len(promedios_lista), 2) if promedios_lista else 0
-        promedio_final_preview = engine.obtener_literal_venezuela(promedio_num) if es_primaria else promedio_num
+class GenerarBoletinView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        context = {
-            "estudiante": estudiante,
-            "cedula": estudiante.cedula,
-            "grado_obj": estudiante.grado_seccion,
-            "materias": materias_data,
-            "lapso": lapso,
-            "es_primaria": es_primaria,
-            "promedio_general": promedio_final_preview,
-            "periodo": request.query_params.get('periodo', '2025-2026'),
-            "fecha_emision": timezone.now().date(),
-            "observaciones": request.query_params.get('observaciones', ''),
-            "es_vista_previa": True
-        }
+    def post(self, request, estudiante_id, lapso):
+        if request.user.rol != 'admin':
+            return Response({'error': 'No autorizado'}, status=403)
 
-        return render(request, "boletines/boletin_secundaria.html", context)
+        estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
+        periodo = request.data.get('periodo_escolar', '2024-2025')
+        obs = request.data.get('observaciones', '')
+
+        context = procesar_data_boletin(estudiante, lapso, periodo, obs)
+        if not context:
+            return Response({'error': 'No hay notas enviadas para generar este boletín'}, status=404)
+
+        try:
+            html_string = render_to_string("boletines/boletin_secundaria.html", context)
+            pdf_file = BytesIO()
+            HTML(string=html_string).write_pdf(pdf_file)
+            
+            # Promedio numérico para registro en BD (basado en el contexto procesado)
+            # Intentamos convertir el display a float si no es primaria
+            try:
+                promedio_db = float(context['promedio_general'])
+            except:
+                promedio_db = 0.0
+
+            boletin, _ = Boletin.objects.update_or_create(
+                estudiante=estudiante, 
+                lapso=str(lapso), 
+                periodo_escolar=periodo,
+                defaults={
+                    'grado_seccion': estudiante.grado_seccion,
+                    'promedio_general': round(promedio_db, 2),
+                    'generado_por': request.user,
+                    'es_definitivo': True,
+                    'observaciones': obs
+                }
+            )
+            boletin.archivo_pdf.save(
+                f"boletin_{estudiante.cedula}_L{lapso}.pdf", 
+                ContentFile(pdf_file.getvalue()), 
+                save=True
+            )
+            return Response(BoletinSerializer(boletin).data, status=201)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+class BoletinListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        if request.user.rol != 'admin': return Response(status=403)
+        boletines = Boletin.objects.all().order_by('-fecha_emision')
+        return Response(BoletinSerializer(boletines, many=True).data)
+
+class DescargarBoletinView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        boletin = get_object_or_404(Boletin, pk=pk)
+        if not boletin.archivo_pdf: raise Http404()
+        return FileResponse(open(boletin.archivo_pdf.path, 'rb'), as_attachment=True)

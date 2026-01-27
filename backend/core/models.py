@@ -53,21 +53,17 @@ class GradoSeccion(models.Model):
     ]
 
     GRADO_OPCIONES_PRIMARIA = [
-        ('1', '1er grado'),
-        ('2', '2do grado'),
-        ('3', '3er grado'),
-        ('4', '4to grado'),
-        ('5', '5to grado'),
-        ('6', '6to grado'),
+        ('1', '1er grado'), ('2', '2do grado'), ('3', '3er grado'),
+        ('4', '4to grado'), ('5', '5to grado'), ('6', '6to grado'),
     ]
 
     GRADO_OPCIONES_SECUNDARIA = [
-        ('1', '1er año'),
-        ('2', '2do año'),
-        ('3', '3er año'),
-        ('4', '4to año'),
-        ('5', '5to año'),
+        ('1', '1er año'), ('2', '2do año'), ('3', '3er año'),
+        ('4', '4to año'), ('5', '5to año'), ('6', '6to año'),
     ]
+
+    # Unificamos todas las opciones para la validación del campo
+    TODOS_LOS_GRADOS = GRADO_OPCIONES_PRIMARIA + GRADO_OPCIONES_SECUNDARIA
 
     SECCION_OPCIONES = [
         ('A', 'Sección A'),
@@ -76,19 +72,23 @@ class GradoSeccion(models.Model):
     ]
 
     nivel = models.CharField(max_length=20, choices=NIVEL_OPCIONES)
-    grado = models.CharField(max_length=50)  # aquí puedes usar choices dinámicos según nivel
+    # Usamos las opciones unificadas para evitar errores de validación
+    grado = models.CharField(max_length=50, choices=TODOS_LOS_GRADOS)
     seccion = models.CharField(max_length=5, choices=SECCION_OPCIONES)
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Grado y Sección"
+        verbose_name_plural = "Grados y Secciones"
+        unique_together = ['nivel', 'grado', 'seccion'] # Evita crear "1er año A" dos veces
+
     def __str__(self):
-        tipo = "Grado" if self.nivel == "primaria" else "Año"
-        # Obtener el texto del grado según el nivel
+        # Lógica para mostrar el nombre según el nivel
         if self.nivel == "primaria":
             grado_texto = dict(self.GRADO_OPCIONES_PRIMARIA).get(self.grado, self.grado)
-        elif self.nivel == "secundaria":
-            grado_texto = dict(self.GRADO_OPCIONES_SECUNDARIA).get(self.grado, self.grado)
         else:
-            grado_texto = self.grado
-        return f"{grado_texto} {self.seccion} ({self.nivel})"
+            grado_texto = dict(self.GRADO_OPCIONES_SECUNDARIA).get(self.grado, self.grado)
+            
+        return f"{grado_texto} {self.seccion} ({self.nivel.capitalize()})"
