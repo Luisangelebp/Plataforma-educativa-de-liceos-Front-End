@@ -4,22 +4,18 @@ from . import views
 app_name = 'boletines'
 
 urlpatterns = [
-    # Plantillas
-    path('plantillas/', views.PlantillaBoletinListCreateView.as_view(), name='plantilla-list-create'),
-    path('plantillas/<int:pk>/', views.PlantillaBoletinDetailView.as_view(), name='plantilla-detail'),
-    path('plantillas/<int:pk>/descargar/', views.DescargarPlantillaView.as_view(), name='plantilla-descargar'),
-    path('plantillas/periodo/<str:periodo>/', views.PlantillasPorPeriodoView.as_view(), name='plantillas-por-periodo'),
-    path('plantillas/periodo/<str:periodo>/grado/<int:grado_id>/', views.PlantillaPorPeriodoGradoView.as_view(), name='plantilla-por-periodo-grado'),
-    
-    # Boletines
+    # Gestión administrativa de boletines generados
     path('', views.BoletinListCreateView.as_view(), name='boletin-list-create'),
-    path('<int:pk>/', views.BoletinDetailView.as_view(), name='boletin-detail'),
     path('<int:pk>/descargar/', views.DescargarBoletinView.as_view(), name='boletin-descargar'),
-    path('estudiante/<int:estudiante_id>/', views.BoletinesPorEstudianteView.as_view(), name='boletines-por-estudiante'),
-    path('estudiante/<int:estudiante_id>/lapso/<str:lapso>/', views.BoletinPorEstudianteLapsoView.as_view(), name='boletin-por-estudiante-lapso'),
-    path('calcular-promedio/<int:estudiante_id>/lapso/<str:lapso>/', views.CalcularPromedioView.as_view(), name='calcular-promedio'),
 
-    # Secundaria
-    path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/generar/', views.GenerarBoletinSecundariaView.as_view(), name='generar-boletin-secundaria'),
-    path('secundaria/<int:estudiante_id>/lapso/<str:lapso>/vista-previa/', views.VistaPreviaBoletinSecundariaView.as_view(), name='vista-previa-boletin-secundaria'),
+    # Motor Dual (Funciona para Primaria y Secundaria automáticamente)
+    # POST para generar, guardar en BD y crear el archivo físico oficial
+    path('generar/<int:estudiante_id>/lapso/<str:lapso>/', 
+         views.GenerarBoletinView.as_view(), 
+         name='generar-boletin'),
+    
+    # GET para ver el boletín en el navegador (HTML) sin guardarlo en disco
+    path('vista-previa/<int:estudiante_id>/lapso/<str:lapso>/', 
+         views.VistaPreviaBoletinView.as_view(), 
+         name='vista-previa-boletin'),
 ]
