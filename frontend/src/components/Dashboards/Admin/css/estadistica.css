@@ -24,6 +24,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+.content .card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+
 }
 
 .content .card i {

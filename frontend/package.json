@@ -11,6 +11,7 @@
     "start": "vite"
   },
   "dependencies": {
+    "antd": "^6.2.1",
     "axios": "^1.13.1",
     "chart.js": "^4.5.1",
     "react": "^19.1.0",
