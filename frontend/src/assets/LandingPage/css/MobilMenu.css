@@ -21,9 +21,7 @@ i {
   text-align: center;
   margin-right: 5vw;
 }
-i:hover {
-  color: #ff0000;
-}
+
 
 .overlay {
   position: fixed;
