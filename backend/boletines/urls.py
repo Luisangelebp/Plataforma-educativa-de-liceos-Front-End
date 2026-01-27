@@ -4,18 +4,17 @@ from . import views
 app_name = 'boletines'
 
 urlpatterns = [
-    # Gestión administrativa de boletines generados
+    # Gestión administrativa de boletines generados (Listado de PDFs ya existentes)
     path('', views.BoletinListCreateView.as_view(), name='boletin-list-create'),
     path('<int:pk>/descargar/', views.DescargarBoletinView.as_view(), name='boletin-descargar'),
 
-    # Motor Dual (Funciona para Primaria y Secundaria automáticamente)
-    # POST para generar, guardar en BD y crear el archivo físico oficial
-    path('generar/<int:estudiante_id>/lapso/<str:lapso>/', 
+    # Motor Dual (Generación de nuevos documentos)
+    # Se cambió <str:lapso> por <int:lapso> para mayor seguridad en la entrada
+    path('generar/<int:estudiante_id>/lapso/<int:lapso>/', 
          views.GenerarBoletinView.as_view(), 
          name='generar-boletin'),
     
-    # GET para ver el boletín en el navegador (HTML) sin guardarlo en disco
-    path('vista-previa/<int:estudiante_id>/lapso/<str:lapso>/', 
+    path('vista-previa/<int:estudiante_id>/lapso/<int:lapso>/', 
          views.VistaPreviaBoletinView.as_view(), 
          name='vista-previa-boletin'),
 ]

@@ -2,11 +2,15 @@ from rest_framework import serializers
 from .models import Calificacion
 
 class CalificacionSerializer(serializers.ModelSerializer):
+    # Usamos los campos que están DIRECTAMENTE en el modelo Estudiante
     estudiante_nombre = serializers.CharField(source='estudiante.nombre', read_only=True)
     estudiante_apellido = serializers.CharField(source='estudiante.apellido', read_only=True)
+    
     materia_nombre = serializers.CharField(source='materia.nombre', read_only=True)
-    profesor_nombre = serializers.CharField(source='profesor.nombre', read_only=True)
-    profesor_apellido = serializers.CharField(source='profesor.apellido', read_only=True)
+    
+    # Para el profesor, saltamos al modelo Usuario de Core usando la relación 'usuario'
+    profesor_nombre = serializers.CharField(source='profesor.usuario.nombre', read_only=True)
+    profesor_apellido = serializers.CharField(source='profesor.usuario.apellido', read_only=True)
     
     promedio_lapso = serializers.SerializerMethodField()
     
@@ -22,12 +26,12 @@ class CalificacionSerializer(serializers.ModelSerializer):
         read_only_fields = ['promedio', 'promedio_lapso', 'fecha_creacion', 'fecha_actualizacion']
     
     def get_promedio_lapso(self, obj):
-        # El modelo ya tiene la lógica: si hay evaluaciones dinámicas las promedia,
-        # si no, devuelve el promedio fijo de primaria.
+        # Llama a la lógica del modelo que unifica Primaria y Secundaria
         val = obj.promedio_lapso(obj.lapso)
         return float(val) if val is not None else 0.0
 
     def validate(self, data):
+        # Validación de rango para las notas (Escala 0-20)
         notas_parciales = ['nota1', 'nota2', 'nota3', 'nota4']
         for campo in notas_parciales:
             valor = data.get(campo)
@@ -38,6 +42,7 @@ class CalificacionSerializer(serializers.ModelSerializer):
         return data
 
     def validate_enviado(self, value):
+        # Una vez enviada (bloqueada), el profesor no puede volver a ponerla en False
         if self.instance and self.instance.enviado and value is False:
             raise serializers.ValidationError("No se puede revertir el estado de una calificación ya enviada.")
         return value

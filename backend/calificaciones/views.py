@@ -13,12 +13,15 @@ class CalificacionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Usamos select_related para optimizar las consultas a la base de datos
+        # Optimizamos incluyendo las relaciones de usuario para los nombres en el serializer
         queryset = Calificacion.objects.all().select_related(
-            'estudiante', 'materia', 'profesor', 'estudiante__grado_seccion'
+            'estudiante', 
+            'materia', 
+            'profesor', 
+            'profesor__usuario', # Para profesor_nombre
+            'estudiante__grado_seccion'
         )
         
-        # Filtros básicos desde query params
         params = self.request.query_params
         materia = params.get('materia')
         lapso = params.get('lapso')
@@ -48,15 +51,15 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         # Restricciones de visibilidad por ROL
         user = self.request.user
         if user.rol == 'profesor':
-            try:
+            if hasattr(user, 'profesor_profile'):
                 queryset = queryset.filter(profesor=user.profesor_profile)
-            except AttributeError:
+            else:
                 queryset = queryset.none()
 
         elif user.rol == 'estudiante':
-            try:
+            if hasattr(user, 'estudiante_profile'):
                 queryset = queryset.filter(estudiante=user.estudiante_profile)
-            except AttributeError:
+            else:
                 queryset = queryset.none()
 
         return queryset
@@ -69,9 +72,8 @@ class CalificacionViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         instance = self.get_object()
-        # BLOQUEO: Si ya se envió, no se puede tocar
         if instance.enviado:
-            raise serializers.ValidationError("Esta calificación ya ha sido enviada al sistema central y no puede modificarse.")
+            raise serializers.ValidationError("Esta calificación ya ha sido enviada y no puede modificarse.")
         
         if self.request.user.rol == 'profesor':
             serializer.save(profesor=self.request.user.profesor_profile)
@@ -80,16 +82,17 @@ class CalificacionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def enviar_finales(self, request):
-        """Bloquea las notas para que ya no sean editables y aparezcan en el boletín."""
+        """Bloquea las notas para que aparezcan en el boletín."""
         materia_id = request.data.get('materia')
         lapso = request.data.get('lapso')
         
         if not materia_id or not lapso:
             return Response({'error': 'Se requiere materia y lapso'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Determinar perfil del profesor
         if request.user.rol == 'profesor':
-            profesor = request.user.profesor_profile
+            profesor = getattr(request.user, 'profesor_profile', None)
+            if not profesor:
+                return Response({'error': 'El usuario no tiene un perfil de profesor asociado'}, status=403)
         else:
             profesor_id = request.data.get('profesor')
             if not profesor_id:
@@ -102,16 +105,13 @@ class CalificacionViewSet(viewsets.ModelViewSet):
             return Response({'error': 'No hay calificaciones para enviar'}, status=status.HTTP_404_NOT_FOUND)
         
         calificaciones.update(enviado=True)
-        return Response({'message': f'Se finalizaron {calificaciones.count()} registros de notas.'}, status=200)
-
-    # --- ACCIONES PARA SECUNDARIA (EVALUACIONES DINÁMICAS) ---
+        return Response({'message': f'Se finalizaron {calificaciones.count()} registros.'}, status=200)
 
     @action(detail=True, methods=['post'])
     def agregar_evaluacion(self, request, pk=None):
         calificacion = self.get_object()
-        
         if calificacion.enviado:
-            return Response({"error": "No se pueden agregar evaluaciones a una materia ya finalizada."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "Materia ya finalizada."}, status=status.HTTP_403_FORBIDDEN)
 
         nombre = request.data.get("nombre")
         nota = request.data.get("nota", 0)
@@ -120,24 +120,14 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         if not nombre:
             return Response({"error": "El nombre de la evaluación es obligatorio."}, status=400)
 
-        evaluacion = Evaluacion.objects.create(
+        Evaluacion.objects.create(
             calificacion=calificacion,
             nombre=nombre,
             nota=nota,
             lapso=lapso
         )
         
-        # AJUSTE: Se cambió promedio_lap por promedio_lapso para coincidir con el modelo
         return Response({
-            "id": evaluacion.id, 
-            "nombre": evaluacion.nombre, 
-            "nota": evaluacion.nota,
+            "status": "Evaluación agregada",
             "nuevo_promedio": calificacion.promedio_lapso(lapso) 
         }, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=['get'])
-    def listar_evaluaciones(self, request, pk=None):
-        calificacion = self.get_object()
-        evaluaciones = calificacion.evaluaciones.all()
-        data = [{"id": ev.id, "nombre": ev.nombre, "lapso": ev.lapso, "nota": ev.nota} for ev in evaluaciones]
-        return Response(data, status=200)

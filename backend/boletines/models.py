@@ -16,9 +16,25 @@ class Boletin(models.Model):
         on_delete=models.CASCADE, 
         related_name='boletines'
     )
+
+    # NUEVO: Para guardar el grado que cursaba el alumno cuando se generó este boletín
+    grado_seccion = models.ForeignKey(
+        GradoSeccion, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='boletines_historicos'
+    )
+
+    # NUEVO: Para diferenciar boletines de distintos años escolares
+    periodo_escolar = models.CharField(
+        max_length=20, 
+        default="2025-2026",
+        help_text="Ejemplo: 2025-2026"
+    )
+
     lapso = models.CharField(max_length=1, choices=LAPSO_OPCIONES)
     
-    # Almacena el PDF generado automáticamente para que el Admin lo descargue
     archivo_pdf = models.FileField(
         upload_to='boletines/finales/', 
         null=True, 
@@ -52,9 +68,11 @@ class Boletin(models.Model):
 
     class Meta:
         ordering = ['-fecha_emision']
-        unique_together = ['estudiante', 'lapso']
+        # CORREGIDO: Un estudiante solo puede tener UN boletín por lapso en UN año escolar específico
+        unique_together = ['estudiante', 'lapso', 'periodo_escolar']
         verbose_name = "Boletín Informativo"
         verbose_name_plural = "Boletines Informativos"
 
     def __str__(self):
-        return f"Boletín {self.get_lapso_display()} - {self.estudiante.nombre} {self.estudiante.apellido}"
+        # Usamos los campos de nombre directos de tu modelo Estudiante
+        return f"Boletín {self.get_lapso_display()} - {self.estudiante.nombre} {self.estudiante.apellido} ({self.periodo_escolar})"

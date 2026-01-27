@@ -4,36 +4,32 @@
     <meta charset="UTF-8">
     <style>
         @page { size: letter; margin: 1.5cm; }
-        body { font-family: 'Helvetica', sans-serif; color: #333; font-size: 12px; line-height: 1.4; }
+        body { font-family: 'Helvetica', sans-serif; color: #333; font-size: 11px; line-height: 1.4; }
         .text-center { text-align: center; }
         .header { text-transform: uppercase; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         
         .info-estudiante { margin-bottom: 20px; width: 100%; }
         .info-estudiante td { border: none; text-align: left; padding: 2px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; text-transform: uppercase; }
-        .materia-td { text-align: left; font-weight: bold; width: 50%; }
+        table.tabla-notas { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .tabla-notas th, .tabla-notas td { border: 1px solid #000; padding: 6px; text-align: center; }
+        th { background-color: #f2f2f2; text-transform: uppercase; font-size: 10px; }
+        .materia-td { text-align: left; font-weight: bold; width: 45%; }
         
-        .promedio-seccion { margin-top: 15px; font-size: 14px; text-align: right; padding-right: 10px; }
-
+        .promedio-seccion { margin-top: 15px; font-size: 13px; text-align: right; padding-right: 10px; }
         .obs-box { 
-            margin-top: 20px; 
-            border: 1px solid #000; 
-            padding: 10px; 
-            min-height: 100px;
-            background-color: #fafafa;
+            margin-top: 20px; border: 1px solid #000; padding: 10px; 
+            min-height: 80px; background-color: #fafafa;
         }
         
-        .firmas { margin-top: 60px; width: 100%; border: none; }
-        .firmas td { border: none; width: 50%; padding-top: 40px; }
+        .firmas { margin-top: 50px; width: 100%; border: none; }
+        .firmas td { border: none; width: 50%; padding-top: 40px; text-align: center; }
         .linea { border-top: 1px solid #000; width: 70%; margin: 0 auto; margin-bottom: 5px; }
         
         .watermark {
-            position: absolute; top: 40%; left: 25%; font-size: 50px;
-            color: rgba(200, 200, 200, 0.3); transform: rotate(-45deg);
-            z-index: -1;
+            position: absolute; top: 40%; left: 15%; font-size: 80px;
+            color: rgba(200, 200, 200, 0.2); transform: rotate(-45deg);
+            z-index: -1; pointer-events: none;
         }
     </style>
 </head>
@@ -45,30 +41,30 @@
     <div class="header text-center">
         <strong>República Bolivariana de Venezuela</strong><br>
         <strong>Ministerio del Poder Popular para la Educación</strong><br>
-        <strong>Liceo Nacional "Simón Bolívar"</strong><br>
+        <strong>U.E. Liceo Nacional "Simón Bolívar"</strong><br>
         <span style="font-size: 14px;">Boletín de Calificaciones - Lapso {{ lapso }}</span><br>
         Año Escolar {{ periodo }}
     </div>
 
     <table class="info-estudiante">
         <tr>
-            <td><strong>Estudiante:</strong> {{ estudiante.user.nombre }} {{ estudiante.user.apellido }}</td>
+            <td><strong>Estudiante:</strong> {{ estudiante.nombre }} {{ estudiante.apellido }}</td>
             <td><strong>Cédula:</strong> {{ cedula }}</td>
         </tr>
         <tr>
             <td><strong>Ubicación Académica:</strong> {{ grado_obj }}</td>
-            <td><strong>Fecha de Emisión:</strong> {{ fecha_emision }}</td>
+            <td><strong>Fecha de Emisión:</strong> {{ fecha_emision|date:"d/m/Y" }}</td>
         </tr>
     </table>
 
-    <table>
+    <table class="tabla-notas">
         <thead>
             <tr>
                 <th>Asignatura / Área de Formación</th>
                 {% if not es_primaria %}
                 <th>Calificación Numérica</th>
                 {% endif %}
-                <th>Resultado Final (Literal/Nota)</th>
+                <th>Resultado Final ({% if es_primaria %}Literal{% else %}Nota{% endif %})</th>
             </tr>
         </thead>
         <tbody>
@@ -78,11 +74,11 @@
                 {% if not es_primaria %}
                 <td>{{ materia.promedio_lapso }}</td>
                 {% endif %}
-                <td><strong>{{ m.nota_display|default:materia.nota_display }}</strong></td>
+                <td><strong>{{ materia.nota_display }}</strong></td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3">No hay calificaciones registradas en este lapso.</td>
+                <td colspan="3">No hay calificaciones registradas o enviadas en este lapso.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -90,14 +86,14 @@
 
     <div class="promedio-seccion">
         <strong>PROMEDIO GENERAL DEL LAPSO:</strong> 
-        <span style="font-size: 16px; border: 1px solid #000; padding: 2px 10px;">
+        <span style="font-size: 15px; border: 2px solid #000; padding: 4px 12px; margin-left: 10px;">
             {{ promedio_general }}
         </span>
     </div>
 
     <div class="obs-box">
         <strong>OBSERVACIONES Y APRECIACIONES:</strong><br>
-        <p>{{ observaciones|default:"Sin observaciones adicionales por parte de la institución." }}</p>
+        <p style="margin-top: 5px;">{{ observaciones|default:"Sin observaciones adicionales por parte de la institución." }}</p>
     </div>
 
     <table class="firmas">
@@ -115,8 +111,9 @@
         </tr>
     </table>
 
-    <div style="margin-top: 30px; font-size: 10px; text-align: center; color: #777;">
-        Este documento es una representación oficial de las calificaciones del estudiante para el periodo indicado.
+    <div style="margin-top: 40px; font-size: 9px; text-align: center; color: #777; border-top: 1px dashed #ccc; padding-top: 5px;">
+        Este documento es una representación oficial emitida por el sistema de gestión escolar. 
+        Cualquier enmienda o tachadura lo anula.
     </div>
 </body>
 </html>

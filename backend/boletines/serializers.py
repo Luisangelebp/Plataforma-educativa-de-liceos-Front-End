@@ -2,11 +2,17 @@ from rest_framework import serializers
 from .models import Boletin
 
 class BoletinSerializer(serializers.ModelSerializer):
+    # Usamos los campos directos del modelo Estudiante que ya tienes
     estudiante_nombre = serializers.SerializerMethodField()
     estudiante_cedula = serializers.CharField(source='estudiante.cedula', read_only=True)
-    # Ahora apunta al campo histórico del modelo Boletin
+    
+    # Representación legible del grado histórico guardado en el boletín
     grado_display = serializers.CharField(source='grado_seccion.__str__', read_only=True)
+    
+    # Información de quién generó el boletín (Admin)
     generado_por_nombre = serializers.SerializerMethodField()
+    
+    # Texto del lapso (ej: "Primer Lapso" en vez de "1")
     lapso_display = serializers.CharField(source='get_lapso_display', read_only=True)
     
     class Meta:
@@ -16,9 +22,9 @@ class BoletinSerializer(serializers.ModelSerializer):
             'estudiante',
             'estudiante_nombre',
             'estudiante_cedula',
-            'periodo_escolar',  # ¡Importante!
-            'grado_seccion',    # El ID del grado histórico
-            'grado_display',    # El texto legible del grado
+            'periodo_escolar',
+            'grado_seccion',
+            'grado_display',
             'lapso',
             'lapso_display',
             'archivo_pdf',
@@ -35,27 +41,28 @@ class BoletinSerializer(serializers.ModelSerializer):
             'fecha_actualizacion',
             'generado_por',
             'promedio_general',
-            'archivo_pdf' # El PDF lo genera el sistema, no el usuario
+            'archivo_pdf'
         ]
     
     def get_estudiante_nombre(self, obj):
-        # Usamos el perfil de usuario para obtener los nombres
-        return f"{obj.estudiante.user.nombre} {obj.estudiante.user.apellido}"
+        # Acceso directo a los campos del modelo Estudiante
+        return f"{obj.estudiante.nombre} {obj.estudiante.apellido}"
     
     def get_generado_por_nombre(self, obj):
+        # Acceso a través de la relación usuario para el administrador
         if obj.generado_por:
             return f"{obj.generado_por.nombre} {obj.generado_por.apellido}"
-        return None
+        return "Sistema"
 
     def validate(self, data):
         """
-        Validación integral: Estudiante + Lapso + Periodo Escolar.
+        Validación integral: Evita duplicados para el mismo Estudiante + Lapso + Periodo.
         """
         estudiante = data.get('estudiante')
         lapso = data.get('lapso')
         periodo = data.get('periodo_escolar')
         
-        # Si es una actualización, tomamos los valores de la instancia si no vienen en data
+        # Lógica para actualizaciones (PATCH/PUT)
         if self.instance:
             estudiante = estudiante or self.instance.estudiante
             lapso = lapso or self.instance.lapso
@@ -73,6 +80,6 @@ class BoletinSerializer(serializers.ModelSerializer):
                 
             if existing.exists():
                 raise serializers.ValidationError(
-                    f"Ya existe un boletín para este estudiante en el {lapso}º lapso del periodo {periodo}."
+                    f"Ya existe un boletín registrado para este estudiante en el {lapso}º lapso del periodo {periodo}."
                 )
         return data
