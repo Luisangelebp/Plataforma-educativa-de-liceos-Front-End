@@ -36,4 +36,4 @@ class UsuarioAdmin(UserAdmin):
 class GradoSeccionAdmin(admin.ModelAdmin):
     list_display = ('nivel', 'grado', 'seccion', 'fecha_creacion', 'fecha_actualizacion')
     list_filter = ('nivel', 'seccion')
-    search_fields = ('grado', 'seccion')
+    search_fields = ('grado', 'seccion', 'nivel')

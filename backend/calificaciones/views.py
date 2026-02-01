@@ -1,29 +1,51 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, serializers
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from .models import Calificacion, Evaluacion
-from .serializers import CalificacionSerializer, EvaluacionSerializer
-from Usuarios.profesor.models import Profesor
+from .serializers import CalificacionSerializer
 
 class CalificacionViewSet(viewsets.ModelViewSet):
     serializer_class = CalificacionSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Optimizamos con select_related y prefetch_related para las evaluaciones
+        """
+        Filtros de seguridad por ROL:
+        - Admin: Todo.
+        - Profesor: Solo lo que él registró.
+        - Representante: Solo las notas de sus hijos.
+        - Estudiante: Solo sus propias notas.
+        """
+        user = self.request.user
         queryset = Calificacion.objects.all().select_related(
             'estudiante', 
             'materia', 
             'profesor', 
             'profesor__usuario',
             'estudiante__grado_seccion'
-        ).prefetch_related('evaluaciones') # Importante para no hacer 1000 consultas
+        ).prefetch_related('evaluaciones')
         
+        # --- FILTROS DE SEGURIDAD POR ROL ---
+        if user.rol == 'profesor':
+            queryset = queryset.filter(profesor__usuario=user)
+        
+        elif user.rol == 'representante':
+            # 🛡️ El representante solo ve notas de sus hijos
+            repre_perfil = getattr(user, 'representante_profile', None)
+            if repre_perfil:
+                queryset = queryset.filter(estudiante__representante=repre_perfil)
+            else:
+                return Calificacion.objects.none()
+                
+        elif user.rol == 'estudiante':
+            queryset = queryset.filter(estudiante__usuario=user)
+
+        # --- FILTROS POR QUERY PARAMS (URL) ---
         params = self.request.query_params
-        # ... (tus filtros se mantienen igual, funcionan bien)
         materia = params.get('materia')
         lapso = params.get('lapso')
         estudiante = params.get('estudiante')
@@ -36,31 +58,35 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         if profesor_id: queryset = queryset.filter(profesor_id=profesor_id)
         if nivel: queryset = queryset.filter(estudiante__grado_seccion__nivel__iexact=nivel)
 
-        # Restricciones de ROL
-        user = self.request.user
-        if user.rol == 'profesor':
-            queryset = queryset.filter(profesor__usuario=user)
-        elif user.rol == 'estudiante':
-            queryset = queryset.filter(estudiante__usuario=user)
-
-        return queryset
+        return queryset.distinct()
     
     def perform_create(self, serializer):
-        # Al crear, asignamos el profesor automáticamente si es quien postea
-        if self.request.user.rol == 'profesor':
-            serializer.save(profesor=self.request.user.profesor_profile)
+        """
+        Asigna el profesor automáticamente y valida que dicte la materia.
+        """
+        user = self.request.user
+        if user.rol == 'profesor':
+            profesor = user.profesor_profile
+            # 🛡️ Validación extra: ¿El profesor dicta esta materia?
+            materia = serializer.validated_data.get('materia')
+            if not profesor.materias.filter(id=materia.id).exists():
+                raise PermissionDenied("No puedes registrar notas en una materia que no tienes asignada.")
+            
+            serializer.save(profesor=profesor)
         else:
+            # Para el admin
             serializer.save()
     
     @action(detail=True, methods=['post'])
     def agregar_evaluacion(self, request, pk=None):
         """
-        Permite añadir una nota extra tanto en Primaria como Secundaria.
+        Añade evaluaciones dinámicas. El get_object() ya asegura que 
+        el usuario tenga permiso sobre esta calificación.
         """
         calificacion = self.get_object()
         
         if calificacion.enviado:
-            return Response({"error": "No se pueden añadir notas a un lapso cerrado."}, 
+            return Response({"error": "No se pueden añadir notas a un lapso cerrado/enviado."}, 
                             status=status.HTTP_403_FORBIDDEN)
 
         nombre = request.data.get("nombre")
@@ -69,14 +95,12 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         if not nombre:
             return Response({"error": "El nombre de la evaluación es obligatorio."}, status=400)
 
-        # Creamos la evaluación vinculada a esta calificación
         Evaluacion.objects.create(
             calificacion=calificacion,
             nombre=nombre,
             nota=nota
         )
         
-        # Recargamos la instancia para obtener el promedio actualizado
         calificacion.refresh_from_db()
         
         return Response({
@@ -86,15 +110,22 @@ class CalificacionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def enviar_finales(self, request):
-        """Bloquea masivamente las notas de una sección/materia para el boletín."""
+        """
+        Bloquea masivamente las notas. Solo afecta a los registros sobre 
+        los que el usuario tiene permiso (gracias a get_queryset).
+        """
         materia_id = request.data.get('materia')
         lapso = request.data.get('lapso')
         
-        # Filtramos las calificaciones que el profesor quiere cerrar
+        if not materia_id or not lapso:
+            return Response({'error': 'Materia y lapso son requeridos.'}, status=400)
+            
         qs = self.get_queryset().filter(materia_id=materia_id, lapso=lapso)
         
         if not qs.exists():
-            return Response({'error': 'No se encontraron registros para finalizar.'}, status=404)
+            return Response({'error': 'No se encontraron registros para finalizar o no tienes permiso.'}, status=404)
         
+        total = qs.count()
         qs.update(enviado=True)
-        return Response({'message': f'Se han bloqueado {qs.count()} registros para el boletín.'})
+        
+        return Response({'message': f'Se han bloqueado {total} registros para el boletín.'})

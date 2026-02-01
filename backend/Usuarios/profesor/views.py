@@ -1,51 +1,48 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 import json
 from .models import Profesor
 from .serializers import RegistroProfesorSerializer, ProfesorListSerializer, ProfesorUpdateSerializer
 
 class RegistroProfesorView(APIView):
-    authentication_classes = []  
-    permission_classes = [permissions.AllowAny]
+    """
+    Solo el Administrador puede registrar nuevos profesores.
+    """
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [permissions.IsAdminUser] 
     
     def post(self, request):
-        # Si viene como FormData, procesar grado_secciones y materias
         data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
         
-        # Si grado_secciones viene como string JSON, parsearlo
+        # Procesar grado_secciones
         if 'grado_secciones' in data and isinstance(data['grado_secciones'], str):
             try:
                 data['grado_secciones'] = json.loads(data['grado_secciones'])
             except json.JSONDecodeError:
                 pass
         
-        # Si materias viene como FormData (JSON string) o JSON, procesarlo
+        # Procesar materias (mantenemos tu lógica exacta de validación)
         if 'materias' in data:
-            # Verificar si es FormData (tiene método getlist)
             if hasattr(request.data, 'getlist'):
-                # Es FormData, puede venir como JSON string o como lista
                 if isinstance(data['materias'], str):
                     try:
                         materias_list = json.loads(data['materias'])
                         if isinstance(materias_list, list):
                             if len(materias_list) > 0:
-                                # Convertir a lista de enteros
-                                data['materias'] = [int(m) for m in materias_list if m is not None and m != '']
+                                data['materias'] = [int(m) for m in materias_list if m]
                             else:
-                                # Array vacío, eliminar para que el backend lo maneje
                                 del data['materias']
                     except (json.JSONDecodeError, ValueError, TypeError):
-                        # No es JSON válido, eliminar
-                        if 'materias' in data:
-                            del data['materias']
+                        if 'materias' in data: del data['materias']
                 elif isinstance(data['materias'], list):
-                    # Ya viene como lista (puede pasar con DRF), convertir a enteros
                     if len(data['materias']) > 0:
-                        data['materias'] = [int(m) for m in data['materias'] if m is not None and m != '']
+                        data['materias'] = [int(m) for m in data['materias'] if m]
                     else:
                         del data['materias']
-            # Si es JSON, el DRF parser ya lo maneja correctamente, no necesitamos procesar
         
         serializer = RegistroProfesorSerializer(data=data)
         if serializer.is_valid():
@@ -55,22 +52,28 @@ class RegistroProfesorView(APIView):
 
 
 class ListProfesoresView(generics.ListAPIView):
+    """
+    Solo Admins y Profesores pueden ver el listado.
+    Los estudiantes tienen el acceso denegado.
+    """
     serializer_class = ProfesorListSerializer
-    permission_classes = [permissions.AllowAny]  # en producción usar IsAuthenticated
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # 🛡️ Seguridad: Si es estudiante o representante, no ve la lista
+        if self.request.user.rol not in ['admin', 'profesor']:
+            raise PermissionDenied("No tienes permiso para ver la lista de profesores.")
+
         nivel = self.request.GET.get("nivel")
         grado = self.request.GET.get("grado")
         seccion = self.request.GET.get("seccion")
 
-        # Construir el queryset base - usar select_related y prefetch_related
-        # Prefetch_related es crucial para ManyToMany fields
         queryset = Profesor.objects.prefetch_related(
             'grado_secciones',
             'materias'
         ).select_related('usuario')
 
-        # Aplicar filtros si existen
         if nivel or grado or seccion:
             if nivel:
                 queryset = queryset.filter(grado_secciones__nivel__iexact=nivel)
@@ -78,67 +81,67 @@ class ListProfesoresView(generics.ListAPIView):
                 queryset = queryset.filter(grado_secciones__grado=grado)
             if seccion:
                 queryset = queryset.filter(grado_secciones__seccion=seccion)
-            # Solo usar distinct si hay filtros aplicados
             queryset = queryset.distinct()
-        else:
-            # Si no hay filtros, simplemente obtener todos
-            queryset = queryset.all()
 
         return queryset
 
 
 class ProfesorDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    - GET: El Admin o el propio Profesor pueden ver.
+    - PATCH/PUT: El Admin o el propio Profesor pueden editar.
+    - DELETE: Solo el Admin puede borrar.
+    """
     queryset = Profesor.objects.all()
     serializer_class = ProfesorUpdateSerializer
-    permission_classes = [permissions.AllowAny]  # en producción usar IsAdminUser
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+        
+        # 🛡️ Seguridad: Bloquear si no es Admin y no es el dueño del perfil
+        if user.rol != 'admin' and user.id != obj.usuario.id:
+            raise PermissionDenied("No tienes permiso para acceder a este perfil.")
+        return obj
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Usar el serializer de listado para incluir las secciones
         return Response(ProfesorListSerializer(instance).data)
+    
+    def perform_destroy(self, instance):
+        # 🛡️ Seguridad: Solo el admin borra. 
+        # Al borrar el usuario de Core, el perfil de Profesor se va por CASCADE.
+        if self.request.user.rol != 'admin':
+            raise PermissionDenied("Solo el administrador puede eliminar registros de profesores.")
+        
+        if instance.usuario:
+            instance.usuario.delete()
+        else:
+            instance.delete()
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        
-        # Si viene como FormData, procesar grado_secciones y materias
         data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
         
-        # Si grado_secciones viene como string JSON, parsearlo
+        # Procesamiento de grado_secciones (JSON string)
         if 'grado_secciones' in data and isinstance(data['grado_secciones'], str):
-            try:
-                data['grado_secciones'] = json.loads(data['grado_secciones'])
-            except json.JSONDecodeError:
-                pass
+            try: data['grado_secciones'] = json.loads(data['grado_secciones'])
+            except json.JSONDecodeError: pass
         
-        # Si materias viene como FormData (JSON string) o JSON, procesarlo
+        # Procesamiento de materias (Mantenemos tu lógica de conversión a enteros)
         if 'materias' in data:
-            # Verificar si es FormData (tiene método getlist)
             if hasattr(request.data, 'getlist'):
-                # Es FormData, puede venir como JSON string o como lista
                 if isinstance(data['materias'], str):
                     try:
-                        materias_list = json.loads(data['materias'])
-                        if isinstance(materias_list, list):
-                            if len(materias_list) > 0:
-                                # Convertir a lista de enteros
-                                data['materias'] = [int(m) for m in materias_list if m is not None and m != '']
-                            else:
-                                # Array vacío, eliminar para que el backend lo maneje
-                                del data['materias']
-                    except (json.JSONDecodeError, ValueError, TypeError):
-                        # No es JSON válido, eliminar
-                        if 'materias' in data:
-                            del data['materias']
+                        m_list = json.loads(data['materias'])
+                        data['materias'] = [int(m) for m in m_list if m]
+                    except: pass
                 elif isinstance(data['materias'], list):
-                    # Ya viene como lista (puede pasar con DRF), convertir a enteros
-                    if len(data['materias']) > 0:
-                        data['materias'] = [int(m) for m in data['materias'] if m is not None and m != '']
-                    else:
-                        del data['materias']
-            # Si es JSON, el DRF parser ya lo maneja correctamente, no necesitamos procesar
-        
+                    data['materias'] = [int(m) for m in data['materias'] if m]
+
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        # Devolver siempre con el serializer de listado (incluye secciones)
         return Response(ProfesorListSerializer(instance).data)
