@@ -3,23 +3,22 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 
 from .serializers import UsuarioSerializer, LoginSerializer, GradoSeccionSerializer, AdminSetUserPasswordSerializer
 from core.models import GradoSeccion, Usuario
 
-# Importar los serializers de cada rol
+# Importar los serializers de cada rol para el login unificado
 from Usuarios.profesor.serializers import ProfesorListSerializer
 from Usuarios.estudiante.serializers import EstudianteListSerializer
 from Usuarios.representante.serializers import RepresentanteListSerializer
 from Usuarios.administrador.serializers import AdministradorListSerializer
 
-
 class RegistroUsuarioView(APIView):
+    # Solo el Administrador puede crear usuarios base desde aquí
+    permission_classes = [permissions.IsAdminUser]
+
     def get(self, request):
-        """
-        Endpoint GET para mostrar información sobre el registro.
-        El registro debe realizarse mediante POST.
-        """
         return Response({
             'mensaje': 'Este endpoint requiere método POST para registrar usuarios',
             'instrucciones': {
@@ -41,11 +40,10 @@ class RegistroUsuarioView(APIView):
 
 
 class LoginUsuarioView(APIView):
+    # ABIERTO: Cualquiera debe poder intentar loguearse
+    permission_classes = [permissions.AllowAny]
+
     def get(self, request):
-        """
-        Endpoint GET para mostrar información sobre el login.
-        El login debe realizarse mediante POST.
-        """
         return Response({
             'mensaje': 'Este endpoint requiere método POST para iniciar sesión',
             'instrucciones': {
@@ -61,24 +59,20 @@ class LoginUsuarioView(APIView):
         usuario = serializer.validated_data['usuario']
         refresh = RefreshToken.for_user(usuario)
 
-        # Seleccionar el perfil según el rol usando el related_name correcto
+        # Buscar el perfil extendido según el rol
         perfil_data = None
         if usuario.rol == 'profesor':
             perfil = getattr(usuario, 'profesor_profile', None)
-            if perfil:
-                perfil_data = ProfesorListSerializer(perfil).data
+            if perfil: perfil_data = ProfesorListSerializer(perfil).data
         elif usuario.rol == 'estudiante':
             perfil = getattr(usuario, 'estudiante_profile', None)
-            if perfil:
-                perfil_data = EstudianteListSerializer(perfil).data
+            if perfil: perfil_data = EstudianteListSerializer(perfil).data
         elif usuario.rol == 'representante':
             perfil = getattr(usuario, 'representante_profile', None)
-            if perfil:
-                perfil_data = RepresentanteListSerializer(perfil).data
+            if perfil: perfil_data = RepresentanteListSerializer(perfil).data
         elif usuario.rol == 'admin':
             perfil = getattr(usuario, 'administrador_profile', None)
-            if perfil:
-                perfil_data = AdministradorListSerializer(perfil).data
+            if perfil: perfil_data = AdministradorListSerializer(perfil).data
 
         return Response({
             'access': str(refresh.access_token),
@@ -90,23 +84,27 @@ class LoginUsuarioView(APIView):
 class GradoSeccionViewSet(viewsets.ModelViewSet):
     """
     ViewSet para listar, crear, actualizar y eliminar instancias de GradoSeccion.
-    Permite al front consumir las combinaciones de nivel/grado/sección como lista.
     """
     queryset = GradoSeccion.objects.all()
     serializer_class = GradoSeccionSerializer
+    # Seguridad: Todos ven (GET), solo Admin modifica (POST, PUT, DELETE)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class UsuarioUpdateView(APIView):
     """
-    Vista para actualizar la información del usuario actual.
+    Vista para que un usuario actualice su propia información.
     """
+    # Requiere estar logueado (JWT o Sesión)
+    permission_classes = [permissions.IsAuthenticated]
+
     def patch(self, request, pk):
         try:
             usuario = Usuario.objects.get(pk=pk)
         except Usuario.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         
-        # Verificar que el usuario solo pueda actualizar su propia información
+        # Bloqueo de seguridad: No puedes editar a otros
         if request.user.id != usuario.id:
             return Response({'error': 'No tienes permiso para actualizar este usuario'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -118,13 +116,12 @@ class UsuarioUpdateView(APIView):
 
 
 class AdminSetUserPasswordView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    """
+    Vista exclusiva para que el Admin resetee contraseñas.
+    """
+    permission_classes = [permissions.IsAdminUser]
 
     def patch(self, request, pk):
-        if getattr(request.user, 'rol', None) != 'admin':
-            return Response({'error': 'No tienes permiso para realizar esta acción'}, status=status.HTTP_403_FORBIDDEN)
-
         try:
             usuario = Usuario.objects.get(pk=pk)
         except Usuario.DoesNotExist:

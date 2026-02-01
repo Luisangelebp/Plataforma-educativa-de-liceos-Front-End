@@ -130,7 +130,20 @@ class EstudiantesPDFView(APIView):
 class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteUpdateSerializer
-    permission_classes = [permissions.AllowAny]  # en producción usar IsAdminUser
+    permission_classes = [permissions.AllowAny] 
+
+    def perform_destroy(self, instance):
+        """
+        Lógica de eliminación real:
+        - Si tiene usuario (Secundaria), borramos el usuario (dispara el CASCADE).
+        - Si no tiene usuario (Primaria), borramos la ficha directamente.
+        """
+        if instance.usuario:
+            # Borramos el login de core, esto limpia todo automáticamente
+            instance.usuario.delete()
+        else:
+            # Borramos solo la ficha del estudiante
+            instance.delete()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -144,4 +157,5 @@ class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         self.perform_update(serializer)
         instance.refresh_from_db()
+        # Devolvemos el list serializer para que el front tenga la info completa tras editar
         return Response(EstudianteListSerializer(instance).data)
