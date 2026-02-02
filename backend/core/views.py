@@ -4,9 +4,13 @@ from rest_framework import status, viewsets, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import SessionAuthentication
+from django.shortcuts import get_object_or_404
 
-from .serializers import UsuarioSerializer, LoginSerializer, GradoSeccionSerializer, AdminSetUserPasswordSerializer
-from core.models import GradoSeccion, Usuario
+from .serializers import (
+    UsuarioSerializer, LoginSerializer, GradoSeccionSerializer, 
+    AdminSetUserPasswordSerializer, InstitucionSerializer, PeriodoEscolarSerializer
+)
+from core.models import GradoSeccion, Usuario, Institucion, PeriodoEscolar
 
 # Importar los serializers de cada rol para el login unificado
 from Usuarios.profesor.serializers import ProfesorListSerializer
@@ -15,7 +19,6 @@ from Usuarios.representante.serializers import RepresentanteListSerializer
 from Usuarios.administrador.serializers import AdministradorListSerializer
 
 class RegistroUsuarioView(APIView):
-    # Solo el Administrador puede crear usuarios base desde aquí
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
@@ -40,7 +43,6 @@ class RegistroUsuarioView(APIView):
 
 
 class LoginUsuarioView(APIView):
-    # ABIERTO: Cualquiera debe poder intentar loguearse
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -59,7 +61,6 @@ class LoginUsuarioView(APIView):
         usuario = serializer.validated_data['usuario']
         refresh = RefreshToken.for_user(usuario)
 
-        # Buscar el perfil extendido según el rol
         perfil_data = None
         if usuario.rol == 'profesor':
             perfil = getattr(usuario, 'profesor_profile', None)
@@ -82,20 +83,12 @@ class LoginUsuarioView(APIView):
 
 
 class GradoSeccionViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para listar, crear, actualizar y eliminar instancias de GradoSeccion.
-    """
     queryset = GradoSeccion.objects.all()
     serializer_class = GradoSeccionSerializer
-    # Seguridad: Todos ven (GET), solo Admin modifica (POST, PUT, DELETE)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class UsuarioUpdateView(APIView):
-    """
-    Vista para que un usuario actualice su propia información.
-    """
-    # Requiere estar logueado (JWT o Sesión)
     permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request, pk):
@@ -104,7 +97,6 @@ class UsuarioUpdateView(APIView):
         except Usuario.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         
-        # Bloqueo de seguridad: No puedes editar a otros
         if request.user.id != usuario.id:
             return Response({'error': 'No tienes permiso para actualizar este usuario'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -116,9 +108,6 @@ class UsuarioUpdateView(APIView):
 
 
 class AdminSetUserPasswordView(APIView):
-    """
-    Vista exclusiva para que el Admin resetee contraseñas.
-    """
     permission_classes = [permissions.IsAdminUser]
 
     def patch(self, request, pk):
@@ -134,3 +123,35 @@ class AdminSetUserPasswordView(APIView):
         usuario.save()
 
         return Response({'mensaje': 'Contraseña actualizada correctamente'}, status=status.HTTP_200_OK)
+
+# --- NUEVAS VISTAS PARA EL FRONT (CONFIGURACIÓN) ---
+
+class InstitucionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para manejar la info del Liceo. Solo permite una instancia.
+    """
+    serializer_class = InstitucionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Institucion.objects.all()
+
+    def get_object(self):
+        # Siempre intenta devolver el primer registro o crear uno base
+        obj, created = Institucion.objects.get_or_create(id=1, defaults={"nombre": "Mi Institución"})
+        return obj
+
+    def list(self, request, *args, **kwargs):
+        # En lugar de una lista, devolvemos el objeto único directamente
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class PeriodoEscolarViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para que el front cree y active periodos escolares.
+    """
+    queryset = PeriodoEscolar.objects.all().order_by('-id')
+    serializer_class = PeriodoEscolarSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]

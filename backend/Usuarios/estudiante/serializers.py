@@ -3,28 +3,25 @@ from core.serializers import UsuarioSerializer, GradoSeccionSerializer
 from core.models import Usuario, GradoSeccion
 from .models import Estudiante
 
-
 class RegistroEstudianteSerializer(serializers.ModelSerializer):
-    # Campos opcionales para posible creación de usuario
     email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
-    # Recibimos nivel, grado y seccion directamente en la petición
     nivel = serializers.CharField(write_only=True)
     grado = serializers.CharField(write_only=True)
     seccion = serializers.CharField(write_only=True)
 
-    # En la respuesta, devolvemos el objeto completo de grado_seccion
     grado_seccion = GradoSeccionSerializer(read_only=True)
 
     class Meta:
         model = Estudiante
         fields = [
             'id', 'usuario', 'nombre', 'apellido',
-            'nivel', 'grado', 'seccion',   # 🔑 se mandan directo en la petición
-            'grado_seccion',               # 🔑 se devuelve expandido en la respuesta
+            'nivel', 'grado', 'seccion', 
+            'grado_seccion', 
             'fecha_nacimiento', 'cedula', 'direccion', 'foto',
-            'email', 'password', 'representante'
+            'email', 'password', 'representante',
+            'estatus', 'es_repitiente'  # 🔑 Agregados para el flujo de inscripción
         ]
         read_only_fields = ['usuario', 'id', 'grado_seccion']
 
@@ -34,20 +31,20 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         cedula = data.get('cedula')
         email = data.get('email')
 
-        # Validar que el grado sea válido para el nivel
+        # Validar grado según nivel
         if nivel == 'primaria':
             opciones = dict(GradoSeccion.GRADO_OPCIONES_PRIMARIA).keys()
         elif nivel == 'secundaria':
             opciones = dict(GradoSeccion.GRADO_OPCIONES_SECUNDARIA).keys()
         else:
-            opciones = []
+            raise serializers.ValidationError({'nivel': "El nivel debe ser 'primaria' o 'secundaria'."})
 
         if grado not in opciones:
             raise serializers.ValidationError({
                 'grado': f"El grado '{grado}' no es válido para el nivel {nivel}."
             })
 
-        # Validaciones extra para secundaria
+        # Validaciones para secundaria
         if nivel == 'secundaria':
             if not email:
                 raise serializers.ValidationError("El email es obligatorio para estudiantes de secundaria.")
@@ -64,7 +61,6 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         seccion = validated_data.pop('seccion')
         representante = validated_data.get('representante')
 
-        # Buscar o crear la sección correspondiente
         grado_seccion, _ = GradoSeccion.objects.get_or_create(
             nivel=nivel,
             grado=grado,
@@ -72,64 +68,55 @@ class RegistroEstudianteSerializer(serializers.ModelSerializer):
         )
         validated_data['grado_seccion'] = grado_seccion
 
-        # Si hay representante, copiar dirección
-        if representante:
+        if representante and not validated_data.get('direccion'):
             validated_data['direccion'] = representante.direccion
 
-        # Crear usuario si es secundaria
         if nivel == 'secundaria':
             if not email or not password:
                 raise serializers.ValidationError("Email y password son obligatorios para secundaria.")
             if Usuario.objects.filter(email=email).exists():
                 raise serializers.ValidationError("El email ya está registrado.")
 
-            datos_usuario = {
-                'email': email,
-                'nombre': validated_data.get('nombre'),
-                'apellido': validated_data.get('apellido'),
-                'rol': 'estudiante',
-                'password': password
-            }
-            usuario_serializer = UsuarioSerializer(data=datos_usuario)
-            usuario_serializer.is_valid(raise_exception=True)
-            usuario = usuario_serializer.save()
-            estudiante = Estudiante.objects.create(usuario=usuario, **validated_data)
-            return estudiante
+            # Usamos el manager para crear el usuario correctamente con password hasheado
+            usuario = Usuario.objects.create_user(
+                email=email,
+                nombre=validated_data.get('nombre'),
+                apellido=validated_data.get('apellido'),
+                rol='estudiante',
+                password=password
+            )
+            return Estudiante.objects.create(usuario=usuario, **validated_data)
 
-        # Para primaria
-        estudiante = Estudiante.objects.create(**validated_data)
-        return estudiante
+        return Estudiante.objects.create(**validated_data)
 
 
 class EstudianteListSerializer(serializers.ModelSerializer):
-    representante = serializers.IntegerField(source='representante_id', read_only=True)
+    representante_nombre = serializers.ReadOnlyField() # 🔑 Usamos la property del modelo
     edad = serializers.ReadOnlyField()
-    # 🔑 Devolvemos el objeto completo de grado_seccion
     grado_seccion = GradoSeccionSerializer(read_only=True)
+    grado_o_año = serializers.ReadOnlyField() # 🔑 Útil para el front
 
     class Meta:
         model = Estudiante
         fields = [
-            'id', 'nombre', 'apellido', 'grado_seccion',
+            'id', 'nombre', 'apellido', 'grado_seccion', 'grado_o_año',
             'fecha_nacimiento', 'edad', 'cedula', 'direccion', 'foto',
-            'representante', 'usuario'
+            'representante', 'representante_nombre', 'usuario', 'estatus', 'es_repitiente'
         ]
 
 
 class EstudianteUpdateSerializer(serializers.ModelSerializer):
-    # En update seguimos permitiendo cambiar la sección por nivel/grado/seccion
     nivel = serializers.CharField(write_only=True, required=False)
     grado = serializers.CharField(write_only=True, required=False)
     seccion = serializers.CharField(write_only=True, required=False)
-
     grado_seccion = GradoSeccionSerializer(read_only=True)
 
     class Meta:
         model = Estudiante
         fields = [
-            'nombre', 'apellido',
-            'nivel', 'grado', 'seccion',   # 🔑 se mandan en update
-            'grado_seccion',               # 🔑 se devuelve expandido
+            'nombre', 'apellido', 'estatus', 'es_repitiente',
+            'nivel', 'grado', 'seccion', 
+            'grado_seccion', 
             'fecha_nacimiento', 'cedula', 'direccion', 'foto', 'representante'
         ]
         read_only_fields = ['id', 'usuario', 'grado_seccion']
@@ -145,6 +132,6 @@ class EstudianteUpdateSerializer(serializers.ModelSerializer):
                 grado=grado,
                 seccion=seccion
             )
-            validated_data['grado_seccion'] = grado_seccion
+            instance.grado_seccion = grado_seccion
 
         return super().update(instance, validated_data)

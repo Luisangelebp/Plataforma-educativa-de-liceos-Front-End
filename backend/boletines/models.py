@@ -1,6 +1,6 @@
 from django.db import models
 from Usuarios.estudiante.models import Estudiante
-from core.models import GradoSeccion
+from core.models import GradoSeccion, PeriodoEscolar  # Importado PeriodoEscolar
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
@@ -25,7 +25,7 @@ class Boletin(models.Model):
     )
     periodo_escolar = models.CharField(
         max_length=20, 
-        default="2025-2026",
+        blank=True,  # Permitimos blanco para llenarlo en el save()
         help_text="Ejemplo: 2025-2026"
     )
     lapso = models.CharField(max_length=1, choices=LAPSO_OPCIONES)
@@ -67,25 +67,40 @@ class Boletin(models.Model):
 
     def calcular_promedio_general(self):
         """
-        Busca las calificaciones de la app 'calificaciones' 
-        que estén marcadas como 'enviado=True'.
+        Busca las calificaciones enviadas para promediar.
         """
-        # Importamos aquí para evitar importación circular
         from calificaciones.models import Calificacion
         
         calificaciones = Calificacion.objects.filter(
             estudiante=self.estudiante,
             lapso=self.lapso,
-            enviado=True # Solo promediamos lo que el profesor ya cerró
+            enviado=True 
         )
         
         if not calificaciones.exists():
             return 0
         
-        total = sum([c.promedio for c in calificaciones if c.promedio])
-        return round(total / calificaciones.count(), 2)
+        # Filtramos valores nulos de promedio antes de sumar
+        notas = [c.promedio for c in calificaciones if c.promedio is not None]
+        if not notas:
+            return 0
+            
+        return round(sum(notas) / len(notas), 2)
 
     def save(self, *args, **kwargs):
-        # Al guardar, intentamos actualizar el promedio general automáticamente
+        # 1. Asignar periodo escolar dinámico si no se provee uno
+        if not self.periodo_escolar:
+            periodo_activo = PeriodoEscolar.objects.filter(es_actual=True).first()
+            if periodo_activo:
+                self.periodo_escolar = periodo_activo.nombre
+            else:
+                self.periodo_escolar = "2025-2026" # Fallback de seguridad
+
+        # 2. Asignar el grado actual del estudiante si no está seteado
+        if not self.grado_seccion and self.estudiante:
+            self.grado_seccion = self.estudiante.grado_seccion
+
+        # 3. Actualizar el promedio numérico
         self.promedio_general = self.calcular_promedio_general()
+        
         super().save(*args, **kwargs)

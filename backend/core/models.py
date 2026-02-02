@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.core.exceptions import ValidationError
+
+# --- GESTIÓN DE USUARIOS ---
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, nombre, apellido, rol, password=None):
@@ -7,7 +10,6 @@ class UsuarioManager(BaseUserManager):
             raise ValueError("El correo electrónico es obligatorio")
         if not rol:
             raise ValueError("El rol es obligatorio")
-
         email = self.normalize_email(email)
         usuario = self.model(email=email, nombre=nombre, apellido=apellido, rol=rol)
         usuario.set_password(password)
@@ -28,43 +30,88 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('representante', 'Representante'),
         ('estudiante', 'Estudiante'),
     ]
-
     email = models.EmailField(unique=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     rol = models.CharField(max_length=20, choices=ROLES)
     foto = models.ImageField(upload_to='usuarios/', null=True, blank=True)
-
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nombre', 'apellido', 'rol']
-
+    
     objects = UsuarioManager()
-
+    
     def __str__(self):
         return f"{self.nombre} {self.apellido} ({self.rol})"
+
+# --- CONFIGURACIÓN DINÁMICA DEL PLANTEL ---
+
+class Institucion(models.Model):
+    nombre = models.CharField(max_length=255, verbose_name="Nombre del Plantel")
+    codigo_dea = models.CharField(max_length=50, blank=True, verbose_name="Código DEA")
+    rif = models.CharField(max_length=20, blank=True, verbose_name="RIF")
+    logo = models.ImageField(upload_to='institucion/logo/', null=True, blank=True)
     
+    director = models.CharField(max_length=150, verbose_name="Director(a)")
+    subdirector = models.CharField(max_length=150, blank=True, verbose_name="Subdirector(a)")
+    
+    slogan_boletin = models.CharField(
+        max_length=255, 
+        default="Educando para el futuro",
+        verbose_name="Slogan / Mensaje al pie"
+    )
+
+    class Meta:
+        verbose_name = "Configuración de la Institución"
+        verbose_name_plural = "Configuración de la Institución"
+
+    def clean(self):
+        # Evita que se cree más de un registro de Institución (Singleton)
+        if not self.pk and Institucion.objects.exists():
+            raise ValidationError("Ya existe una configuración institucional. Solo se permite un registro.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.nombre
+
+class PeriodoEscolar(models.Model):
+    nombre = models.CharField(max_length=20)
+    es_actual = models.BooleanField(default=False, verbose_name="¿Es el periodo activo?")
+    
+    class Meta:
+        verbose_name = "Periodo Escolar"
+        verbose_name_plural = "Periodos Escolares"
+
+    def save(self, *args, **kwargs):
+        # Al activar un periodo, desactiva automáticamente los demás
+        if self.es_actual:
+            PeriodoEscolar.objects.filter(es_actual=True).exclude(pk=self.pk).update(es_actual=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.nombre
+
+# --- ESTRUCTURA DE GRADOS ---
+
 class GradoSeccion(models.Model):
     NIVEL_OPCIONES = [
         ('primaria', 'Primaria'),
         ('secundaria', 'Secundaria'),
     ]
-
     GRADO_OPCIONES_PRIMARIA = [
         ('1', '1er grado'), ('2', '2do grado'), ('3', '3er grado'),
         ('4', '4to grado'), ('5', '5to grado'), ('6', '6to grado'),
     ]
-
     GRADO_OPCIONES_SECUNDARIA = [
         ('1', '1er año'), ('2', '2do año'), ('3', '3er año'),
         ('4', '4to año'), ('5', '5to año'), ('6', '6to año'),
     ]
-
-    # Unificamos todas las opciones para la validación del campo
     TODOS_LOS_GRADOS = GRADO_OPCIONES_PRIMARIA + GRADO_OPCIONES_SECUNDARIA
-
     SECCION_OPCIONES = [
         ('A', 'Sección A'),
         ('B', 'Sección B'),
@@ -72,9 +119,17 @@ class GradoSeccion(models.Model):
     ]
 
     nivel = models.CharField(max_length=20, choices=NIVEL_OPCIONES)
-    # Usamos las opciones unificadas para evitar errores de validación
     grado = models.CharField(max_length=50, choices=TODOS_LOS_GRADOS)
     seccion = models.CharField(max_length=5, choices=SECCION_OPCIONES)
+    
+    # Relación para el Docente Guía (Referenciando a la app Usuarios)
+    docente_guia = models.ForeignKey(
+        'Usuarios.Profesor', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='secciones_asignadas'
+    )
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
@@ -82,13 +137,12 @@ class GradoSeccion(models.Model):
     class Meta:
         verbose_name = "Grado y Sección"
         verbose_name_plural = "Grados y Secciones"
-        unique_together = ['nivel', 'grado', 'seccion'] # Evita crear "1er año A" dos veces
+        unique_together = ['nivel', 'grado', 'seccion']
 
     def __str__(self):
-        # Lógica para mostrar el nombre según el nivel
+        # Mapeo inteligente del nombre del grado según el nivel
         if self.nivel == "primaria":
             grado_texto = dict(self.GRADO_OPCIONES_PRIMARIA).get(self.grado, self.grado)
         else:
             grado_texto = dict(self.GRADO_OPCIONES_SECUNDARIA).get(self.grado, self.grado)
-            
         return f"{grado_texto} {self.seccion} ({self.nivel.capitalize()})"

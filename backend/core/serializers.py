@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from core.models import Usuario, GradoSeccion
+from core.models import Usuario, GradoSeccion, Institucion, PeriodoEscolar
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -12,25 +12,20 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id', 'email', 'nombre', 'apellido', 'rol', 'password', 'foto']
-        read_only_fields = ['id']  # Removido 'rol' de read_only para permitir escritura durante creación
+        read_only_fields = ['id']
 
     def create(self, validated_data):
-        # Extraer rol si está presente, es requerido para create_user
         rol = validated_data.pop('rol', None)
         if not rol:
             raise serializers.ValidationError({'rol': 'El rol es obligatorio para crear un usuario.'})
         return Usuario.objects.create_user(rol=rol, **validated_data)
     
     def update(self, instance, validated_data):
-        # No permitir cambiar el rol durante la actualización
         validated_data.pop('rol', None)
-        
-        # Si se proporciona una nueva contraseña, hashearla
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)
         
-        # Actualizar los demás campos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -40,7 +35,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    rol = serializers.CharField()  # Recibimos el rol tal cual y luego mapeamos
+    rol = serializers.CharField()
 
     ROLE_MAP = {
         'administrador': 'admin',
@@ -70,19 +65,14 @@ class LoginSerializer(serializers.Serializer):
         if usuario.rol != rol:
             raise serializers.ValidationError("El rol no coincide con el usuario")
 
-        # Validación específica por rol
         if rol == 'estudiante':
             estudiante = getattr(usuario, 'estudiante_profile', None)
             if not estudiante:
                 raise serializers.ValidationError("No existe perfil de estudiante asociado.")
-
-            # 🔑 Ahora validamos usando grado_seccion.nivel
             if not estudiante.grado_seccion:
                 raise serializers.ValidationError("El estudiante no tiene sección asignada.")
-
             if estudiante.grado_seccion.nivel != 'secundaria':
                 raise serializers.ValidationError("Solo estudiantes de secundaria pueden iniciar sesión.")
-
             if not estudiante.cedula:
                 raise serializers.ValidationError("Estudiante de secundaria debe tener cédula registrada.")
 
@@ -109,7 +99,6 @@ class GradoSeccionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'grado': f"El grado '{grado}' no es válido para el nivel {nivel}."
             })
-
         return data
 
 
@@ -122,3 +111,16 @@ class AdminSetUserPasswordSerializer(serializers.Serializer):
         except ValidationError as e:
             raise serializers.ValidationError(list(e.messages))
         return value
+
+# --- NUEVOS SERIALIZERS PARA CONFIGURACIÓN DINÁMICA ---
+
+class InstitucionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Institucion
+        fields = '__all__'
+
+
+class PeriodoEscolarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PeriodoEscolar
+        fields = '__all__'

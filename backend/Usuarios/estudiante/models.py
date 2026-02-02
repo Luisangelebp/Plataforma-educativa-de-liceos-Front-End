@@ -1,9 +1,17 @@
 from django.db import models
 from django.conf import settings
 from datetime import date
-from core.models import GradoSeccion 
+# 🛡️ Eliminamos el import directo de GradoSeccion para evitar bloqueos circulares
+# from core.models import GradoSeccion 
 
 class Estudiante(models.Model):
+    ESTATUS_OPCIONES = [
+        ('activo', 'Activo'),      # Estudiante cursando actualmente
+        ('graduado', 'Graduado'),  # Ya terminó bachillerato/primaria
+        ('retirado', 'Retirado'),  # Se fue del plantel
+        ('inactivo', 'Inactivo'),  # No se ha reinscrito en el nuevo periodo
+    ]
+
     usuario = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -18,6 +26,18 @@ class Estudiante(models.Model):
     direccion = models.TextField()
     foto = models.ImageField(upload_to='estudiantes/', null=True, blank=True)
 
+    # --- CAMPOS DE CONTROL ACADÉMICO ---
+    estatus = models.CharField(
+        max_length=20, 
+        choices=ESTATUS_OPCIONES, 
+        default='activo'
+    )
+    es_repitiente = models.BooleanField(
+        default=False, 
+        help_text="Marcar si el estudiante está repitiendo el grado actual."
+    )
+    # ----------------------------------
+
     representante = models.ForeignKey(
         'Usuarios.Representante',
         on_delete=models.SET_NULL,
@@ -26,8 +46,9 @@ class Estudiante(models.Model):
         related_name='estudiantes'
     )
 
+    # 🛡️ CORRECCIÓN: Usamos el string 'core.GradoSeccion'
     grado_seccion = models.ForeignKey(
-        GradoSeccion,
+        'core.GradoSeccion',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -65,7 +86,9 @@ class Estudiante(models.Model):
     @property
     def representante_nombre(self):
         """Devuelve el nombre del representante o 'Sin representante'."""
-        return self.representante.nombre if self.representante else "Sin representante"
+        if self.representante:
+            return f"{getattr(self.representante, 'nombre', '')} {getattr(self.representante, 'apellido', '')}".strip()
+        return "Sin representante"
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido} - {self.grado_seccion}"
+        return f"{self.nombre} {self.apellido} ({self.estatus.capitalize()}) - {self.grado_seccion}"

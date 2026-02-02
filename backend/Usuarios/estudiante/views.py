@@ -14,7 +14,7 @@ from .serializers import (
     EstudianteUpdateSerializer
 )
 
-# Registro de estudiantes
+# --- REGISTRO DE ESTUDIANTES ---
 class RegistroEstudianteView(generics.CreateAPIView):
     queryset = Estudiante.objects.all()
     serializer_class = RegistroEstudianteSerializer
@@ -22,7 +22,7 @@ class RegistroEstudianteView(generics.CreateAPIView):
     permission_classes = [permissions.IsAdminUser] # 🛡️ Solo el Admin registra
 
 
-# Listado en JSON con Filtros por Rol
+# --- LISTADO EN JSON CON FILTROS ---
 class ListEstudiantesView(generics.ListAPIView):
     serializer_class = EstudianteListSerializer
     authentication_classes = [JWTAuthentication, SessionAuthentication]
@@ -34,12 +34,12 @@ class ListEstudiantesView(generics.ListAPIView):
 
         # --- 🛡️ CAPA DE SEGURIDAD SEGÚN ROL ---
         
-        # 1. Si es PROFESOR: Solo ve estudiantes de sus secciones asignadas
+        # 1. Si es PROFESOR: Solo ve estudiantes de sus secciones y que estén ACTIVOS
         if user.rol == 'profesor':
             profesor_perfil = getattr(user, 'profesor_profile', None)
             if profesor_perfil:
                 secciones_ids = profesor_perfil.grado_secciones.values_list('id', flat=True)
-                queryset = queryset.filter(grado_seccion_id__in=secciones_ids)
+                queryset = queryset.filter(grado_seccion_id__in=secciones_ids, estatus='activo')
             else:
                 return Estudiante.objects.none()
 
@@ -55,20 +55,31 @@ class ListEstudiantesView(generics.ListAPIView):
         elif user.rol == 'estudiante':
             queryset = queryset.filter(usuario=user)
 
-        # 4. Si es ADMIN: No se aplica filtro extra (ve todo)
+        # 4. Si es ADMIN: Ve todo, pero puede filtrar por estatus
 
-        # --- FILTROS DE URL (Query Params) ---
+        # --- 🔍 FILTROS DE URL (Query Params) ---
+        estatus = self.request.query_params.get("estatus")
+        es_repitiente = self.request.query_params.get("es_repitiente")
         grado_seccion_ids = self.request.query_params.getlist("grado_seccion_id") or self.request.query_params.getlist("grado_seccion")
         nivel = self.request.query_params.get("nivel")
         representante_id = self.request.query_params.get("representante_id") or self.request.query_params.get("representante")
         grado = self.request.query_params.get("grado")
         seccion = self.request.query_params.get("seccion")
 
+        # Filtro de Estatus (Activo, Graduado, etc.)
+        if estatus:
+            queryset = queryset.filter(estatus=estatus)
+        
+        # Filtro de Repitiente
+        if es_repitiente is not None:
+            val = es_repitiente.lower() in ['true', '1', 't']
+            queryset = queryset.filter(es_repitiente=val)
+
         if grado_seccion_ids:
             queryset = queryset.filter(grado_seccion_id__in=grado_seccion_ids)
         if nivel:
             queryset = queryset.filter(grado_seccion__nivel__iexact=nivel)
-        if representante_id and user.rol == 'admin': # Solo admin filtra por cualquier repre
+        if representante_id and user.rol == 'admin':
             queryset = queryset.filter(representante_id=representante_id)
         if grado:
             queryset = queryset.filter(grado_seccion__grado=grado)
@@ -78,13 +89,12 @@ class ListEstudiantesView(generics.ListAPIView):
         return queryset.distinct()
 
 
-# Listado en PDF (Aplica la misma seguridad que el JSON)
+# --- LISTADO EN PDF ---
 class EstudiantesPDFView(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # Usamos la misma lógica de filtrado del listado para el PDF
         view_instance = ListEstudiantesView()
         view_instance.request = request
         estudiantes = view_instance.get_queryset()
@@ -115,7 +125,7 @@ class EstudiantesPDFView(APIView):
             return Response({'error': 'WeasyPrint no disponible'}, status=500)
 
 
-# Detalle, Actualización y Eliminación
+# --- DETALLE, ACTUALIZACIÓN Y ELIMINACIÓN ---
 class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteUpdateSerializer
@@ -126,11 +136,9 @@ class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
         obj = super().get_object()
         user = self.request.user
         
-        # 🛡️ Seguridad: Solo Admin, el propio Estudiante o su Representante pueden ver la ficha
         es_dueño = (obj.usuario and obj.usuario.id == user.id)
         es_su_repre = (obj.representante and getattr(user, 'representante_profile', None) == obj.representante)
         
-        # Si eres profesor, solo puedes ver si el alumno está en tu sección
         es_su_profe = False
         if user.rol == 'profesor':
             profe = getattr(user, 'profesor_profile', None)
@@ -142,7 +150,6 @@ class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def perform_destroy(self, instance):
-        # 🛡️ Solo el Admin puede borrar estudiantes
         if self.request.user.rol != 'admin':
             raise PermissionDenied("Solo el administrador puede eliminar estudiantes.")
             
@@ -153,17 +160,21 @@ class EstudianteDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Solo Admin o Representante pueden editar (El estudiante no debería editar su propia ficha)
+        # Solo Admin puede cambiar estatus o grados (Inscripción/Graduación)
+        # El representante solo debería poder editar datos de contacto/dirección
         if request.user.rol not in ['admin', 'representante']:
              raise PermissionDenied("No tienes permiso para editar esta ficha.")
 
+        # partial=True permite que el front mande solo el campo 'estatus' para graduar
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         representante = serializer.validated_data.get('representante')
-        if representante:
+        if representante and not request.data.get('direccion'):
             serializer.validated_data['direccion'] = representante.direccion
 
         self.perform_update(serializer)
         instance.refresh_from_db()
+        
+        # Devolvemos el ListSerializer para que el Front reciba los campos calculados actualizados
         return Response(EstudianteListSerializer(instance).data)

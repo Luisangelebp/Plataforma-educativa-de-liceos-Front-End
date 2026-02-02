@@ -7,10 +7,11 @@ urlpatterns = [
     # Gestión administrativa (Listado y control)
     path('', views.BoletinListCreateView.as_view(), name='boletin-list-create'),
     
-    # Descarga del archivo físico (IMPORTANTE: El admin usa 'boletin-descargar')
+    # Descarga del archivo físico
     path('<int:pk>/descargar/', views.DescargarBoletinView.as_view(), name='boletin-descargar'),
 
     # Motor de Generación (POST)
+    # Usamos int para asegurar que solo lleguen números por la URL
     path('generar/<int:estudiante_id>/lapso/<int:lapso>/', 
          views.GenerarBoletinView.as_view(), 
          name='generar-boletin'),

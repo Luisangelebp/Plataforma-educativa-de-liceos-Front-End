@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
 from datetime import date
-from core.models import GradoSeccion
-from horarios.models import Materia
+# 🛡️ Eliminamos los imports directos para romper el círculo vicioso
+# from core.models import GradoSeccion
+# from horarios.models import Materia
 
 OPCIONES_TIPO_PROFESOR = [
     ('titular', 'Titular'),
@@ -19,16 +20,16 @@ class Profesor(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
 
-    # 🔑 Puede estar en varias secciones
+    # 🛡️ CORRECCIÓN: Relación mediante string
     grado_secciones = models.ManyToManyField(
-        GradoSeccion,
+        'core.GradoSeccion',
         related_name='profesores',
         blank=True
     )
 
-    # 🔑 Puede dictar varias materias, pero no es obligatorio
+    # 🛡️ CORRECCIÓN: Relación mediante string
     materias = models.ManyToManyField(
-        Materia,
+        'horarios.Materia',
         related_name='profesores',
         blank=True
     )

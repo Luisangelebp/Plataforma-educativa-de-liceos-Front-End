@@ -1,5 +1,4 @@
 from django.db import models
-from core.models import GradoSeccion
 
 class Materia(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -26,10 +25,16 @@ class Horario(models.Model):
     hora_fin = models.TimeField()
 
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
-    grado_seccion = models.ForeignKey(GradoSeccion, on_delete=models.CASCADE)
-    # 🔑 Aquí va el formato correcto
+    
+    # 🛡️ CORRECCIÓN: Usamos string 'core.GradoSeccion' para evitar el bloqueo mutuo
+    grado_seccion = models.ForeignKey(
+        'core.GradoSeccion', 
+        on_delete=models.CASCADE
+    )
+    
+    # 🔑 Relación con Profesor (ya estaba bien como string)
     profesor = models.ForeignKey(
-        "Usuarios.Profesor",   # app_label.ModelName
+        "Usuarios.Profesor",
         on_delete=models.SET_NULL,
         null=True,
         blank=True

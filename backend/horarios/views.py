@@ -15,16 +15,22 @@ class HorarioViewSet(viewsets.ModelViewSet):
     """
     Vista de horarios con filtros de seguridad por rol.
     """
+    # 🔑 CORRECCIÓN: Definimos el queryset base para que el router
+    # pueda determinar el nombre de la URL (basename) automáticamente.
+    queryset = Horario.objects.all()
     serializer_class = HorarioSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        # Optimizamos la consulta para traer los nombres de una vez
+        
+        # Optimizamos la consulta con select_related para evitar 
+        # múltiples hits a la base de datos al traer nombres de materia, etc.
         queryset = Horario.objects.all().select_related(
             'materia', 
             'grado_seccion', 
-            'profesor'
+            'profesor',
+            'profesor__usuario' # Útil para filtrar por usuario del profesor
         )
 
         # --- 🛡️ LÓGICA DE SEGURIDAD SEGÚN ROL ---
@@ -53,9 +59,10 @@ class HorarioViewSet(viewsets.ModelViewSet):
             else:
                 return Horario.objects.none()
 
-        # 4. ADMIN: No entra en los filtros anteriores, ve todo el cronograma escolar
+        # 4. ADMIN: Ve todo el cronograma escolar (no aplicamos filtros de rol)
 
         # --- FILTROS EXTRAS POR URL ---
+        # Permite filtrar por ejemplo: /horarios/?dia_semana=lunes
         grado_seccion_id = self.request.query_params.get('grado_seccion')
         dia = self.request.query_params.get('dia_semana')
 
@@ -64,4 +71,5 @@ class HorarioViewSet(viewsets.ModelViewSet):
         if dia:
             queryset = queryset.filter(dia_semana__iexact=dia)
 
+        # Ordenamos por día y hora para que el front lo reciba organizado
         return queryset.distinct().order_by('dia_semana', 'hora_inicio')
