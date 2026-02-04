@@ -119,7 +119,7 @@ export function CalificacionesPrimaria() {
                 getAxiosConfig(),
             );
         });
-        console.log(calificacion);
+        console.log(calificacion.observaciones);
 
         const obsPromise = axios.patch(
             `${API_URL}/calificaciones/${calificacion.id}/`,

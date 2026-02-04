@@ -140,41 +140,43 @@ export function CalificacionesSecundaria() {
         );
     };
 
-    const handleObservacionChange = (calificacionId, value) => {
-        setCalificaciones((prev) =>
-            prev.map((cal) =>
-                cal.id === calificacionId
-                    ? { ...cal, observaciones: value }
-                    : cal,
-            ),
-        );
-    };
+    // const handleObservacionChange = (calificacionId, value) => {
+    //     setCalificaciones((prev) =>
+    //         prev.map((cal) =>
+    //             cal.id === calificacionId
+    //                 ? { ...cal, observaciones: value }
+    //                 : cal,
+    //         ),
+    //     );
+    // };
 
     const handleSaveRow = async (calificacion) => {
         try {
-            const evalPromises = calificacion.evaluaciones.map(({ id, nota }) => {
-                const notaValue =
-                    nota === '' || isNaN(parseFloat(nota))
-                        ? 0
-                        : parseFloat(nota);
+            const evalPromises = calificacion.evaluaciones.map(
+                ({ id, nota }) => {
+                    const notaValue =
+                        nota === '' || isNaN(parseFloat(nota))
+                            ? 0
+                            : parseFloat(nota);
 
-                return axios.patch(
-                    `${API_URL}/calificaciones/evaluaciones/${id}/`,
-                    { nota: notaValue },
-                    getAxiosConfig(),
-                );
-            });
-
-            const obsPromise = axios.patch(
-                `${API_URL}/calificaciones/${calificacion.id}/`,
-                { observaciones: calificacion.observaciones || '' },
-                getAxiosConfig(),
+                    return axios.patch(
+                        `${API_URL}/calificaciones/evaluaciones/${id}/`,
+                        { nota: notaValue },
+                        getAxiosConfig(),
+                    );
+                },
             );
 
-            await Promise.all([...evalPromises, obsPromise]);
+            // const obsPromise = axios.patch(
+            //     `${API_URL}/calificaciones/${calificacion.id}/`,
+            //     { observaciones: calificacion.observaciones || '' },
+            //     getAxiosConfig(),
+            // );
+
+            await Promise.all([...evalPromises]);
 
             addNotification(
-                `Notas y observaciones de ${calificacion.estudiante_nombre} actualizadas.`,
+                `Notas de ${calificacion.estudiante_nombre} actualizadas.`,
                 'success',
             );
             cargarCalificaciones();
@@ -279,7 +281,6 @@ export function CalificacionesSecundaria() {
                                     {e.nombre || `Nota ${index + 1}`}
                                 </th>
                             ))}
-                            <th>Observaciones</th>
                             <th>Promedio</th>
                             <th>Estado</th>
                             <th style={{ borderRadius: '0 8px 0 0' }}>
@@ -325,7 +326,7 @@ export function CalificacionesSecundaria() {
                                         </td>
                                     ))}
                                     <td>
-                                        <Input
+                                        {/* <Input
                                             className={`nota-input ${cal.enviado ? 'input-locked' : ''}`}
                                             value={cal.observaciones || ''}
                                             disabled={cal.enviado}
@@ -336,7 +337,7 @@ export function CalificacionesSecundaria() {
                                                 )
                                             }
                                             placeholder="Añadir observación..."
-                                        />
+                                        /> */}
                                     </td>
                                     <td style={{ fontWeight: 'bold' }}>
                                         {cal.promedio}
