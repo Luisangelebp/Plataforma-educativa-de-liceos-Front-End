@@ -215,7 +215,6 @@ const LapsoActionCell = ({ estudianteId, lapso, boletines, onUpdate }) => {
     const [status, setStatus] = useState('loading');
     const [boletin, setBoletin] = useState(null);
     const { addNotification } = useNotification();
-
     const checkStatus = useCallback(async () => {
         const generatedBoletin = boletines.find(
             (b) =>
@@ -231,11 +230,20 @@ const LapsoActionCell = ({ estudianteId, lapso, boletines, onUpdate }) => {
 
         try {
             const res = await axios.get(
-                `${API_URL}/calificaciones/${estudianteId}/?lapso=${lapso}`,
+                `${API_URL}/calificaciones/?estudiante=${estudianteId}`,
                 getAuthHeaders(),
             );
-            if (res.data.enviado) {
-                setStatus('ready');
+
+            const filterByLapso = res.data.filter(
+                (item) => Number(item.lapso) == lapso,
+            );
+
+            if (filterByLapso.length > 0) {
+                if (filterByLapso[0].enviado) {
+                    setStatus('ready');
+                } else {
+                    setStatus('pending');
+                }
             } else {
                 setStatus('pending');
             }
@@ -406,7 +414,6 @@ export default function BoletinesSecundaria() {
                     est.grado_seccion &&
                     est.grado_seccion.nivel === 'secundaria',
             );
-
             setEstudiantes(estudiantesSecundaria);
             setBoletines(boletinesRes.data);
             await getMateriasYProfesoresSecundaria();

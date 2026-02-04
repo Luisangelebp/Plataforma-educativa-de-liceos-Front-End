@@ -60,12 +60,18 @@ export function CalificacionesRepresentante() {
                     Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
                 },
             });
-            console.log(response.data);
-            console.log(selectedHijo);
-            console.log(filtroLapso);
+
             const boletin = response.data.find(
                 (b) => b.estudiante == selectedHijo && b.lapso == filtroLapso,
             );
+
+            if (!boletin) {
+                addNotification(
+                    'El boletín aún no está disponible para este lapso.',
+                    'warning',
+                );
+                return;
+            }
 
             const boletinpdf = await axios.get(
                 `${API_URL}/boletines/${boletin.id}/descargar/`,
@@ -82,15 +88,10 @@ export function CalificacionesRepresentante() {
                 });
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
-            } else {
-                addNotification(
-                    'El boletín aún no está disponible para este lapso.',
-                    'warning',
-                );
             }
         } catch (error) {
-            console.error('Error al generar la descarga:', error);
             addNotification('Error al generar la descarga.', 'error');
+            console.error('Error al generar la descarga:', error);
         }
     };
 

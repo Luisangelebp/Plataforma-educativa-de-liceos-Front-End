@@ -102,6 +102,7 @@ const DetailModal = ({ user, isOpen, onClose }) => {
 
 // Componente de fila de estudiante
 const EstudianteRow = ({ user, onRowClick }) => {
+    console.log(user);
     return (
         <tr onClick={() => onRowClick(user)} className="user-row">
             <td>
@@ -122,9 +123,9 @@ const EstudianteRow = ({ user, onRowClick }) => {
             <td className="user-name">
                 {user.nombre} {user.apellido}
             </td>
-            <td>{user.grado || 'N/A'}</td>
-            <td>{user.seccion || 'N/A'}</td>
-            <td>{user.nivel || 'N/A'}</td>
+            <td>{user.grado_seccion.grado || 'N/A'}</td>
+            <td>{user.grado_seccion.seccion || 'N/A'}</td>
+            <td>{user.grado_seccion.nivel || 'N/A'}</td>
             <td>{user.edad ? `${user.edad} años` : 'N/A'}</td>
             <td>{user.representante_nombre || 'Sin asignar'}</td>
         </tr>

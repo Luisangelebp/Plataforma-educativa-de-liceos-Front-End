@@ -40,7 +40,6 @@ import CuentaEstudiante from './components/Dashboards/Estudiante/Cuenta.jsx';
 
 import { Profesor } from './components/Dashboards/Profesor/Profesor.jsx';
 import { ListaEstudiantesProfesor } from './components/Dashboards/Profesor/ListaEstudiantesProfesor.jsx';
-import { Asistencia } from './components/Dashboards/Profesor/Asistencia.jsx';
 import { HorariosProfesor } from './components/Dashboards/Profesor/HorariosProfesor.jsx';
 import CuentaProfesor from './components/Dashboards/Profesor/Cuenta.jsx';
 import { CalificacionesPrimaria } from './components/Dashboards/Profesor/CalificacionesPrimaria.jsx';
@@ -126,7 +125,7 @@ function App() {
                                 path="horarios"
                                 element={<HorariosProfesor />}
                             />
-                            <Route path="asistencia" element={<Asistencia />} />
+
                             <Route
                                 path="calificaciones/primaria"
                                 element={<CalificacionesPrimaria />}
