@@ -1,6 +1,7 @@
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
@@ -59,7 +60,6 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
                 'nums': {} 
             }
         
-        # Agregar observaciones si existen
         if cal.observaciones:
             observaciones_por_materia.append({
                 'materia': cal.materia.nombre,
@@ -140,12 +140,16 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         "logo_url": logo_full_url,
     }
 
-# --- VISTAS LIBERADAS PARA PRESENTACIÓN ---
+# --- VISTAS PROTEGIDAS ---
 
 class VistaPreviaBoletinView(APIView):
-    permission_classes = [permissions.AllowAny] # ABIERTO
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, estudiante_id, lapso):
+        if request.user.rol != 'admin' and not request.user.is_staff:
+            return Response({"error": "No tienes permisos de administrador"}, status=403)
+
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.query_params.get('periodo')
         
@@ -166,9 +170,13 @@ class VistaPreviaBoletinView(APIView):
             return Response({'error': str(e)}, status=500)
 
 class GenerarBoletinView(APIView):
-    permission_classes = [permissions.AllowAny] # ABIERTO
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, estudiante_id, lapso):
+        if request.user.rol != 'admin' and not request.user.is_staff:
+            return Response({"error": "No tienes permisos para realizar esta acción"}, status=403)
+
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.data.get('periodo_escolar')
         obs = request.data.get('observaciones', '')
@@ -184,9 +192,6 @@ class GenerarBoletinView(APIView):
             pdf_file = BytesIO()
             HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file)
 
-            # Ajuste para que no pida request.user obligatorio
-            usuario_generador = request.user if request.user.is_authenticated else None
-
             boletin, _ = Boletin.objects.update_or_create(
                 estudiante=estudiante, 
                 lapso=str(lapso), 
@@ -194,7 +199,7 @@ class GenerarBoletinView(APIView):
                 defaults={
                     'grado_seccion': estudiante.grado_seccion,
                     'promedio_general': context['promedio_numerico'],
-                    'generado_por': usuario_generador,
+                    'generado_por': request.user,
                     'es_definitivo': True,
                     'observaciones': obs
                 }
@@ -209,16 +214,63 @@ class GenerarBoletinView(APIView):
             return Response({'error': str(e)}, status=500)
 
 class BoletinListCreateView(APIView):
-    permission_classes = [permissions.AllowAny] # ABIERTO - Luisangel podrá listar todo
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        boletines = Boletin.objects.all().order_by('-fecha_emision')
-        return Response(BoletinSerializer(boletines, many=True).data)
+        user = request.user
+        queryset = Boletin.objects.all().select_related('estudiante', 'grado_seccion').order_by('-fecha_emision')
+
+        # Captura de query params pedidos por Luisangel
+        id_estudiante = request.query_params.get('idEstudiante')
+        id_representante = request.query_params.get('idRepresentante')
+
+        # --- FILTROS DE SEGURIDAD POR ROL ---
+        if user.rol == 'estudiante':
+            queryset = queryset.filter(estudiante__usuario=user)
+        
+        elif user.rol == 'representante':
+            repre_perfil = getattr(user, 'representante_profile', None)
+            if not repre_perfil:
+                return Response([], status=200)
+            
+            if id_estudiante:
+                queryset = queryset.filter(estudiante_id=id_estudiante, estudiante__representante=repre_perfil)
+            else:
+                queryset = queryset.filter(estudiante__representante=repre_perfil)
+
+        elif user.rol == 'admin' or user.is_staff:
+            if id_estudiante:
+                queryset = queryset.filter(estudiante_id=id_estudiante)
+            if id_representante:
+                queryset = queryset.filter(estudiante__representante_id=id_representante)
+        
+        else:
+            return Response({"error": "No tienes permiso para ver este listado"}, status=403)
+
+        serializer = BoletinSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class DescargarBoletinView(APIView):
-    permission_classes = [permissions.AllowAny] # ABIERTO
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, pk):
         boletin = get_object_or_404(Boletin, pk=pk)
-        if not boletin.archivo_pdf: raise Http404()
+        user = request.user
+
+        pueden_descargar = False
+        if user.rol == 'admin' or user.is_staff:
+            pueden_descargar = True
+        elif user.rol == 'estudiante' and boletin.estudiante.usuario == user:
+            pueden_descargar = True
+        elif user.rol == 'representante' and boletin.estudiante.representante.usuario == user:
+            pueden_descargar = True
+
+        if not pueden_descargar:
+            return Response({"error": "No tienes permiso para descargar este boletín."}, status=403)
+
+        if not boletin.archivo_pdf: 
+            raise Http404()
+            
         return FileResponse(open(boletin.archivo_pdf.path, 'rb'), as_attachment=True)
