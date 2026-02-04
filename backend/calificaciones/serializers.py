@@ -24,6 +24,10 @@ class CalificacionSerializer(serializers.ModelSerializer):
             'fecha_creacion', 'fecha_actualizacion',
         ]
         read_only_fields = ['promedio', 'fecha_creacion', 'fecha_actualizacion']
+        # Hacemos que observaciones sea opcional a nivel de API
+        extra_kwargs = {
+            'observaciones': {'required': False, 'allow_blank': True}
+        }
 
     def create(self, validated_data):
         """
@@ -33,8 +37,7 @@ class CalificacionSerializer(serializers.ModelSerializer):
         estudiante = validated_data.get('estudiante')
 
         # Lógica de autogeneración para Primaria
-        # Asumiendo que en tu modelo Estudiante tienes acceso al nivel educativo
-        if estudiante.grado_seccion.nivel == 'primaria':
+        if estudiante.grado_seccion and estudiante.grado_seccion.nivel == 'primaria':
             for i in range(1, 5):
                 Evaluacion.objects.create(
                     calificacion=calificacion,
@@ -44,11 +47,18 @@ class CalificacionSerializer(serializers.ModelSerializer):
         return calificacion
 
     def update(self, instance, validated_data):
-        # Bloqueo de edición si ya fue enviado al boletín
+        # 1. Bloqueo de edición si ya fue enviado al boletín
         if instance.enviado:
             raise serializers.ValidationError(
                 "Esta calificación está bloqueada porque ya fue enviada al boletín."
             )
+
+        # 2. Lógica de Respeto a la Observación General:
+        # Si el profesor actualiza su materia pero deja las observaciones vacías,
+        # NO sobrescribimos lo que ya esté guardado (que pudo poner otro profesor o admin).
+        if 'observaciones' in validated_data and not validated_data['observaciones']:
+            validated_data.pop('observaciones')
+
         return super().update(instance, validated_data)
 
     def validate_enviado(self, value):

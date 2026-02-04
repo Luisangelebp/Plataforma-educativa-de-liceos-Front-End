@@ -17,13 +17,13 @@ class Calificacion(models.Model):
     profesor = models.ForeignKey(Profesor, on_delete=models.CASCADE, related_name='calificaciones_registradas')
     lapso = models.CharField(max_length=1, choices=LAPSO_OPCIONES)
     
-    # Único campo de resultado. Se llena sumando sus "Evaluaciones"
     promedio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     enviado = models.BooleanField(default=False)
+    
     observaciones = models.TextField(
         null=True, 
         blank=True, 
-        help_text="Observaciones del profesor sobre el estudiante en esta materia"
+        help_text="Al ser general, lo que escribas aquí se verá en el boletín del lapso."
     )
     
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -34,19 +34,27 @@ class Calificacion(models.Model):
         verbose_name = 'Control de Nota'
 
     def calcular_promedio(self):
-        """Suma todas las evaluaciones dinámicas y saca el promedio"""
         evals = self.evaluaciones.all()
         if evals.exists():
-            # Filtramos solo las que tengan nota numérica válida
             notas = [float(e.nota) for e in evals if e.nota]
             return round(sum(notas) / len(notas), 2) if notas else 0
         return 0
 
     def save(self, *args, **kwargs):
-        # El promedio se recalcula siempre al guardar el padre
+        # 1. Recalcular promedio
         if self.pk:
             self.promedio = self.calcular_promedio()
+        
         super().save(*args, **kwargs)
+
+        # 2. Lógica de Sincronización: 
+        # Si esta materia tiene una observación, se la copiamos a todas las 
+        # otras materias del estudiante en el mismo lapso.
+        if self.observaciones:
+            Calificacion.objects.filter(
+                estudiante=self.estudiante, 
+                lapso=self.lapso
+            ).exclude(id=self.id).update(observaciones=self.observaciones)
 
     def __str__(self):
         return f"{self.estudiante} - {self.materia} (Lapso {self.lapso})"
@@ -54,7 +62,7 @@ class Calificacion(models.Model):
 
 class Evaluacion(models.Model):
     calificacion = models.ForeignKey(Calificacion, on_delete=models.CASCADE, related_name="evaluaciones")
-    nombre = models.CharField(max_length=100) # Ej: "Nota 1", "Examen", etc.
+    nombre = models.CharField(max_length=100) 
     nota = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
@@ -65,7 +73,7 @@ class Evaluacion(models.Model):
         if self.calificacion.enviado:
             raise ValidationError("No puedes editar notas de un lapso ya cerrado/enviado.")
         super().save(*args, **kwargs)
-        # Importante: Esto actualiza el promedio en el modelo Calificacion
+        # Actualiza el padre para disparar el cálculo de promedio y la sincronización
         self.calificacion.save()
 
     def __str__(self):
