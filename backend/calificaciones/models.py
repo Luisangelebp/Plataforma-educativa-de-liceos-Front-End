@@ -20,6 +20,11 @@ class Calificacion(models.Model):
     # Único campo de resultado. Se llena sumando sus "Evaluaciones"
     promedio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     enviado = models.BooleanField(default=False)
+    observaciones = models.TextField(
+        null=True, 
+        blank=True, 
+        help_text="Observaciones del profesor sobre el estudiante en esta materia"
+    )
     
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

@@ -1,0 +1,394 @@
+/* ===== GRADOS Y SECCIONES CSS ===== */
+
+.grados-container {
+    padding: 0;
+    background: transparent;
+    overflow-x: hidden;
+}
+
+/* Header & Search Area */
+.grados-header-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+}
+
+.grados-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.grados-header-top h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Search Bar (Modular like Listas) */
+.grados-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+.grados-search-wrapper .material-symbols-outlined {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 20px;
+    pointer-events: none;
+}
+
+.grados-search-wrapper input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.grados-search-wrapper input:focus {
+    outline: none;
+    background: white;
+    border-color: #137fec;
+    box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+}
+
+/* Level Section */
+.level-section {
+    margin-bottom: 2.5rem;
+}
+
+.level-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
+}
+
+.level-section-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.level-section-header .ver-todo {
+    color: #137fec;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ===== GRADE CARDS GRID ===== */
+.grade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+}
+
+.grade-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.grade-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+    border-color: #137fec;
+}
+
+.grade-card.active {
+    border-color: #137fec;
+    background-color: #f0f7ff;
+    box-shadow: 0 0 0 2px #137fec;
+}
+
+.grade-card-badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #137fec, #4361ee);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(19, 127, 236, 0.3);
+}
+
+.grade-number {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.grade-check {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #10b981;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transform: scale(0);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 14px;
+    border: 2px solid white;
+}
+
+.grade-check .material-symbols-outlined {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.grade-card.active .grade-check {
+    transform: scale(1);
+}
+
+.grade-card-content {
+    width: 100%;
+}
+
+.grade-card-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.grade-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.grade-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.grade-stat-item .material-symbols-outlined {
+    font-size: 14px;
+}
+
+.grade-card.active .grade-stat-item {
+    color: #137fec;
+    font-weight: 500;
+}
+
+/* ===== SECTIONS LIST (Detail View) ===== */
+.sections-detail-header {
+    background: #f1f5f9;
+    padding: 1rem 1.25rem;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    margin-top: 2rem;
+}
+
+.sections-detail-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.sections-list-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    transition: all 0.2s;
+}
+
+.section-item:last-child {
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-item:hover {
+    background-color: #f8fafc;
+}
+
+.section-item-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(19, 127, 236, 0.1);
+    color: #137fec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.section-info p {
+    margin: 0;
+}
+
+.section-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9375rem;
+}
+
+.section-teacher {
+    color: #64748b;
+    font-size: 0.8125rem;
+    margin-top: 0.125rem !important;
+}
+
+.section-item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.student-badge {
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+}
+
+.section-item-right .material-symbols-outlined {
+    color: #94a3b8;
+}
+
+/* Actions in Section List */
+.section-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.section-item:hover .section-actions {
+    opacity: 1;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.btn-icon.delete:hover {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 768px) {
+    .grados-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .grados-header-top h1 {
+        font-size: 1.5rem;
+    }
+
+    .grade-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .section-item {
+        padding: 1rem;
+    }
+
+    .section-actions {
+        opacity: 1;
+        /* Always visible on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .grade-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}

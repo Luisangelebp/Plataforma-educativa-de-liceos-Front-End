@@ -10,6 +10,7 @@ const LoginSession = ({ setShowLogin }) => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [selectedRole, setSelectedRole] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const modalRef = useRef(null);
 
     // Cerrar modal al hacer click fuera
@@ -144,12 +145,12 @@ const LoginSession = ({ setShowLogin }) => {
                 role === 'estudiante'
                     ? 'Estudiante'
                     : role === 'profesor'
-                      ? 'Profesor'
-                      : role === 'representante'
-                        ? 'Representante'
-                        : role === 'admin'
-                          ? 'Administrador'
-                          : '',
+                        ? 'Profesor'
+                        : role === 'representante'
+                            ? 'Representante'
+                            : role === 'admin'
+                                ? 'Administrador'
+                                : '',
         }));
     };
 
@@ -183,7 +184,7 @@ const LoginSession = ({ setShowLogin }) => {
                         color: 'var(--gray)',
                         border: 'none',
                         borderRadius: '50%',
-                        fontSize: '1.1rem',
+                        fontSize: '1.2rem',
                         cursor: 'pointer',
                         transition: 'var(--transition)',
                         display: 'flex',
@@ -193,70 +194,54 @@ const LoginSession = ({ setShowLogin }) => {
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.color = 'var(--primary)';
-                        e.currentTarget.style.background =
-                            'rgba(67, 97, 238, 0.1)';
+                        e.currentTarget.style.background = 'rgba(67, 97, 238, 0.1)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.color = 'var(--gray)';
                         e.currentTarget.style.background = 'transparent';
                     }}
                 >
-                    <i className="fas fa-arrow-left"></i>
+                    <span className="material-symbols-outlined">arrow_back</span>
                 </button>
 
                 {/* Panel Izquierdo */}
                 <div className="login-left">
                     <div className="logo-container">
                         <div className="logo-icon">
-                            <i className="fas fa-graduation-cap"></i>
+                            <img src="logo.svg" alt="CENIT Logo" style={{ width: '50px', height: '50px' }} />
                         </div>
                         <div className="logo-text">
                             <h1>
-                                <i
-                                    className="fas fa-star"
-                                    style={{
-                                        marginRight: '10px',
-                                        fontSize: '1.8rem',
-                                        verticalAlign: 'middle',
-                                    }}
-                                ></i>
                                 CENIT
                             </h1>
-                            <p>
-                                "Con Excelencia Navegaras Iluminando Tu Futuro"
-                            </p>
+                            <p>"Con Excelencia Navegaras Iluminando Tu Futuro"</p>
                         </div>
                     </div>
 
                     <div className="features-list">
                         <div className="feature-item">
                             <div className="feature-icon">
-                                <i className="fas fa-users"></i>
+                                <span className="material-symbols-outlined">groups</span>
                             </div>
                             <div className="feature-text">
                                 <h4>Gestión Completa</h4>
-                                <p>
-                                    Administra estudiantes, profesores y
-                                    materias
-                                </p>
+                                <p>Administra estudiantes, profesores y materias</p>
                             </div>
                         </div>
 
                         <div className="feature-item">
                             <div className="feature-icon">
-                                <i className="fas fa-file-alt"></i>
+                                <span className="material-symbols-outlined">description</span>
                             </div>
                             <div className="feature-text">
                                 <h4>Boletines Digitales</h4>
-                                <p>
-                                    Genera y descarga boletines en formato PDF
-                                </p>
+                                <p>Genera y descarga boletines en formato PDF</p>
                             </div>
                         </div>
 
                         <div className="feature-item">
                             <div className="feature-icon">
-                                <i className="fas fa-chart-line"></i>
+                                <span className="material-symbols-outlined">analytics</span>
                             </div>
                             <div className="feature-text">
                                 <h4>Reportes y Estadísticas</h4>
@@ -275,6 +260,7 @@ const LoginSession = ({ setShowLogin }) => {
                         <div className="form-group">
                             <label htmlFor="username">Usuario</label>
                             <div className="input-with-icon">
+                                <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray)', fontSize: '1.2rem', zIndex: 1 }}>person</span>
                                 <input
                                     type="text"
                                     id="username"
@@ -283,55 +269,61 @@ const LoginSession = ({ setShowLogin }) => {
                                     onChange={handleInputChange}
                                     placeholder="Ingrese su usuario"
                                     required
-                                    style={{ paddingLeft: '15px' }}
                                 />
                             </div>
-                            {errors.username && (
-                                <span
-                                    style={{
-                                        color: 'var(--danger)',
-                                        fontSize: '0.85rem',
-                                        marginTop: '5px',
-                                        display: 'block',
-                                    }}
-                                >
-                                    {errors.username}
-                                </span>
-                            )}
+                            {errors.username && <span className="error-text">{errors.username}</span>}
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="password">Contraseña</label>
                             <div className="input-with-icon">
-                                <i className="fas fa-lock"></i>
+                                <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray)', fontSize: '1.2rem', zIndex: 1 }}>lock</span>
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     id="password"
                                     name="password"
                                     value={formData.password}
                                     onChange={handleInputChange}
                                     placeholder="Ingrese su contraseña"
                                     required
+                                    style={{ paddingRight: '45px' }}
                                 />
-                            </div>
-                            {errors.password && (
-                                <span
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
                                     style={{
-                                        color: 'var(--danger)',
-                                        fontSize: '0.85rem',
-                                        marginTop: '5px',
-                                        display: 'block',
+                                        position: 'absolute',
+                                        right: '8px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'var(--gray)',
+                                        zIndex: 2,
+                                        borderRadius: '4px',
+                                        transition: 'color 0.2s ease'
                                     }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+                                    title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                                 >
-                                    {errors.password}
-                                </span>
-                            )}
+                                    <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
+                                        {showPassword ? "visibility_off" : "visibility"}
+                                    </span>
+                                </button>
+                            </div>
+                            {errors.password && <span className="error-text">{errors.password}</span>}
                         </div>
 
                         <div className="form-group" id="typeUSelectLogin">
                             <label htmlFor="typeU">Tipo de Usuario</label>
                             <div className="input-with-icon">
-                                <i className="fas fa-user-tag"></i>
+                                <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray)', fontSize: '1.2rem', zIndex: 1 }}>assignment_ind</span>
                                 <select
                                     id="typeU"
                                     name="typeU"
@@ -340,123 +332,70 @@ const LoginSession = ({ setShowLogin }) => {
                                     required
                                 >
                                     <option value="">Seleccione un rol</option>
-                                    <option value="Administrador">
-                                        Administrador
-                                    </option>
+                                    <option value="Administrador">Administrador</option>
                                     <option value="Profesor">Profesor</option>
-                                    <option value="Estudiante">
-                                        Estudiante
-                                    </option>
-                                    <option value="Representante">
-                                        Representante
-                                    </option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Representante">Representante</option>
                                 </select>
                             </div>
-                            {errors.typeU && (
-                                <span
-                                    style={{
-                                        color: 'var(--danger)',
-                                        fontSize: '0.85rem',
-                                        marginTop: '5px',
-                                        display: 'block',
-                                    }}
-                                >
-                                    {errors.typeU}
-                                </span>
-                            )}
+                            {errors.typeU && <span className="error-text">{errors.typeU}</span>}
                         </div>
 
                         {errors.submit && (
-                            <div
-                                style={{
-                                    background: 'rgba(247, 37, 133, 0.1)',
-                                    color: 'var(--danger)',
-                                    padding: '12px',
-                                    borderRadius: 'var(--border-radius)',
-                                    marginBottom: '20px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                }}
-                            >
-                                <i className="fas fa-exclamation-circle"></i>
+                            <div className="submit-error">
+                                <span className="material-symbols-outlined">error</span>
                                 {errors.submit}
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={isLoading}
-                        >
+                        <button type="submit" className="btn btn-primary" disabled={isLoading}>
                             {isLoading ? (
                                 <>
-                                    <i className="fas fa-spinner fa-spin"></i>
+                                    <div className="login-spinner"></div>
                                     Accediendo...
                                 </>
                             ) : (
                                 <>
-                                    <i className="fas fa-sign-in-alt"></i>
+                                    <span className="material-symbols-outlined">login</span>
                                     Acceder al Sistema
                                 </>
                             )}
                         </button>
 
                         <div className="role-selector">
-                            <div
-                                className={`role-card ${
-                                    selectedRole === 'estudiante'
-                                        ? 'active'
-                                        : ''
-                                }`}
-                                onClick={() => selectRole('estudiante')}
-                            >
+
+                            <div className={`role-card ${selectedRole === 'admin' ? 'active' : ''}`} onClick={() => selectRole('admin')}>
                                 <div className="role-icon">
-                                    <i className="fas fa-user-graduate"></i>
+                                    <span className="material-symbols-outlined">admin_panel_settings</span>
+                                </div>
+                                <h4>Administrador</h4>
+                                <p>Gestión total</p>
+                            </div>
+
+                            <div className={`role-card ${selectedRole === 'estudiante' ? 'active' : ''}`} onClick={() => selectRole('estudiante')}>
+                                <div className="role-icon">
+                                    <span className="material-symbols-outlined">school</span>
                                 </div>
                                 <h4>Estudiante</h4>
                                 <p>Consulta de notas</p>
                             </div>
 
-                            <div
-                                className={`role-card ${
-                                    selectedRole === 'profesor' ? 'active' : ''
-                                }`}
-                                onClick={() => selectRole('profesor')}
-                            >
+                            <div className={`role-card ${selectedRole === 'profesor' ? 'active' : ''}`} onClick={() => selectRole('profesor')}>
                                 <div className="role-icon">
-                                    <i className="fas fa-chalkboard-teacher"></i>
+                                    <span className="material-symbols-outlined">co_present</span>
                                 </div>
                                 <h4>Profesor</h4>
                                 <p>Control académico</p>
                             </div>
 
-                            <div
-                                className={`role-card ${
-                                    selectedRole === 'representante'
-                                        ? 'active'
-                                        : ''
-                                }`}
-                                onClick={() => selectRole('representante')}
-                            >
+                            <div className={`role-card ${selectedRole === 'representante' ? 'active' : ''}`} onClick={() => selectRole('representante')}>
                                 <div className="role-icon">
-                                    <i className="fas fa-user-friends"></i>
+                                    <span className="material-symbols-outlined">group</span>
                                 </div>
                                 <h4>Representante</h4>
                                 <p>Gestión de estudiantes</p>
                             </div>
-                            <div
-                                className={`role-card ${
-                                    selectedRole === 'admin' ? 'active' : ''
-                                }`}
-                                onClick={() => selectRole('admin')}
-                            >
-                                <div className="role-icon">
-                                    <i className="fas fa-user-shield"></i>
-                                </div>
-                                <h4>Administrador</h4>
-                                <p>Gestión de estudiantes</p>
-                            </div>
+
                         </div>
                     </form>
                 </div>

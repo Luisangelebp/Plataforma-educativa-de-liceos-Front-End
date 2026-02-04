@@ -1,20 +1,27 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../css/dashboards.css';
+import { useNotification } from '../../../context/NotificationContext';
 
 const API_URL = 'http://localhost:8000/';
 
 // Modal para ver detalles del estudiante
 const DetailModal = ({ user, isOpen, onClose }) => {
     if (!isOpen || !user) return null;
-
+    console.log(user);
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="modal-container"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-header">
-                    <h2>Detalles del Estudiante</h2>
-                    <button className="modal-close" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+                    <h3>Detalles del Estudiante</h3>
+                    <button
+                        className="close-btn"
+                        onClick={onClose}
+                        title="Cerrar"
+                    >
+                        &times;
                     </button>
                 </div>
                 <div className="modal-body">
@@ -34,7 +41,9 @@ const DetailModal = ({ user, isOpen, onClose }) => {
                         <div className="detail-info">
                             <div className="detail-item">
                                 <strong>Nombre:</strong>
-                                <span>{user.nombre} {user.apellido}</span>
+                                <span>
+                                    {user.nombre} {user.apellido}
+                                </span>
                             </div>
                             <div className="detail-item">
                                 <strong>Cédula:</strong>
@@ -42,23 +51,29 @@ const DetailModal = ({ user, isOpen, onClose }) => {
                             </div>
                             <div className="detail-item">
                                 <strong>Edad:</strong>
-                                <span>{user.edad ? `${user.edad} años` : 'N/A'}</span>
+                                <span>
+                                    {user.edad ? `${user.edad} años` : 'N/A'}
+                                </span>
                             </div>
                             <div className="detail-item">
                                 <strong>Grado:</strong>
-                                <span>{user.grado || 'N/A'}</span>
+                                <span>{user.grado_seccion.grado || 'N/A'}</span>
                             </div>
                             <div className="detail-item">
                                 <strong>Sección:</strong>
-                                <span>{user.seccion || 'N/A'}</span>
+                                <span>
+                                    {user.grado_seccion.seccion || 'N/A'}
+                                </span>
                             </div>
                             <div className="detail-item">
                                 <strong>Nivel:</strong>
-                                <span>{user.nivel || 'N/A'}</span>
+                                <span>{user.grado_seccion.nivel || 'N/A'}</span>
                             </div>
                             <div className="detail-item">
                                 <strong>Representante:</strong>
-                                <span>{user.representante_nombre || 'Sin asignar'}</span>
+                                <span>
+                                    {user.representante_nombre || 'Sin asignar'}
+                                </span>
                             </div>
                             <div className="detail-item">
                                 <strong>Dirección:</strong>
@@ -90,17 +105,19 @@ const EstudianteRow = ({ user, onRowClick }) => {
     return (
         <tr onClick={() => onRowClick(user)} className="user-row">
             <td>
-                <img
-                    src={
-                        user.foto
-                            ? user.foto.startsWith('http')
-                                ? user.foto
-                                : `${API_URL}${user.foto}`
-                            : 'https://via.placeholder.com/50'
-                    }
-                    alt={user.nombre}
-                    className="user-avatar"
-                />
+                <div className="user-photo-wrapper">
+                    <img
+                        src={
+                            user.foto
+                                ? user.foto.startsWith('http')
+                                    ? user.foto
+                                    : `${API_URL}${user.foto}`
+                                : 'https://via.placeholder.com/50'
+                        }
+                        alt={user.nombre}
+                        className="user-avatar"
+                    />
+                </div>
             </td>
             <td className="user-name">
                 {user.nombre} {user.apellido}
@@ -116,6 +133,7 @@ const EstudianteRow = ({ user, onRowClick }) => {
 
 // Componente principal
 export function ListaEstudiantesProfesor() {
+    const { addNotification } = useNotification();
     const [estudiantes, setEstudiantes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -123,7 +141,7 @@ export function ListaEstudiantesProfesor() {
     const [filtros, setFiltros] = useState({
         nivel: '',
         grado: '',
-        seccion: ''
+        seccion: '',
     });
     const [profesorInfo, setProfesorInfo] = useState(null);
 
@@ -141,22 +159,29 @@ export function ListaEstudiantesProfesor() {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
             if (user && user.id) {
-                const response = await axios.get(`${API_URL}usuarios/profesor/${user.id}/`);
+                // Usar el nuevo endpoint de perfil
+                const response = await axios.get(
+                    `${API_URL}usuarios/profesor/perfil/`,
+                );
                 setProfesorInfo(response.data);
             }
         } catch (error) {
             console.error('Error al cargar información del profesor:', error);
-            alert('Error al cargar la información del profesor');
+            addNotification(
+                'Error al cargar la información del profesor',
+                'error',
+            );
         }
     };
 
     const fetchEstudiantes = async () => {
         try {
             setLoading(true);
-            
+
             // Obtener las secciones del profesor
-            const gradoSeccionesIds = profesorInfo?.grado_secciones?.map(gs => gs.id) || [];
-            
+            const gradoSeccionesIds =
+                profesorInfo?.grado_secciones?.map((gs) => gs.id) || [];
+
             if (gradoSeccionesIds.length === 0) {
                 setEstudiantes([]);
                 return;
@@ -164,9 +189,9 @@ export function ListaEstudiantesProfesor() {
 
             // Construir parámetros de consulta
             let params = new URLSearchParams();
-            
+
             // Filtrar por las secciones del profesor
-            gradoSeccionesIds.forEach(id => {
+            gradoSeccionesIds.forEach((id) => {
                 params.append('grado_seccion_id', id);
             });
 
@@ -175,11 +200,13 @@ export function ListaEstudiantesProfesor() {
             if (filtros.grado) params.append('grado', filtros.grado);
             if (filtros.seccion) params.append('seccion', filtros.seccion);
 
-            const response = await axios.get(`${API_URL}usuarios/estudiante/?${params.toString()}`);
+            const response = await axios.get(
+                `${API_URL}usuarios/estudiante/?${params.toString()}`,
+            );
             setEstudiantes(response.data);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
-            alert('Error al cargar la lista de estudiantes');
+            addNotification('Error al cargar la lista de estudiantes', 'error');
         } finally {
             setLoading(false);
         }
@@ -193,18 +220,19 @@ export function ListaEstudiantesProfesor() {
     const handleGenerarPDF = async () => {
         try {
             // Obtener las secciones del profesor
-            const gradoSeccionesIds = profesorInfo?.grado_secciones?.map(gs => gs.id) || [];
-            
+            const gradoSeccionesIds =
+                profesorInfo?.grado_secciones?.map((gs) => gs.id) || [];
+
             if (gradoSeccionesIds.length === 0) {
-                alert('No tienes secciones asignadas');
+                addNotification('No tienes secciones asignadas', 'warning');
                 return;
             }
 
             // Construir parámetros para el PDF
             let params = new URLSearchParams();
-            
+
             // Agregar todas las secciones del profesor
-            gradoSeccionesIds.forEach(id => {
+            gradoSeccionesIds.forEach((id) => {
                 params.append('grado_seccion_id', id);
             });
 
@@ -216,7 +244,7 @@ export function ListaEstudiantesProfesor() {
             // Descargar el PDF
             const response = await axios.get(
                 `${API_URL}usuarios/estudiante/pdf/?${params.toString()}`,
-                { responseType: 'blob' }
+                { responseType: 'blob' },
             );
 
             // Crear enlace de descarga
@@ -229,15 +257,15 @@ export function ListaEstudiantesProfesor() {
             link.remove();
         } catch (error) {
             console.error('Error al generar PDF:', error);
-            alert('Error al generar el PDF');
+            addNotification('Error al generar el PDF', 'error');
         }
     };
 
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
-        setFiltros(prev => ({
+        setFiltros((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
 
@@ -245,15 +273,17 @@ export function ListaEstudiantesProfesor() {
         setFiltros({
             nivel: '',
             grado: '',
-            seccion: ''
+            seccion: '',
         });
     };
 
     // Obtener valores únicos para los filtros
     const seccionesProfesor = profesorInfo?.grado_secciones || [];
-    const nivelesUnicos = [...new Set(seccionesProfesor.map(gs => gs.nivel))];
-    const gradosUnicos = [...new Set(seccionesProfesor.map(gs => gs.grado))];
-    const seccionesUnicas = [...new Set(seccionesProfesor.map(gs => gs.seccion))];
+    const nivelesUnicos = [...new Set(seccionesProfesor.map((gs) => gs.nivel))];
+    const gradosUnicos = [...new Set(seccionesProfesor.map((gs) => gs.grado))];
+    const seccionesUnicas = [
+        ...new Set(seccionesProfesor.map((gs) => gs.seccion)),
+    ];
 
     if (loading && !profesorInfo) {
         return <div className="loading">Cargando información...</div>;
@@ -273,33 +303,42 @@ export function ListaEstudiantesProfesor() {
             </div>
 
             {/* Filtros */}
-            <div className="filtros-container" style={{ 
-                marginBottom: '20px', 
-                padding: '15px', 
-                backgroundColor: '#f5f5f5', 
-                borderRadius: '8px',
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'end',
-                flexWrap: 'wrap'
-            }}>
+            <div
+                className="filtros-container"
+                style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'end',
+                    flexWrap: 'wrap',
+                }}
+            >
                 <div style={{ flex: '1', minWidth: '150px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    <label
+                        style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Nivel:
                     </label>
                     <select
                         name="nivel"
                         value={filtros.nivel}
                         onChange={handleFiltroChange}
-                        style={{ 
-                            width: '100%', 
-                            padding: '8px', 
+                        style={{
+                            width: '100%',
+                            padding: '8px',
                             borderRadius: '4px',
-                            border: '1px solid #ccc'
+                            border: '1px solid #ccc',
                         }}
                     >
                         <option value="">Todos</option>
-                        {nivelesUnicos.map(nivel => (
+                        {nivelesUnicos.map((nivel) => (
                             <option key={nivel} value={nivel}>
                                 {nivel.charAt(0).toUpperCase() + nivel.slice(1)}
                             </option>
@@ -308,22 +347,28 @@ export function ListaEstudiantesProfesor() {
                 </div>
 
                 <div style={{ flex: '1', minWidth: '150px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    <label
+                        style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Grado/Año:
                     </label>
                     <select
                         name="grado"
                         value={filtros.grado}
                         onChange={handleFiltroChange}
-                        style={{ 
-                            width: '100%', 
-                            padding: '8px', 
+                        style={{
+                            width: '100%',
+                            padding: '8px',
                             borderRadius: '4px',
-                            border: '1px solid #ccc'
+                            border: '1px solid #ccc',
                         }}
                     >
                         <option value="">Todos</option>
-                        {gradosUnicos.map(grado => (
+                        {gradosUnicos.map((grado) => (
                             <option key={grado} value={grado}>
                                 {grado}°
                             </option>
@@ -332,22 +377,28 @@ export function ListaEstudiantesProfesor() {
                 </div>
 
                 <div style={{ flex: '1', minWidth: '150px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    <label
+                        style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Sección:
                     </label>
                     <select
                         name="seccion"
                         value={filtros.seccion}
                         onChange={handleFiltroChange}
-                        style={{ 
-                            width: '100%', 
-                            padding: '8px', 
+                        style={{
+                            width: '100%',
+                            padding: '8px',
                             borderRadius: '4px',
-                            border: '1px solid #ccc'
+                            border: '1px solid #ccc',
                         }}
                     >
                         <option value="">Todas</option>
-                        {seccionesUnicas.map(seccion => (
+                        {seccionesUnicas.map((seccion) => (
                             <option key={seccion} value={seccion}>
                                 {seccion}
                             </option>
@@ -364,7 +415,7 @@ export function ListaEstudiantesProfesor() {
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
                     }}
                 >
                     Limpiar Filtros
@@ -383,30 +434,33 @@ export function ListaEstudiantesProfesor() {
                 ) : (
                     <>
                         <div style={{ marginBottom: '10px', color: '#666' }}>
-                            <strong>Total de estudiantes:</strong> {estudiantes.length}
+                            <strong>Total de estudiantes:</strong>{' '}
+                            {estudiantes.length}
                         </div>
-                        <table className="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Nombre</th>
-                                    <th>Grado</th>
-                                    <th>Sección</th>
-                                    <th>Nivel</th>
-                                    <th>Edad</th>
-                                    <th>Representante</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {estudiantes.map((estudiante) => (
-                                    <EstudianteRow
-                                        key={estudiante.id}
-                                        user={estudiante}
-                                        onRowClick={handleCardClick}
-                                    />
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="table-container">
+                            <table className="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nombre</th>
+                                        <th>Grado</th>
+                                        <th>Sección</th>
+                                        <th>Nivel</th>
+                                        <th>Edad</th>
+                                        <th>Representante</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {estudiantes.map((estudiante) => (
+                                        <EstudianteRow
+                                            key={estudiante.id}
+                                            user={estudiante}
+                                            onRowClick={handleCardClick}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </>
                 )}
             </div>
@@ -422,4 +476,3 @@ export function ListaEstudiantesProfesor() {
         </div>
     );
 }
-

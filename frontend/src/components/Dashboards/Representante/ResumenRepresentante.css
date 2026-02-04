@@ -7,12 +7,17 @@
 }
 
 .resumen-header {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    background: white;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border-left: 5px solid var(--primary);
 }
 
 .resumen-header h1 {
-    color: #333;
-    font-size: 2.2rem;
+    color: var(--dark);
+    font-size: 1.8rem;
     margin: 0 0 10px 0;
     display: flex;
     align-items: center;
@@ -20,12 +25,12 @@
 }
 
 .resumen-header h1 i {
-    color: #007bff;
+    color: var(--primary);
 }
 
 .resumen-header p {
-    color: #666;
-    font-size: 1.1rem;
+    color: var(--gray);
+    font-size: 1rem;
     margin: 0;
 }
 
@@ -41,76 +46,61 @@
 
 .loading-container i {
     font-size: 3rem;
-    color: #007bff;
+    color: var(--primary);
 }
 
 .loading-container p {
-    color: #666;
+    color: var(--gray);
     font-size: 1.1rem;
 }
 
 /* Cards de Resumen */
 .resumen-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 25px;
     margin-bottom: 40px;
 }
 
 .resumen-card {
     background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-}
-
-.resumen-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #007bff, #0056b3);
+    border: 1px solid transparent;
 }
 
 .resumen-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.card-estudiantes::before {
-    background: linear-gradient(90deg, #28a745, #20c997);
-}
-
-.card-boletines::before {
-    background: linear-gradient(90deg, #dc3545, #c82333);
+    box-shadow: var(--box-shadow-hover);
+    border-color: var(--primary-light);
 }
 
 .card-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    font-size: 2rem;
+    font-size: 1.8rem;
+    background: var(--light);
 }
 
 .card-estudiantes .card-icon {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
+    background: rgba(76, 201, 240, 0.1);
+    color: var(--success);
 }
 
 .card-boletines .card-icon {
-    background: linear-gradient(135deg, #dc3545, #c82333);
-    color: white;
+    background: rgba(247, 37, 133, 0.1);
+    color: var(--danger);
 }
 
 .card-content {
@@ -119,160 +109,68 @@
 }
 
 .card-content h3 {
-    color: #333;
-    font-size: 1.2rem;
-    margin: 0 0 15px 0;
+    color: var(--dark);
+    font-size: 1.1rem;
+    margin: 0 0 10px 0;
     font-weight: 600;
-    font-family: "Playfair Display", serif;
-
 }
 
 .card-number {
-    font-size: 3rem !important;
+    font-size: 2.5rem !important;
     font-weight: 700;
-    color: #007bff;
     margin: 0;
     line-height: 1;
 }
 
 .card-estudiantes .card-number {
-    color: #28a745;
+    color: var(--success);
 }
 
 .card-boletines .card-number {
-    color: #dc3545;
+    color: var(--danger);
 }
 
 .card-label {
-    color: #666;
-    font-size: 0.95rem;
-    margin: 10px 0 0 0;
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin: 5px 0 0 0;
 }
 
 .card-button {
     width: 100%;
     padding: 12px 20px;
-    background: #007bff;
-    color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.3s;
+    transition: var(--transition);
 }
 
 .card-estudiantes .card-button {
-    background: #28a745;
+    background: var(--light);
+    color: var(--success-dark);
 }
 
 .card-estudiantes .card-button:hover {
-    background: #218838;
+    background: rgba(76, 201, 240, 0.2);
 }
 
 .card-boletines .card-button {
-    background: #dc3545;
+    background: var(--light);
+    color: var(--danger-dark);
 }
 
 .card-boletines .card-button:hover {
-    background: #c82333;
-}
-
-.card-button:hover {
-    transform: translateX(5px);
+    background: rgba(247, 37, 133, 0.2);
 }
 
 .card-button i {
-    font-size: 0.9rem;
-}
-
-/* Accesos Rápidos */
-.accesos-rapidos {
-    margin-bottom: 40px;
-}
-
-.accesos-rapidos h2 {
-    color: #333;
-    font-size: 1.8rem;
-    margin: 0 0 25px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.accesos-rapidos h2 i {
-    color: #ffc107;
-}
-
-.accesos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.acceso-item {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s;
-    border-left: 4px solid #007bff;
-}
-
-.acceso-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border-left-color: #0056b3;
-}
-
-.acceso-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.acceso-content {
-    flex: 1;
-}
-
-.acceso-content h4 {
-    color: #333;
-    font-size: 1.2rem;
-    margin: 0 0 8px 0;
-    font-weight: 600;
-}
-
-.acceso-content p {
-    color: #666;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.acceso-arrow {
-    color: #999;
-    font-size: 1.2rem;
-    transition: all 0.3s;
-}
-
-.acceso-item:hover .acceso-arrow {
-    color: #007bff;
-    transform: translateX(5px);
+    font-size: 0.8rem;
 }
 
 /* Boletines Recientes */
@@ -281,8 +179,8 @@
 }
 
 .boletines-recientes h2 {
-    color: #333;
-    font-size: 1.8rem;
+    color: var(--dark);
+    font-size: 1.5rem;
     margin: 0 0 25px 0;
     display: flex;
     align-items: center;
@@ -290,125 +188,104 @@
 }
 
 .boletines-recientes h2 i {
-    color: #17a2b8;
+    color: var(--warning);
 }
 
 .boletines-recientes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
 }
 
 .boletin-reciente-card {
     background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-    border-left: 4px solid #17a2b8;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    border: 1px solid var(--border-radius-sm);
+    display: flex;
+    flex-direction: column;
 }
 
 .boletin-reciente-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--box-shadow-hover);
+    border-color: var(--primary);
 }
 
 .boletin-reciente-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     margin-bottom: 15px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid var(--light-gray);
 }
 
 .boletin-reciente-header h4 {
     margin: 0;
-    color: #333;
-    font-size: 1.1rem;
+    color: var(--dark);
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-weight: 600;
 }
 
 .boletin-reciente-header h4 i {
-    color: #17a2b8;
+    color: var(--primary);
 }
 
 .promedio-badge {
-    background: #17a2b8;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
     font-weight: 700;
 }
 
 .boletin-reciente-info {
     margin-bottom: 15px;
+    flex: 1;
 }
 
 .boletin-reciente-info p {
     margin: 8px 0;
-    color: #666;
+    color: var(--gray);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .boletin-reciente-info p i {
-    color: #17a2b8;
-    width: 18px;
+    color: var(--gray-light);
+    width: 20px;
+    text-align: center;
 }
 
 .btn-ver-boletin {
     width: 100%;
     padding: 10px 16px;
-    background: #17a2b8;
+    background: var(--primary);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.3s;
+    transition: var(--transition);
 }
 
 .btn-ver-boletin:hover {
-    background: #138496;
-    transform: translateX(5px);
-}
-
-.btn-ver-boletin i {
-    font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .resumen-representante {
-        padding: 20px;
-    }
-
-    .resumen-header h1 {
-        font-size: 1.8rem;
-    }
-
-    .resumen-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .accesos-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .boletines-recientes-grid {
-        grid-template-columns: 1fr;
-    }
+    background: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
 }
 
 /* Modal Styles */
@@ -418,55 +295,61 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
-.modal-content {
+.modal-container {
     background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow-lg);
     width: 90%;
     max-width: 500px;
-    max-height: 90vh;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
 }
 
 .modal-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--light-gray);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
+    background: #f8f9fa;
 }
 
-.modal-header h2 {
+.modal-header h3 {
     margin: 0;
-    font-size: 1.5rem;
-    color: #333;
+    font-size: 1.25rem;
+    color: var(--dark);
+    font-weight: 600;
 }
 
-.modal-close {
+.close-btn {
     background: transparent;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #999;
+    color: var(--gray);
+    transition: var(--transition);
+    line-height: 1;
 }
 
-.modal-close:hover {
-    color: #333;
+.close-btn:hover {
+    color: var(--danger);
 }
 
 .modal-body {
+    padding: 25px;
     overflow-y: auto;
-    flex-grow: 1;
 }
 
 .estudiantes-lista {
@@ -480,51 +363,88 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid #f0f0f0;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 10px;
+    transition: var(--transition);
 }
 
-.estudiante-item:last-child {
-    border-bottom: none;
+.estudiante-item:hover {
+    border-color: var(--primary);
+    background: #f8f9fa;
 }
 
 .estudiante-info {
     display: flex;
     align-items: center;
     gap: 15px;
-    font-size: 1.1rem;
-    color: #333;
+    color: var(--dark);
+    font-weight: 500;
 }
 
 .estudiante-info i {
-    color: #007bff;
-    font-size: 1.8rem;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.estudiante-info span {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
 }
 
 .estudiante-grado {
-    font-size: 1rem;
-    color: #666;
-    background: #f0f0f0;
-    padding: 5px 10px;
+    font-size: 0.85rem;
+    color: var(--primary);
+    background: rgba(67, 97, 238, 0.1);
+    padding: 4px 12px;
     border-radius: 20px;
-}
-
-.modal-footer {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-    margin-top: 15px;
-    text-align: right;
-}
-
-.btn-cancel {
-    background-color: #6c757d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
     font-weight: 600;
 }
 
+.modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid var(--light-gray);
+    text-align: right;
+    background: #f8f9fa;
+}
+
+.btn-cancel {
+    background-color: var(--white);
+    color: var(--gray);
+    padding: 10px 20px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
 .btn-cancel:hover {
-    background-color: #5a6268;
+    background-color: var(--light-gray);
+    color: var(--dark);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .resumen-representante {
+        padding: 20px;
+    }
+
+    .resumen-cards,
+    .boletines-recientes-grid {
+        grid-template-columns: 1fr;
+    }
 }

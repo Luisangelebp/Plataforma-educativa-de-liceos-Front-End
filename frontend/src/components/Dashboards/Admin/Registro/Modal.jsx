@@ -8,95 +8,120 @@ const Modal = ({ isOpen, onClose, title, children, roleIcon }) => {
             className="modal-overlay"
             onClick={onClose}
             style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000,
-                padding: '20px',
+                backdropFilter: 'blur(10px)',
+                backgroundColor: 'rgba(15, 23, 42, 0.4)',
             }}
         >
             <div
-                className="modal-content"
+                className="modal-container"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    width: '100%',
-                    maxWidth: '900px',
-                    maxHeight: '95vh',
-                    // overflowY: 'auto', // Se quita para evitar el scroll, el carrusel lo maneja
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column',
+                    maxWidth: '700px',
+                    borderRadius: '28px',
+                    overflow: 'hidden',
+                    border: 'none',
+                    boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                    background: '#f1f5f9',
                 }}
             >
                 <div
+                    className="modal-header"
                     style={{
+                        background: '#f8fafc',
+                        borderBottom: '1px solid #e2e8f0',
+                        padding: '1.75rem 2.5rem',
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '15px 20px',
-                        borderBottom: '2px solid #f0f0f0',
-                        flexShrink: 0,
+                        justifyContent: 'space-between',
+                        marginBottom: 0,
                     }}
                 >
-                    <h2
+                    <div
                         style={{
-                            margin: 0,
-                            fontSize: '1.3rem',
-                            fontWeight: '600',
-                            color: '#333',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px',
+                            gap: '1rem',
                         }}
                     >
-                        <i
-                            className={`fas ${roleIcon}`}
-                            style={{ color: '#007bff' }}
-                        ></i>
-                        {title}
-                    </h2>
+                        {roleIcon && (
+                            <div
+                                style={{
+                                    width: '42px',
+                                    height: '42px',
+                                    borderRadius: '12px',
+                                    background: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--primary)',
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                                    border: '1px solid #e2e8f0',
+                                }}
+                            >
+                                <span
+                                    className="material-symbols-outlined"
+                                    style={{ fontSize: '24px' }}
+                                >
+                                    {roleIcon}
+                                </span>
+                            </div>
+                        )}
+                        <h3
+                            style={{
+                                margin: 0,
+                                fontFamily: 'Outfit',
+                                fontWeight: '800',
+                                fontSize: '1.5rem',
+                                color: '#0f172a',
+                                letterSpacing: '-0.02em',
+                            }}
+                        >
+                            {title}
+                        </h3>
+                    </div>
                     <button
-                        type="button"
+                        className="close-btn"
                         onClick={onClose}
+                        title="Cerrar"
                         style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '1.5rem',
-                            color: '#999',
+                            background: '#ffffff',
+                            color: '#64748b',
+                            width: '36px',
+                            height: '36px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             cursor: 'pointer',
-                            padding: '5px 10px',
-                            borderRadius: '6px',
-                            transition: 'all 0.3s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#f0f0f0';
-                            e.currentTarget.style.color = '#333';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'none';
-                            e.currentTarget.style.color = '#999';
                         }}
                     >
-                        ×
+                        <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: '20px' }}
+                        >
+                            close
+                        </span>
                     </button>
                 </div>
+
                 <div
+                    className="modal-body"
                     style={{
-                        padding: '20px',
-                        flex: 1,
-                        overflow: 'hidden', // Contenedor del carrusel no debe tener scroll
+                        overflowY: 'none',
                     }}
                 >
-                    {children}
+                    <div
+                        style={{
+                            background: 'white',
+                            borderRadius: '24px',
+                            boxShadow: '0 4px 20px -5px rgba(0, 0, 0, 0.05)',
+                            border: '1px solid #ffffff',
+                            padding: '1rem',
+                        }}
+                    >
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

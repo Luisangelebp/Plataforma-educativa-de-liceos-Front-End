@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNotification } from '../../../context/NotificationContext';
 import '../Admin/css/Listas.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -59,6 +60,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 
 export default function Cuenta() {
     const navigate = useNavigate();
+    const { addNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [profesor, setProfesor] = useState(null);
     const [formData, setFormData] = useState({
@@ -391,12 +393,13 @@ export default function Cuenta() {
                 );
                 console.log(responsePass);
                 if (responsePass.status == 200) {
-                    alert(
-                        `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}" Por favor recuerdela, inicie sesión nuevamente.`
+                    addNotification(
+                        `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}". Por favor recuérdela, inicie sesión nuevamente.`,
+                        'success'
                     );
-                    handleLogout();
+                    setTimeout(() => handleLogout(), 2000);
                 } else {
-                    alert('Error al actualizar la contraseña.');
+                    addNotification('Error al actualizar la contraseña.', 'error');
                 }
             }
 
@@ -469,9 +472,9 @@ export default function Cuenta() {
     }
 
     return (
-        <div className="dashboard-content">
+        <div className="dashboard-content" style={{ padding: window.innerWidth < 768 ? '1rem' : '2rem' }}>
             <div
-                style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}
+                style={{ maxWidth: '800px', margin: '0 auto' }}
             >
                 <h1 style={{ marginBottom: '2rem', color: '#2563eb' }}>
                     <i className="fas fa-user-cog"></i> Mi Cuenta
@@ -542,9 +545,8 @@ export default function Cuenta() {
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: `1px solid ${
-                                        errors.password ? '#ef4444' : '#d1d5db'
-                                    }`,
+                                    border: `1px solid ${errors.password ? '#ef4444' : '#d1d5db'
+                                        }`,
                                     borderRadius: '6px',
                                     fontSize: '1rem',
                                 }}
@@ -578,9 +580,8 @@ export default function Cuenta() {
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: `1px solid ${
-                                        errors.telefono ? '#ef4444' : '#d1d5db'
-                                    }`,
+                                    border: `1px solid ${errors.telefono ? '#ef4444' : '#d1d5db'
+                                        }`,
                                     borderRadius: '6px',
                                     fontSize: '1rem',
                                 }}
@@ -616,9 +617,8 @@ export default function Cuenta() {
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: `1px solid ${
-                                        errors.direccion ? '#ef4444' : '#d1d5db'
-                                    }`,
+                                    border: `1px solid ${errors.direccion ? '#ef4444' : '#d1d5db'
+                                        }`,
                                     borderRadius: '6px',
                                     fontSize: '1rem',
                                     resize: 'vertical',
@@ -673,9 +673,8 @@ export default function Cuenta() {
                                     onChange={handleFileChange}
                                     style={{
                                         padding: '0.5rem',
-                                        border: `1px solid ${
-                                            errors.foto ? '#ef4444' : '#d1d5db'
-                                        }`,
+                                        border: `1px solid ${errors.foto ? '#ef4444' : '#d1d5db'
+                                            }`,
                                         borderRadius: '6px',
                                         fontSize: '0.875rem',
                                     }}
@@ -699,6 +698,7 @@ export default function Cuenta() {
                             display: 'flex',
                             gap: '1rem',
                             justifyContent: 'flex-end',
+                            flexDirection: window.innerWidth < 640 ? 'column-reverse' : 'row'
                         }}
                     >
                         <button
@@ -707,14 +707,16 @@ export default function Cuenta() {
                                 navigate('/profesor');
                             }}
                             style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: '#6b7280',
+                                padding: '0.875rem 1.75rem',
+                                backgroundColor: '#64748b',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '6px',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
                                 fontSize: '1rem',
-                                fontWeight: '600',
+                                fontWeight: '700',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit'
                             }}
                         >
                             Cancelar
@@ -723,25 +725,31 @@ export default function Cuenta() {
                             type="submit"
                             disabled={saving}
                             style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: saving ? '#9ca3af' : '#2563eb',
+                                padding: '0.875rem 2rem',
+                                backgroundColor: saving ? '#94a3b8' : '#2563eb',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '6px',
+                                borderRadius: '12px',
                                 cursor: saving ? 'not-allowed' : 'pointer',
                                 fontSize: '1rem',
-                                fontWeight: '600',
+                                fontWeight: '800',
+                                boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
                             }}
                         >
                             {saving ? (
                                 <>
-                                    <i className="fas fa-spinner fa-spin"></i>{' '}
+                                    <i className="material-symbols-outlined spin" style={{ fontSize: '1.25rem' }}>progress_activity</i>{' '}
                                     Guardando...
                                 </>
                             ) : (
                                 <>
-                                    <i className="fas fa-save"></i> Guardar
-                                    Cambios
+                                    <i className="material-symbols-outlined" style={{ fontSize: '1.25rem' }}>save</i> Guardar Cambios
                                 </>
                             )}
                         </button>

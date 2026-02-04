@@ -2,35 +2,32 @@ import { useRegistration } from './Registro/useRegistration';
 import Modal from './Registro/Modal';
 import RegistrationForm from './Registro/RegistrationForm';
 import RegistrationCard from './Registro/RegistrationCard';
+import '../css/ModernDashboard.css';
 
 const cardData = [
     {
         role: 'estudiante',
-        icon: 'fa-user-graduate',
+        icon: 'school',
         title: 'Estudiante',
         description: 'Registrar nuevo estudiante',
-        gradient: 'linear-gradient(135deg, #28a745, #20c997)',
     },
     {
         role: 'profesor',
-        icon: 'fa-chalkboard-teacher',
+        icon: 'assignment_ind',
         title: 'Profesor',
         description: 'Registrar nuevo profesor',
-        gradient: 'linear-gradient(135deg, #007bff, #0056b3)',
     },
     {
         role: 'representante',
-        icon: 'fa-user-friends',
+        icon: 'group',
         title: 'Representante',
         description: 'Registrar nuevo representante',
-        gradient: 'linear-gradient(135deg, #17a2b8, #138496)',
     },
     {
         role: 'administrador',
-        icon: 'fa-user-cog',
+        icon: 'admin_panel_settings',
         title: 'Administrador',
         description: 'Registrar nuevo administrador',
-        gradient: 'linear-gradient(135deg, #6f42c1, #5a32a3)',
     },
 ];
 
@@ -40,6 +37,12 @@ export default function Registro() {
         errors,
         isLoading,
         openModal,
+        gradosSecciones,
+        materias,
+        representantes,
+        loadingGrados,
+        loadingMaterias,
+        loadingRepresentantes,
         handleInputChange,
         openModalHandler,
         closeModal,
@@ -47,25 +50,22 @@ export default function Registro() {
         getRoleIcon,
         getRoleName,
         calcularEdad,
+        setSelectedGradosSecciones,
+        setSelectedMaterias,
+        selectedGradosSecciones,
+        selectedMaterias
     } = useRegistration();
 
     return (
         <div>
-            <div className="header">
-                <div className="page-title">
-                    <h1>Creación de usuarios</h1>
-                    <p>Seleccione el tipo de usuario que desea registrar</p>
+            <div className="dashboard-header">
+                <div>
+                    <h1 className="page-title">Creación de usuarios</h1>
+                    <p className="page-subtitle">Seleccione el tipo de usuario que desea registrar</p>
                 </div>
             </div>
 
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: '20px',
-                    marginTop: '30px',
-                }}
-            >
+            <div className="grid-4">
                 {cardData.map((card) => (
                     <RegistrationCard
                         key={card.role}
@@ -73,7 +73,6 @@ export default function Registro() {
                         icon={card.icon}
                         title={card.title}
                         description={card.description}
-                        gradient={card.gradient}
                         onClick={openModalHandler}
                     />
                 ))}
@@ -95,6 +94,16 @@ export default function Registro() {
                         closeModal={closeModal}
                         role={openModal}
                         calcularEdad={calcularEdad}
+                        gradosSecciones={gradosSecciones}
+                        materias={materias}
+                        representantes={representantes}
+                        loadingGrados={loadingGrados}
+                        loadingMaterias={loadingMaterias}
+                        loadingRepresentantes={loadingRepresentantes}
+                        selectedGradosSecciones={selectedGradosSecciones}
+                        selectedMaterias={selectedMaterias}
+                        setSelectedGradosSecciones={setSelectedGradosSecciones}
+                        setSelectedMaterias={setSelectedMaterias}
                     />
                 </Modal>
             )}

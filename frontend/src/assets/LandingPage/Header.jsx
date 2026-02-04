@@ -1,11 +1,12 @@
 import MobilMenu from './MobilMenu';
 import Menu from './Menu';
-import '../../../public/logo.svg';
+import logo from '../../logo.svg';
 import '../../css/App.css';
+import './css/Menu.css'; // Import explicit styles for Header
 import { useScreenWidth } from '../constans/hooks';
 import { elementsMenu } from '../constans/constans';
 
-export default function Header() {
+export default function Header({ setShowLogin }) {
     const screenWidth = useScreenWidth();
     return (
         <header>
@@ -17,14 +18,25 @@ export default function Header() {
                 </div>
                 <div className="cenit">
                     <h1>CENIT</h1>
-                    <h3>"Con Excelencia Navegaras Iluminando Tu Futuro"</h3>
                 </div>
             </div>
-            {screenWidth < 1024 ? (
-                <MobilMenu elementsMenu={elementsMenu}></MobilMenu>
-            ) : (
-                <Menu elementsMenu={elementsMenu} />
-            )}
+
+            <div className="nav-container">
+                {screenWidth < 1024 ? (
+                    <MobilMenu elementsMenu={elementsMenu} setShowLogin={setShowLogin}></MobilMenu>
+                ) : (
+                    <Menu elementsMenu={elementsMenu} />
+                )}
+            </div>
+
+            <div className="auth-container">
+                <button
+                    className="btn-login-header"
+                    onClick={() => setShowLogin(true)}
+                >
+                    Iniciar Sesión
+                </button>
+            </div>
         </header>
     );
 }

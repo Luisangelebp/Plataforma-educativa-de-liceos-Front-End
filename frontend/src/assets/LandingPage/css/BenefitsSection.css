@@ -1,0 +1,219 @@
+/* BenefitsSection.css */
+
+.benefits-section {
+    background-color: #FFFFFF;
+    padding: 3.5rem 0;
+    position: relative;
+    border-top: 1px solid #E2E8F0;
+    overflow: hidden;
+}
+
+.benefits-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+/* Left Column - Image Placeholder */
+.benefits-image-wrapper {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background-color: #F1F5F9;
+    background-image: url('../../../../public/sectionultima.webp');
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.benefits-placeholder-text {
+    color: #94A3B8;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* Right Column - Content */
+.benefits-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.benefits-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #DCFCE7;
+    /* Green 100 */
+    color: #166534;
+    /* Green 800 */
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.benefits-content h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0F172A;
+    /* Slate 900 */
+    margin-bottom: 1.25rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.benefits-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    color: #64748B;
+    /* Slate 500 */
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+/* Checklist */
+.benefits-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    width: 100%;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: #475569;
+    /* Slate 600 */
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    background: #DCFCE7;
+    /* Green 100 */
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.benefit-check-symbol {
+    color: #16A34A !important;
+    /* Green 600 - Force it */
+    font-size: 0.75rem !important;
+    width: auto !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Buttons */
+.benefits-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary-benefit {
+    background: #2563EB;
+    /* Blue 600 */
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary-benefit:hover {
+    background: #1D4ED8;
+    /* Blue 700 */
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.25);
+}
+
+.btn-outline-benefit {
+    background: white;
+    color: #0F172A;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid #E2E8F0;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.btn-outline-benefit:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .benefits-content {
+        align-items: center;
+        text-align: center;
+    }
+
+    .benefits-checklist {
+        align-items: center;
+        /* Center the container on the page */
+        width: 100%;
+        max-width: 400px;
+        /* Limit width to keep items contained */
+        margin: 0 auto 2.5rem;
+        gap: 1.25rem;
+    }
+
+    .checklist-item {
+        align-self: flex-start;
+        /* Key fix: align items to the left of the centered container */
+        text-align: left;
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        /* Align check icon with the first line of text */
+    }
+
+    .check-icon {
+        margin-top: 2px;
+        /* Fine-tune vertical alignment with text */
+    }
+
+    .benefits-image-wrapper {
+        order: -1;
+        /* Image first on mobile */
+    }
+}

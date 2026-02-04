@@ -7,8 +7,9 @@ from rest_framework.exceptions import PermissionDenied
 
 from .models import Calificacion, Evaluacion
 from .serializers import CalificacionSerializer
+from .evaluacion_views import CalificacionViewSetExtended
 
-class CalificacionViewSet(viewsets.ModelViewSet):
+class CalificacionViewSet(viewsets.ModelViewSet, CalificacionViewSetExtended):
     serializer_class = CalificacionSerializer
     permission_classes = [IsAuthenticated]
     
@@ -34,7 +35,6 @@ class CalificacionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(profesor__usuario=user)
         
         elif user.rol == 'representante':
-            # 🛡️ El representante solo ve notas de sus hijos
             repre_perfil = getattr(user, 'representante_profile', None)
             if repre_perfil:
                 queryset = queryset.filter(estudiante__representante=repre_perfil)
@@ -67,21 +67,18 @@ class CalificacionViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.rol == 'profesor':
             profesor = user.profesor_profile
-            # 🛡️ Validación extra: ¿El profesor dicta esta materia?
             materia = serializer.validated_data.get('materia')
             if not profesor.materias.filter(id=materia.id).exists():
                 raise PermissionDenied("No puedes registrar notas en una materia que no tienes asignada.")
             
             serializer.save(profesor=profesor)
         else:
-            # Para el admin
             serializer.save()
     
     @action(detail=True, methods=['post'])
     def agregar_evaluacion(self, request, pk=None):
         """
-        Añade evaluaciones dinámicas. El get_object() ya asegura que 
-        el usuario tenga permiso sobre esta calificación.
+        Añade evaluaciones dinámicas a una calificación específica.
         """
         calificacion = self.get_object()
         
@@ -111,21 +108,39 @@ class CalificacionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def enviar_finales(self, request):
         """
-        Bloquea masivamente las notas. Solo afecta a los registros sobre 
-        los que el usuario tiene permiso (gracias a get_queryset).
+        Bloquea notas masivamente o individualmente.
+        Si se envía 'estudiante' en el body, solo cierra la de ese alumno.
+        De lo contrario, cierra todos los registros de la materia y lapso para el profesor.
         """
         materia_id = request.data.get('materia')
         lapso = request.data.get('lapso')
-        
+        estudiante_id = request.data.get('estudiante') # Opcional para cierre individual
+
         if not materia_id or not lapso:
             return Response({'error': 'Materia y lapso son requeridos.'}, status=400)
             
-        qs = self.get_queryset().filter(materia_id=materia_id, lapso=lapso)
+        # Filtros base basados en la materia y el lapso
+        filtros = {
+            'materia_id': materia_id,
+            'lapso': lapso
+        }
+
+        # Si el frontend envía un estudiante específico, lo agregamos al filtro
+        if estudiante_id:
+            filtros['estudiante_id'] = estudiante_id
+
+        # Obtenemos el queryset respetando la seguridad de rol (get_queryset)
+        qs = self.get_queryset().filter(**filtros)
         
         if not qs.exists():
             return Response({'error': 'No se encontraron registros para finalizar o no tienes permiso.'}, status=404)
         
         total = qs.count()
+        # Actualización masiva de los registros filtrados
         qs.update(enviado=True)
         
-        return Response({'message': f'Se han bloqueado {total} registros para el boletín.'})
+        tipo_cierre = "individual" if estudiante_id else "masivo"
+        return Response({
+            'message': f'Se ha realizado un cierre {tipo_cierre}. Bloqueados {total} registros para el boletín.',
+            'total_afectados': total
+        }, status=status.HTTP_200_OK)

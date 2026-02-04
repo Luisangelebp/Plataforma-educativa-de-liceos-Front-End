@@ -1,69 +1,62 @@
-const RegistrationCard = ({
-    role,
-    icon,
-    title,
-    description,
-    onClick,
-    gradient,
-}) => {
+import React from 'react';
+import '../../css/ModernDashboard.css';
+
+const RegistrationCard = ({ role, icon, title, description, onClick, gradient }) => {
+    const colorMap = {
+        'estudiante': '#3B82F6',
+        'profesor': '#F59E0B',
+        'representante': '#10B981',
+        'administrador': '#6366F1'
+    };
+
+    const color = colorMap[role] || '#3B82F6';
+
     return (
         <button
             onClick={() => onClick(role)}
+            className="dashboard-card"
             style={{
-                padding: '30px',
-                background: 'white',
-                border: '2px solid var(--light-gray)',
-                borderRadius: 'var(--border-radius)',
                 cursor: 'pointer',
-                transition: 'var(--transition)',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '15px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                gap: '1rem',
+                border: '2px solid var(--border-color)',
+                transition: 'all 0.3s ease',
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.transform = 'translateY(-5px)';
-                e.currentTarget.style.boxShadow =
-                    '0 4px 16px rgba(67, 97, 238, 0.2)';
+                e.currentTarget.style.borderColor = color;
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = `0 8px 16px ${color}30`;
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--light-gray)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow =
-                    '0 2px 8px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
             }}
         >
             <div
                 style={{
                     width: '70px',
                     height: '70px',
-                    borderRadius: '50%',
-                    background: gradient,
+                    borderRadius: '14px',
+                    backgroundColor: `${color}20`,
+                    color: color,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    overflow: 'hidden',
+                    fontSize: '2rem',
                 }}
             >
-                <i
-                    className={`fas ${icon}`}
-                    style={{
-                        fontSize: '2rem',
-                        lineHeight: '1',
-                        marginRight: 0,
-                    }}
-                ></i>
+                <span className="material-symbols-outlined">{icon}</span>
             </div>
             <h3
                 style={{
                     margin: 0,
-                    fontSize: '1.2rem',
+                    fontSize: '1.125rem',
                     fontWeight: '600',
-                    color: 'var(--dark)',
+                    color: 'var(--text-primary)',
                 }}
             >
                 {title}
@@ -71,8 +64,8 @@ const RegistrationCard = ({
             <p
                 style={{
                     margin: 0,
-                    color: 'var(--gray)',
-                    fontSize: '0.9rem',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem',
                 }}
             >
                 {description}

@@ -1,510 +1,602 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useNotification } from '../../../context/NotificationContext';
 import './css/Listas.css';
 import './css/Boletines.css';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Función para obtener el token actual
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
     return {
-        'Authorization': token ? `Bearer ${token}` : '',
+        headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+        },
     };
 };
 
-const axiosInstance = axios.create({
-    baseURL: API_URL,
-});
-
-// Interceptor para agregar el token en cada petición
-axiosInstance.interceptors.request.use((config) => {
-    const authHeaders = getAuthHeaders();
-    config.headers = {
-        ...config.headers,
-        ...authHeaders,
-        'Content-Type': 'application/json',
-    };
-    return config;
-});
-
-export default function BoletinesSecundaria() {
-    const [estudiantes, setEstudiantes] = useState([]);
-    const [boletines, setBoletines] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filtroLapso, setFiltroLapso] = useState('1');
-    const [filtroGrado, setFiltroGrado] = useState('');
-    const [filtroSeccion, setFiltroSeccion] = useState('');
-    const [busquedaTexto, setBusquedaTexto] = useState('');
+function ModalGenerarCabecera({
+    showModal,
+    setShowModal,
+    materias,
+    estudiantesFiltrados,
+    profesores,
+}) {
+    const { addNotification } = useNotification();
+    const [selectedMateria, setSelectedMateria] = useState('');
+    const [selectedLapso, setSelectedLapso] = useState('1');
+    const [selectedProfe, setSelectedProfe] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        cargarEstudiantes();
-        cargarBoletines();
-    }, []);
+        if (!showModal) {
+            setSelectedMateria('');
+            setSelectedProfe('');
+        }
+    }, [showModal]);
 
-    const cargarEstudiantes = async () => {
-        try {
-            const response = await axiosInstance.get('usuarios/estudiante/');
-            // Filtrar solo estudiantes de secundaria
-            const estudiantesSecundaria = response.data.filter(est => 
-                est.grado_seccion && est.grado_seccion.nivel === 'secundaria'
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedMateria || !selectedProfe) {
+            addNotification(
+                'Por favor, seleccione materia y profesor.',
+                'warning',
             );
-            setEstudiantes(estudiantesSecundaria);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error al cargar estudiantes:', error);
-            setLoading(false);
+            return;
         }
-    };
-
-    const cargarBoletines = async () => {
+        setLoading(true);
         try {
-            const response = await axiosInstance.get('boletines/');
-            setBoletines(response.data);
-        } catch (error) {
-            console.error('Error al cargar boletines:', error);
-        }
-    };
-
-    const verificarNotasCompletas = async (estudianteId, lapso) => {
-        try {
-            const response = await axiosInstance.get(`calificaciones/?estudiante=${estudianteId}&lapso=${lapso}`);
-            const calificaciones = response.data;
-            
-            if (!calificaciones || calificaciones.length === 0) {
-                return false;
-            }
-
-            // Verificar que todas las calificaciones estén enviadas
-            const todasEnviadas = calificaciones.every(cal => cal.enviado === true);
-            
-            // Verificar que todas tengan promedios calculados
-            const todasConPromedio = calificaciones.every(cal => 
-                cal.promedio_lapso !== null && cal.promedio_lapso !== undefined
+            const promesas = estudiantesFiltrados.map((estudiante) =>
+                axios.post(
+                    `${API_URL}/calificaciones/`,
+                    {
+                        estudiante: estudiante.id,
+                        materia: selectedMateria,
+                        lapso: selectedLapso,
+                        nivel: 'secundaria', // Adaptado para secundaria
+                        profesor: selectedProfe,
+                    },
+                    getAuthHeaders(),
+                ),
             );
 
-            return todasEnviadas && todasConPromedio;
+            await Promise.all(promesas);
+            addNotification(
+                `Cabeceras generadas para la materia y el lapso seleccionados.`,
+                'success',
+            );
+            setShowModal(false);
         } catch (error) {
-            console.error('Error al verificar notas:', error);
-            return false;
+            console.error('Error creating headers:', error);
+            addNotification(
+                'Error al generar las cabeceras. Es posible que ya existan.',
+                'error',
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
-    const generarBoletin = async (estudianteId, lapso) => {
-        try {
-            const response = await axiosInstance.post(`boletines/secundaria/${estudianteId}/lapso/${lapso}/generar/`);
-            if (response.data) {
-                alert('Boletín generado exitosamente');
-                cargarBoletines();
-            }
-        } catch (error) {
-            console.error('Error al generar boletín:', error);
-            if (error.response?.data?.error) {
-                alert(`Error: ${error.response.data.error}`);
-            } else {
-                alert('Error al generar el boletín');
-            }
-        }
-    };
-
-    const descargarBoletin = async (boletinId, estudianteNombre, lapso) => {
-        try {
-            const response = await axiosInstance.get(`boletines/${boletinId}/descargar/`, {
-                responseType: 'blob',
-            });
-            
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `boletin_${estudianteNombre}_${lapso}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (error) {
-            console.error('Error al descargar boletín:', error);
-            alert('Error al descargar el boletín');
-        }
-    };
-
-    const verVistaPrevia = async (estudianteId, lapso) => {
-        try {
-            // Primero verificar si existe el boletín
-            const boletin = boletines.find(b => b.estudiante === estudianteId && b.lapso === lapso);
-            if (!boletin) {
-                const tieneNotas = await verificarNotasCompletas(estudianteId, lapso);
-                if (!tieneNotas) {
-                    alert('El estudiante no tiene todas las notas completas para este lapso');
-                    return;
-                }
-                // Generar el boletín primero
-                await generarBoletin(estudianteId, lapso);
-                await cargarBoletines();
-            }
-            
-            // Abrir la vista previa en una nueva ventana
-            const token = localStorage.getItem('accessToken');
-            const url = `${API_URL}boletines/secundaria/${estudianteId}/lapso/${lapso}/vista-previa/`;
-            const newWindow = window.open('', '_blank');
-            if (newWindow) {
-                // Hacer una petición para obtener el HTML y mostrarlo
-                try {
-                    const response = await axiosInstance.get(`boletines/secundaria/${estudianteId}/lapso/${lapso}/vista-previa/`, {
-                        responseType: 'text',
-                    });
-                    newWindow.document.write(response.data);
-                    newWindow.document.close();
-                } catch (error) {
-                    // Si falla, intentar abrir directamente la URL
-                    newWindow.location.href = url;
-                }
-            }
-        } catch (error) {
-            console.error('Error al abrir vista previa:', error);
-            if (error.response?.status === 404) {
-                alert('No existe boletín para este estudiante y lapso. Debe generarlo primero.');
-            } else {
-                alert('Error al abrir la vista previa');
-            }
-        }
-    };
-
-    // Filtrar estudiantes
-    const estudiantesFiltrados = estudiantes.filter(estudiante => {
-        const matchLapso = !filtroLapso || true; // El lapso se verifica por boletín
-        const matchGrado = !filtroGrado || (estudiante.grado_seccion && estudiante.grado_seccion.grado === filtroGrado);
-        const matchSeccion = !filtroSeccion || (estudiante.grado_seccion && estudiante.grado_seccion.seccion === filtroSeccion);
-        const matchTexto = !busquedaTexto || 
-            estudiante.nombre?.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
-            estudiante.apellido?.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
-            estudiante.cedula?.toString().includes(busquedaTexto);
-
-        return matchGrado && matchSeccion && matchTexto;
-    });
-
-    // Obtener grados únicos de secundaria
-    const gradosUnicos = [...new Set(estudiantes
-        .filter(e => e.grado_seccion)
-        .map(e => e.grado_seccion.grado)
-        .filter(g => g))].sort();
-
-    // Obtener secciones únicas
-    const seccionesUnicas = [...new Set(estudiantes
-        .filter(e => e.grado_seccion)
-        .map(e => e.grado_seccion.seccion)
-        .filter(s => s))].sort();
-
-    if (loading) {
-        return (
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
-                <p>Cargando estudiantes...</p>
-            </div>
-        );
+    if (!showModal) {
+        return null;
     }
-
     return (
-        <div style={{ padding: '2rem' }}>
-            <div style={{ marginBottom: '2rem' }}>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.5rem' }}>
-                    Generar Boletines
-                </h1>
-                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                    Sistema de Gestión Liceos Públicos
-                </p>
-            </div>
-
-            <div style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1.5rem',
-                    flexWrap: 'wrap',
-                    gap: '1rem'
-                }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#1f2937' }}>
-                        Generar Boletines en PDF
-                    </h2>
-                    
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                        <select
-                            value={filtroLapso}
-                            onChange={(e) => setFiltroLapso(e.target.value)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '6px',
-                                fontSize: '0.875rem',
-                                background: 'white'
-                            }}
-                        >
-                            <option value="1">Primer Lapso</option>
-                            <option value="2">Segundo Lapso</option>
-                            <option value="3">Tercer Lapso</option>
-                        </select>
-
-                        <select
-                            value={filtroGrado}
-                            onChange={(e) => setFiltroGrado(e.target.value)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '6px',
-                                fontSize: '0.875rem',
-                                background: 'white'
-                            }}
-                        >
-                            <option value="">Todos los años</option>
-                            {gradosUnicos.map(grado => (
-                                <option key={grado} value={grado}>
-                                    {grado === '1' ? '1° Año' : 
-                                     grado === '2' ? '2° Año' :
-                                     grado === '3' ? '3° Año' :
-                                     grado === '4' ? '4° Año' :
-                                     grado === '5' ? '5° Año' : `${grado}° Año`}
-                                </option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={filtroSeccion}
-                            onChange={(e) => setFiltroSeccion(e.target.value)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '6px',
-                                fontSize: '0.875rem',
-                                background: 'white'
-                            }}
-                        >
-                            <option value="">Todas las secciones</option>
-                            {seccionesUnicas.map(seccion => (
-                                <option key={seccion} value={seccion}>
-                                    Sección {seccion}
-                                </option>
-                            ))}
-                        </select>
-
-                        <input
-                            type="text"
-                            placeholder="Buscar estudiante..."
-                            value={busquedaTexto}
-                            onChange={(e) => setBusquedaTexto(e.target.value)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '6px',
-                                fontSize: '0.875rem',
-                                minWidth: '200px'
-                            }}
-                        />
-                    </div>
+        <div
+            className="modal-overlay"
+            style={{
+                backdropFilter: 'blur(10px)',
+                backgroundColor: 'rgba(15, 23, 42, 0.4)',
+            }}
+        >
+            <div
+                className="modal-container"
+                style={{
+                    maxWidth: '700px',
+                    borderRadius: ' 28px',
+                    overflow: 'hidden',
+                    border: 'none',
+                    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 30px 60px -12px',
+                    background: ' rgb(241, 245, 249)',
+                }}
+            >
+                <div className="modal-header">
+                    <i
+                        className="material-symbols-outlined"
+                        style={{ fontSize: '24px' }}
+                    >
+                        rocket_launch
+                    </i>
+                    <h3
+                        style={{
+                            margin: '0px',
+                            fontFamily: 'Outfit',
+                            fontWeight: '800',
+                            fontSize: ' 1.5rem',
+                            color: ' rgb(15, 23, 42)',
+                            letterSpacing: ' -0.02em',
+                        }}
+                    >
+                        Aperturar Registro de Notas (Secundaria)
+                    </h3>
+                    <button
+                        className="close-btn"
+                        onClick={() => setShowModal(false)}
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
                 </div>
-
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        marginTop: '1rem'
-                    }}>
-                        <thead>
-                            <tr style={{
-                                background: '#3b82f6',
-                                color: 'white'
-                            }}>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Estudiante
-                                </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Cédula
-                                </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Año
-                                </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Sección
-                                </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Notas Completas
-                                </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: '600', fontSize: '0.9rem' }}>
-                                    Acciones
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {estudiantesFiltrados.map((estudiante) => {
-                                const gradoTexto = estudiante.grado_seccion?.grado === '1' ? '1er' :
-                                                  estudiante.grado_seccion?.grado === '2' ? '2do' :
-                                                  estudiante.grado_seccion?.grado === '3' ? '3er' :
-                                                  estudiante.grado_seccion?.grado === '4' ? '4to' :
-                                                  estudiante.grado_seccion?.grado === '5' ? '5to' :
-                                                  `${estudiante.grado_seccion?.grado}°`;
-                                
-                                return (
-                                    <tr key={estudiante.id} style={{
-                                        borderBottom: '1px solid #e5e7eb',
-                                        background: 'white'
-                                    }}>
-                                        <td style={{ padding: '14px 16px', color: '#1f2937' }}>
-                                            {estudiante.nombre} {estudiante.apellido}
-                                        </td>
-                                        <td style={{ padding: '14px 16px', color: '#1f2937' }}>
-                                            {estudiante.cedula || 'N/A'}
-                                        </td>
-                                        <td style={{ padding: '14px 16px', color: '#1f2937' }}>
-                                            {gradoTexto} año
-                                        </td>
-                                        <td style={{ padding: '14px 16px', color: '#1f2937' }}>
-                                            {estudiante.grado_seccion?.seccion || 'N/A'}
-                                        </td>
-                                        <td style={{ padding: '14px 16px', textAlign: 'center', color: '#1f2937' }}>
-                                            <NotasCompletasCell estudianteId={estudiante.id} lapso={filtroLapso} />
-                                        </td>
-                                        <td style={{ padding: '14px 16px', textAlign: 'center', verticalAlign: 'middle' }}>
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                flexDirection: 'row', 
-                                                gap: '0.25rem', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                margin: 0,
-                                                padding: 0
-                                            }}>
-                                                <button
-                                                    onClick={() => verVistaPrevia(estudiante.id, filtroLapso)}
-                                                    style={{
-                                                        width: '48px',
-                                                        height: '48px',
-                                                        borderRadius: '50%',
-                                                        border: 'none',
-                                                        background: 'transparent',
-                                                        color: '#000000',
-                                                        cursor: 'pointer',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        fontSize: '0.75rem',
-                                                        padding: 0,
-                                                        margin: 0,
-                                                        lineHeight: 1,
-                                                        verticalAlign: 'middle'
-                                                    }}
-                                                    title="Ver vista previa"
-                                                >
-                                                    <i className="fas fa-eye" style={{ fontSize: '0.75rem', lineHeight: 1 }}></i>
-                                                </button>
-                                                <button
-                                                    onClick={async () => {
-                                                        const lapso = filtroLapso;
-                                                        const tieneNotas = await verificarNotasCompletas(estudiante.id, lapso);
-                                                        if (tieneNotas) {
-                                                            let boletin = boletines.find(b => b.estudiante === estudiante.id && b.lapso === lapso);
-                                                            if (!boletin) {
-                                                                await generarBoletin(estudiante.id, lapso);
-                                                                // Recargar boletines y esperar
-                                                                const response = await axiosInstance.get('boletines/');
-                                                                const nuevosBoletines = response.data;
-                                                                const nuevoBoletin = nuevosBoletines.find(b => b.estudiante === estudiante.id && b.lapso === lapso);
-                                                                if (nuevoBoletin) {
-                                                                    descargarBoletin(nuevoBoletin.id, `${estudiante.nombre}_${estudiante.apellido}`, lapso);
-                                                                }
-                                                                setBoletines(nuevosBoletines);
-                                                            } else {
-                                                                descargarBoletin(boletin.id, `${estudiante.nombre}_${estudiante.apellido}`, lapso);
-                                                            }
-                                                        } else {
-                                                            alert('El estudiante no tiene todas las notas completas para este lapso');
-                                                        }
-                                                    }}
-                                                    style={{
-                                                        width: '28px',
-                                                        height: '28px',
-                                                        borderRadius: '50%',
-                                                        border: 'none',
-                                                        background: 'transparent',
-                                                        color: '#000000',
-                                                        cursor: 'pointer',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        fontSize: '0.75rem',
-                                                        padding: 0,
-                                                        margin: 0,
-                                                        lineHeight: 1,
-                                                        verticalAlign: 'middle'
-                                                    }}
-                                                    title="Descargar boletín"
-                                                >
-                                                    <i className="fas fa-download" style={{ fontSize: '0.75rem', lineHeight: 1 }}></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                <div className="modal-body">
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="materia-select">Materia</label>
+                            <select
+                                id="materia-select"
+                                value={selectedMateria}
+                                onChange={(e) =>
+                                    setSelectedMateria(e.target.value)
+                                }
+                                disabled={loading}
+                                required
+                            >
+                                <option value="">Seleccione una materia</option>
+                                {materias.map((materia) => (
+                                    <option key={materia.id} value={materia.id}>
+                                        {materia.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="profe-select">Profesor</label>
+                            <select
+                                name="profe-select"
+                                id="profe-select"
+                                value={selectedProfe}
+                                onChange={(e) =>
+                                    setSelectedProfe(e.target.value)
+                                }
+                                required
+                            >
+                                <option value="">Seleccione el Profesor</option>
+                                {profesores.map((profe) => (
+                                    <option key={profe.id} value={profe.id}>
+                                        {profe.nombre} {profe.apellido}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="lapso-select">Lapso</label>
+                            <select
+                                id="lapso-select"
+                                value={selectedLapso}
+                                onChange={(e) =>
+                                    setSelectedLapso(e.target.value)
+                                }
+                                required
+                            >
+                                <option value="1">Primer Lapso</option>
+                                <option value="2">Segundo Lapso</option>
+                                <option value="3">Tercer Lapso</option>
+                            </select>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn-secondary carousel-button"
+                                style={{
+                                    background: 'white',
+                                    color: 'black',
+                                    border: '1px solid gray',
+                                }}
+                                onClick={() => setShowModal(false)}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn-primary carousel-button"
+                                disabled={loading}
+                            >
+                                {loading
+                                    ? 'Generando...'
+                                    : 'Aperturar Planilla'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-
-                {estudiantesFiltrados.length === 0 && (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                        <p>No hay estudiantes de secundaria que coincidan con los filtros.</p>
-                    </div>
-                )}
             </div>
         </div>
     );
 }
 
-// Componente para verificar notas completas
-function NotasCompletasCell({ estudianteId, lapso = '1' }) {
-    const [notasCompletas, setNotasCompletas] = useState(false);
-    const [loading, setLoading] = useState(true);
+const LapsoActionCell = ({ estudianteId, lapso, boletines, onUpdate }) => {
+    const [status, setStatus] = useState('loading');
+    const [boletin, setBoletin] = useState(null);
+    const { addNotification } = useNotification();
+
+    const checkStatus = useCallback(async () => {
+        const generatedBoletin = boletines.find(
+            (b) =>
+                b.estudiante === estudianteId &&
+                b.lapso.toString() === lapso.toString(),
+        );
+
+        if (generatedBoletin) {
+            setBoletin(generatedBoletin);
+            setStatus('generated');
+            return;
+        }
+
+        try {
+            const res = await axios.get(
+                `${API_URL}/calificaciones/${estudianteId}/?lapso=${lapso}`,
+                getAuthHeaders(),
+            );
+            if (res.data.enviado) {
+                setStatus('ready');
+            } else {
+                setStatus('pending');
+            }
+        } catch (error) {
+            setStatus('pending');
+        }
+    }, [estudianteId, lapso, boletines]);
 
     useEffect(() => {
-        const verificar = async () => {
-            try {
-                const response = await axiosInstance.get(`calificaciones/?estudiante=${estudianteId}&lapso=${lapso}`);
-                const calificaciones = response.data;
-                
-                if (!calificaciones || calificaciones.length === 0) {
-                    setNotasCompletas(false);
-                    setLoading(false);
-                    return;
-                }
+        checkStatus();
+    }, [checkStatus]);
 
-                const todasEnviadas = calificaciones.every(cal => cal.enviado === true);
-                const todasConPromedio = calificaciones.every(cal => 
-                    cal.promedio_lapso !== null && cal.promedio_lapso !== undefined
-                );
-
-                setNotasCompletas(todasEnviadas && todasConPromedio);
-            } catch (error) {
-                console.error('Error al verificar notas:', error);
-                setNotasCompletas(false);
-            } finally {
-                setLoading(false);
-            }
+    const handleAction = async (action) => {
+        const urlMap = {
+            preview: `${API_URL}/boletines/vista-previa/${estudianteId}/lapso/${lapso}/`,
+            generate: `${API_URL}/boletines/generar/${estudianteId}/lapso/${lapso}/`,
+            download: `${API_URL}/boletines/${boletin ? boletin.id : 0}/descargar/`,
         };
 
-        verificar();
-    }, [estudianteId, lapso]);
+        const url = urlMap[action];
+        const isDownload = action === 'download' || action === 'preview';
+
+        try {
+            const config = {
+                ...getAuthHeaders(),
+                responseType: isDownload ? 'blob' : 'json',
+            };
+            const response =
+                action === 'generate'
+                    ? await axios.post(url, {}, config)
+                    : await axios.get(url, config);
+
+            if (isDownload) {
+                const blob = new Blob([response.data], {
+                    type: 'application/pdf',
+                });
+                const blobUrl = URL.createObjectURL(blob);
+                if (action === 'preview') {
+                    window.open(blobUrl, '_blank');
+                } else {
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = `boletin_${boletin.id}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    URL.revokeObjectURL(blobUrl);
+                }
+            } else {
+                addNotification('Boletín oficializado con éxito.', 'success');
+                onUpdate(); // Refrescar datos
+            }
+        } catch (error) {
+            console.error(`Error en la acción ${action}:`, error);
+            const message =
+                error.response?.status === 404
+                    ? 'Asegúrese de que las notas del profesor estén marcadas como "enviadas".'
+                    : `Error al ${action} el boletín.`;
+            addNotification(message, 'error');
+        }
+    };
+
+    switch (status) {
+        case 'loading':
+            return <span style={{ color: '#6b7280' }}>Cargando...</span>;
+        case 'pending':
+            return <span style={{ color: '#9ca3af' }}>Notas pendientes</span>;
+        case 'ready':
+            return (
+                <div className="boletin-actions">
+                    <button
+                        onClick={() => handleAction('preview')}
+                        title="Vista Previa"
+                        className="btn-icon btn-preview"
+                    >
+                        <i className="material-symbols-outlined">visibility</i>
+                    </button>
+                    <button
+                        onClick={() => handleAction('generate')}
+                        title="Oficializar"
+                        className="btn-icon btn-generate"
+                    >
+                        <i className="material-symbols-outlined">bolt</i>
+                    </button>
+                </div>
+            );
+        case 'generated':
+            return (
+                <div className="boletin-actions">
+                    <button
+                        onClick={() => handleAction('download')}
+                        title="Descargar PDF"
+                        className="btn-icon btn-download"
+                    >
+                        <i className="material-symbols-outlined">download</i>
+                    </button>
+                </div>
+            );
+        default:
+            return null;
+    }
+};
+
+export default function BoletinesSecundaria() {
+    const { addNotification } = useNotification();
+    const [estudiantes, setEstudiantes] = useState([]);
+    const [boletines, setBoletines] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filtroGrado, setFiltroGrado] = useState('');
+    const [filtroSeccion, setFiltroSeccion] = useState('');
+    const [busquedaTexto, setBusquedaTexto] = useState('');
+    const [materias, setMaterias] = useState([]);
+    const [profesores, setProfesores] = useState([]);
+    const [showModalGenerarCabecera, setShowModalGenerarCabecera] =
+        useState(false);
+
+    const getMateriasYProfesoresSecundaria = async () => {
+        try {
+            const resGS = await axios.get(
+                `${API_URL}/grado-seccion/`,
+                getAuthHeaders(),
+            );
+            const idSecundaria = resGS.data
+                .filter((item) => item.nivel === 'secundaria')
+                .map((item) => item.id);
+
+            const resHorario = await axios.get(
+                `${API_URL}/horarios/`,
+                getAuthHeaders(),
+            );
+            const horariosSecundaria = resHorario.data.filter((h) =>
+                idSecundaria.includes(h.grado_seccion),
+            );
+
+            const materiasIds = [
+                ...new Set(horariosSecundaria.flatMap((h) => h.materia)),
+            ];
+            const profesIds = [
+                ...new Set(horariosSecundaria.flatMap((h) => h.profesor)),
+            ];
+
+            const [resMate, resProf] = await Promise.all([
+                axios.get(`${API_URL}/horarios/materias/`, getAuthHeaders()),
+                axios.get(`${API_URL}/usuarios/profesor/`, getAuthHeaders()),
+            ]);
+
+            setMaterias(resMate.data.filter((m) => materiasIds.includes(m.id)));
+            setProfesores(resProf.data.filter((p) => profesIds.includes(p.id)));
+        } catch (e) {
+            console.error(e);
+            addNotification(
+                'Error al cargar las materias o profesores.',
+                'error',
+            );
+        }
+    };
+
+    const cargarDatos = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [estudiantesRes, boletinesRes] = await Promise.all([
+                axios.get(`${API_URL}/usuarios/estudiante/`, getAuthHeaders()),
+                axios.get(`${API_URL}/boletines/`, getAuthHeaders()),
+            ]);
+
+            const estudiantesSecundaria = estudiantesRes.data.filter(
+                (est) =>
+                    est.grado_seccion &&
+                    est.grado_seccion.nivel === 'secundaria',
+            );
+
+            setEstudiantes(estudiantesSecundaria);
+            setBoletines(boletinesRes.data);
+            await getMateriasYProfesoresSecundaria();
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+            addNotification('Error al cargar los datos iniciales.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, [addNotification]);
+
+    useEffect(() => {
+        cargarDatos();
+    }, [cargarDatos]);
+
+    const handleOpenModal = () => {
+        if (!filtroGrado || !filtroSeccion) {
+            addNotification(
+                'Por favor, seleccione un año y sección primero.',
+                'warning',
+            );
+            return;
+        }
+        if (estudiantesFiltrados.length === 0) {
+            addNotification(
+                'No hay estudiantes en la selección actual para aperturar un lapso.',
+                'warning',
+            );
+            return;
+        }
+        setShowModalGenerarCabecera(true);
+    };
+
+    const estudiantesFiltrados = estudiantes.filter((estudiante) => {
+        const matchGrado =
+            !filtroGrado ||
+            (estudiante.grado_seccion &&
+                estudiante.grado_seccion.grado === filtroGrado);
+        const matchSeccion =
+            !filtroSeccion ||
+            (estudiante.grado_seccion &&
+                estudiante.grado_seccion.seccion === filtroSeccion);
+        const matchTexto =
+            !busquedaTexto ||
+            `${estudiante.nombre} ${estudiante.apellido}`
+                .toLowerCase()
+                .includes(busquedaTexto.toLowerCase()) ||
+            estudiante.cedula?.toString().includes(busquedaTexto);
+
+        return matchGrado && matchSeccion && matchTexto;
+    });
+
+    const gradosUnicos = [
+        ...new Set(
+            estudiantes.map((e) => e.grado_seccion?.grado).filter(Boolean),
+        ),
+    ].sort((a, b) => a - b);
+    const seccionesUnicas = [
+        ...new Set(
+            estudiantes.map((e) => e.grado_seccion?.seccion).filter(Boolean),
+        ),
+    ].sort();
 
     if (loading) {
-        return <span style={{ color: '#6b7280' }}>Verificando...</span>;
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <p>Cargando...</p>
+            </div>
+        );
     }
 
     return (
-        <span style={{ 
-            color: notasCompletas ? '#10b981' : '#ef4444',
-            fontWeight: '500'
-        }}>
-            {notasCompletas ? 'Sí' : 'No'}
-        </span>
+        <div className="container-boletines">
+            <div className="boletines-header">
+                <h1>Gestión de Boletines de Secundaria</h1>
+                <p>
+                    Visualiza, genera y descarga los boletines acumulativos por
+                    lapso.
+                </p>
+            </div>
+
+            <div className="table-container" style={{ padding: '20px' }}>
+                <div
+                    className="filters-container"
+                    style={{ marginBottom: '20px' }}
+                >
+                    <select
+                        value={filtroGrado}
+                        onChange={(e) => setFiltroGrado(e.target.value)}
+                        className="periodo-selector"
+                    >
+                        <option value="">Todos los años</option>
+                        {gradosUnicos.map((grado) => (
+                            <option key={grado} value={grado}>
+                                {grado}° Año
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={filtroSeccion}
+                        onChange={(e) => setFiltroSeccion(e.target.value)}
+                        className="periodo-selector"
+                    >
+                        <option value="">Todas las secciones</option>
+                        {seccionesUnicas.map((seccion) => (
+                            <option key={seccion} value={seccion}>
+                                Sección {seccion}
+                            </option>
+                        ))}
+                    </select>
+                    <input
+                        type="text"
+                        placeholder="Buscar estudiante..."
+                        value={busquedaTexto}
+                        onChange={(e) => setBusquedaTexto(e.target.value)}
+                        className="periodo-selector"
+                    />
+                    <button
+                        className="periodo-selector"
+                        onClick={handleOpenModal}
+                    >
+                        <i className="material-symbols-outlined">
+                            rocket_launch
+                        </i>
+                        Aperturar Lapso
+                    </button>
+                </div>
+
+                <table className="boletines-table">
+                    <thead>
+                        <tr>
+                            <th style={{ borderRadius: '8px 0 0 0' }}>
+                                Estudiante
+                            </th>
+                            <th>Cédula</th>
+                            <th>Año y Sección</th>
+                            <th className="text-center">Primer Lapso</th>
+                            <th className="text-center">Segundo Lapso</th>
+                            <th
+                                className="text-center"
+                                style={{ borderRadius: '0 8px 0 0' }}
+                            >
+                                Tercer Lapso
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {estudiantesFiltrados.map((estudiante) => (
+                            <tr key={estudiante.id}>
+                                <td>
+                                    {estudiante.nombre} {estudiante.apellido}
+                                </td>
+                                <td>{estudiante.cedula || 'N/A'}</td>
+                                <td>
+                                    {estudiante.grado_seccion
+                                        ? `${estudiante.grado_seccion.grado}° "${estudiante.grado_seccion.seccion}"`
+                                        : 'N/A'}
+                                </td>
+                                {[1, 2, 3].map((lapso) => (
+                                    <td
+                                        key={lapso}
+                                        className="table-cell text-center"
+                                    >
+                                        <LapsoActionCell
+                                            estudianteId={estudiante.id}
+                                            lapso={lapso}
+                                            boletines={boletines}
+                                            onUpdate={cargarDatos}
+                                        />
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {estudiantesFiltrados.length === 0 && (
+                    <div className="no-results">
+                        <p>No hay estudiantes que coincidan con los filtros.</p>
+                    </div>
+                )}
+            </div>
+
+            <ModalGenerarCabecera
+                showModal={showModalGenerarCabecera}
+                setShowModal={setShowModalGenerarCabecera}
+                materias={materias}
+                estudiantesFiltrados={estudiantesFiltrados}
+                profesores={profesores}
+            />
+        </div>
     );
 }

@@ -1,4 +1,6 @@
 import './css/Main.css';
+import './css/FeatureSection.css?v=7';
+import './css/BenefitsSection.css';
 import { useState, useEffect, useRef } from 'react';
 
 import bannerImage from '../img/banner_landing.jpg';
@@ -38,41 +40,53 @@ export default function Main({ setShowLogin }) {
 
     const services = [
         {
-            icon: 'fas fa-graduation-cap',
-            title: 'Gestión Académica',
-            description:
-                'Control completo de calificaciones, asignaturas y rendimiento estudiantil con análisis predictivo.',
+            icon: 'school',
+            title: 'Gestión de Estudiantes',
+            description: 'Administra fichas, matrículas y datos personales de todos los alumnos en un solo lugar.',
+            color: 'blue'
         },
         {
-            icon: 'fas fa-chalkboard-teacher',
-            title: 'Control Docente',
-            description:
-                'Administración eficiente del personal académico, horarios y planificación curricular.',
+            icon: 'fact_check',
+            title: 'Control de Asistencias',
+            description: 'Registro diario de asistencias con reportes automáticos para padres y directivos.',
+            color: 'green'
         },
         {
-            icon: 'fas fa-book-open',
-            title: 'Plataforma Educativa',
-            description:
-                'Recursos digitales, biblioteca virtual y materiales de estudio interactivos en la nube.',
+            icon: 'school',
+            title: 'Gestión de Calificaciones',
+            description: 'Carga de notas, promedios automáticos y boletines digitales para cada período.',
+            color: 'purple'
         },
         {
-            icon: 'fas fa-comments',
-            title: 'Comunicación Institucional',
-            description:
-                'Canal directo entre estudiantes, padres, profesores y administración educativa.',
+            icon: 'calendar_month',
+            title: 'Horarios y Planificación',
+            description: 'Crea y gestiona horarios de clases, exámenes y actividades escolares.',
+            color: 'orange'
         },
         {
-            icon: 'fas fa-calendar-alt',
-            title: 'Calendarización Inteligente',
-            description:
-                'Organización automática de eventos académicos y actividades extracurriculares.',
+            icon: 'description',
+            title: 'Documentación Digital',
+            description: 'Almacena y gestiona certificados, constancias y documentos importantes.',
+            color: 'pink'
         },
         {
-            icon: 'fas fa-chart-line',
-            title: 'Analytics Educativo',
-            description:
-                'Dashboard con métricas de desempeño institucional y tendencias académicas.',
+            icon: 'forum',
+            title: 'Comunicación Integrada',
+            description: 'Envía notificaciones y mensajes a padres, docentes y estudiantes.',
+            color: 'indigo'
         },
+        {
+            icon: 'analytics',
+            title: 'Reportes y Análisis',
+            description: 'Visualiza estadísticas y genera reportes detallados del rendimiento académico.',
+            color: 'teal'
+        },
+        {
+            icon: 'security',
+            title: 'Seguridad y Privacidad',
+            description: 'Protección de datos con encriptación y control de acceso por roles.',
+            color: 'red'
+        }
     ];
 
     const stats = [
@@ -100,25 +114,19 @@ export default function Main({ setShowLogin }) {
                     <div className="background-overlay"></div>
                 </div>
 
-                <div className="hero-content">
-                    <div className="hero-text scroll-animate">
-                        <div className="title-container">
-                            <h1 className="hero-title">
-                                Sistema Integral de
-                                <span className="title-accent">
-                                    {' '}
-                                    Gestión Educativa
-                                </span>
-                            </h1>
-                        </div>
-                        <p className="hero-subtitle">
+                <div className="hero-content centered">
+                    <div className="hero-text-center scroll-animate">
+                        <h1 className="hero-title-large">
+                            Bienvenido a CENIT
+                        </h1>
+                        <p className="hero-description">
                             Transformamos la administración académica con
                             tecnología innovadora diseñada específicamente para
                             instituciones educativas modernas
                         </p>
-                        <div className="cta-container">
+                        <div className="cta-container-center">
                             <button
-                                className="cta-btn primary-btn scroll-animate"
+                                className="cta-btn primary-btn large-btn"
                                 onClick={() => {
                                     if (setShowLogin) {
                                         setShowLogin(true);
@@ -126,383 +134,85 @@ export default function Main({ setShowLogin }) {
                                 }}
                             >
                                 <span>Iniciar Sesión</span>
-                                <i className="fas fa-arrow-right"></i>
                             </button>
                         </div>
                     </div>
-
-                    <div className="hero-visual scroll-animate">
-                        <div className="platform-showcase">
-                            {/* Dispositivos mostrando la plataforma */}
-                            <div className="devices-container">
-                                {/* Laptop */}
-                                <div className="device laptop">
-                                    <div className="device-frame">
-                                        <div className="device-screen">
-                                            <div className="screen-content">
-                                                <div className="app-header">
-                                                    <div className="app-nav">
-                                                        <i className="fas fa-bars"></i>
-                                                        <span>Dashboard</span>
-                                                    </div>
-                                                </div>
-                                                <div className="app-stats">
-                                                    <div className="stat-item">
-                                                        <i className="fas fa-users"></i>
-                                                        <span>Activos</span>
-                                                        <strong>5.2k</strong>
-                                                    </div>
-                                                    <div className="stat-item">
-                                                        <i className="fas fa-calendar-check"></i>
-                                                        <span>Clases Hoy</span>
-                                                        <strong>127</strong>
-                                                    </div>
-                                                </div>
-                                                <div className="app-chart">
-                                                    <div className="chart-bars">
-                                                        <div
-                                                            className="bar"
-                                                            style={{
-                                                                height: '60%',
-                                                            }}
-                                                        ></div>
-                                                        <div
-                                                            className="bar"
-                                                            style={{
-                                                                height: '80%',
-                                                            }}
-                                                        ></div>
-                                                        <div
-                                                            className="bar"
-                                                            style={{
-                                                                height: '45%',
-                                                            }}
-                                                        ></div>
-                                                        <div
-                                                            className="bar"
-                                                            style={{
-                                                                height: '90%',
-                                                            }}
-                                                        ></div>
-                                                        <div
-                                                            className="bar"
-                                                            style={{
-                                                                height: '70%',
-                                                            }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Tablet */}
-                                <div className="device tablet">
-                                    <div className="device-frame">
-                                        <div className="device-screen">
-                                            <div className="screen-content">
-                                                <div className="mobile-nav">
-                                                    <i className="fas fa-home active"></i>
-                                                    <i className="fas fa-chart-bar"></i>
-                                                    <i className="fas fa-calendar"></i>
-                                                    <i className="fas fa-cog"></i>
-                                                </div>
-                                                <div className="mobile-stats">
-                                                    <div className="mobile-stat">
-                                                        <i className="fas fa-check-circle"></i>
-                                                        <span>Asistencia</span>
-                                                        <strong>94%</strong>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Phone */}
-                                <div className="device phone">
-                                    <div className="device-frame">
-                                        <div className="device-screen">
-                                            <div className="screen-content">
-                                                <div className="notification">
-                                                    <i className="fas fa-bell"></i>
-                                                    <span>
-                                                        Nueva tarea asignada
-                                                    </span>
-                                                </div>
-                                                <div className="quick-stats">
-                                                    <div className="quick-stat">
-                                                        <small>Promedio</small>
-                                                        <strong>8.7</strong>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Elementos decorativos */}
-                            <div className="floating-elements">
-                                <div className="floating-element element-1">
-                                    <i className="fas fa-cloud"></i>
-                                </div>
-                                <div className="floating-element element-2">
-                                    <i className="fas fa-database"></i>
-                                </div>
-                                <div className="floating-element element-3">
-                                    <i className="fas fa-mobile-alt"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="stats-section">
-                <div className="section-container">
-                    <div className="stats-grid">
-                        {stats.map((stat, index) => (
-                            <div
-                                key={index}
-                                className="stat-card scroll-animate"
-                            >
-                                <div className="stat-icon">
-                                    {index === 0 && (
-                                        <i className="fas fa-user-graduate"></i>
-                                    )}
-                                    {index === 1 && (
-                                        <i className="fas fa-chalkboard-teacher"></i>
-                                    )}
-                                    {index === 2 && (
-                                        <i className="fas fa-star"></i>
-                                    )}
-                                    {index === 3 && (
-                                        <i className="fas fa-trophy"></i>
-                                    )}
-                                </div>
-                                <div className="stat-content">
-                                    <div className="stat-number">
-                                        {stat.number}
-                                    </div>
-                                    <div className="stat-label">
-                                        {stat.label}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* About Section */}
-            <section className="about-section" id="Nosotros">
-                <div className="section-container">
-                    <div className="about-content">
-                        <div className="about-text scroll-animate">
-                            <div className="section-header">
-                                <h2>Innovación en Gestión Educativa</h2>
-                                <p className="section-subtitle">
-                                    Liderando la transformación digital de
-                                    instituciones educativas
-                                </p>
-                            </div>
-                            <p>
-                                Desarrollamos soluciones tecnológicas que
-                                revolucionan la administración académica,
-                                optimizando procesos y mejorando la experiencia
-                                educativa mediante herramientas inteligentes
-                                diseñadas específicamente para el entorno
-                                educativo moderno.
-                            </p>
-                            <div className="features-grid">
-                                <div className="feature scroll-animate">
-                                    <i className="fas fa-shield-alt"></i>
-                                    <h4>Seguridad Avanzada</h4>
-                                    <p>
-                                        Protección de datos estudiantiles y
-                                        administrativos con encriptación de
-                                        última generación
-                                    </p>
-                                </div>
-                                <div className="feature scroll-animate">
-                                    <i className="fas fa-rocket"></i>
-                                    <h4>Alto Rendimiento</h4>
-                                    <p>
-                                        Infraestructura escalable que soporta
-                                        miles de usuarios simultáneos
-                                    </p>
-                                </div>
-                                <div className="feature scroll-animate">
-                                    <i className="fas fa-sync"></i>
-                                    <h4>Actualizaciones Constantes</h4>
-                                    <p>
-                                        Mejoras continuas basadas en feedback de
-                                        instituciones educativas
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="about-visual scroll-animate">
-                            <div className="visual-container">
-                                <div className="floating-element el-1">
-                                    <i className="fas fa-cloud"></i>
-                                </div>
-                                <div className="floating-element el-2">
-                                    <i className="fas fa-database"></i>
-                                </div>
-                                <div className="floating-element el-3">
-                                    <i className="fas fa-mobile-alt"></i>
-                                </div>
-                                <div className="main-visual">
-                                    <img
-                                        src={bannerImage}
-                                        alt="Dashboard de la Plataforma Educativa"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             {/* Services Section */}
-            <section className="services-section" id="Servicios">
-                <div className="section-container" id="Funcionalidades">
-                    <div className="section-header scroll-animate">
-                        <h2>Funcionalidades Principales</h2>
-                        <p className="section-subtitle">
-                            Herramientas completas diseñadas para optimizar la
-                            gestión educativa
+            <section className="radical-features-section" id="Características">
+                <div className="section-container">
+                    <div className="radical-header scroll-animate">
+                        <span className="radical-badge">Características</span>
+                        <h2>Todo lo que necesitas para gestionar tu escuela</h2>
+                        <p className="radical-subtitle">
+                            Una plataforma completa con todas las herramientas necesarias para administrar de
+                            forma eficiente tu institución educativa.
                         </p>
                     </div>
 
-                    <div className="services-grid">
+                    <div className="radical-grid">
                         {services.map((service, index) => (
                             <div
                                 key={index}
-                                className="service-card scroll-animate"
+                                className="radical-card scroll-animate"
                             >
-                                <div className="card-header">
-                                    <div className="card-icon">
-                                        <i className={service.icon}></i>
-                                    </div>
-                                    <h3>{service.title}</h3>
+                                <div className={`radical-icon ${service.color}`}>
+                                    <span className="material-symbols-outlined radical-symbol">{service.icon}</span>
                                 </div>
-                                <div className="card-content">
-                                    <p>{service.description}</p>
-                                </div>
-                                <div className="card-features">
-                                    <span>
-                                        <i className="fas fa-check"></i>{' '}
-                                        Reportes automáticos
-                                    </span>
-                                    <span>
-                                        <i className="fas fa-check"></i>{' '}
-                                        Múltiples dispositivos
-                                    </span>
-                                </div>
+                                <h3>{service.title}</h3>
+                                <p>{service.description}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Video Section */}
-            <section className="video-section">
-                <div className="section-container">
-                    <div className="video-content">
-                        <div className="video-text scroll-animate">
-                            <h2>Descubre Nuestra Plataforma</h2>
-                            <p>
-                                Mira cómo nuestra solución transforma la gestión
-                                educativa en menos de 3 minutos. Descubre las
-                                características principales y el impacto
-                                positivo en la administración académica.
-                            </p>
-                            <div className="video-stats">
-                                <div className="video-stat">
-                                    <strong>+500</strong>
-                                    <span>Instituciones</span>
-                                </div>
-                                <div className="video-stat">
-                                    <strong>98%</strong>
-                                    <span>Eficiencia</span>
-                                </div>
-                                <div className="video-stat">
-                                    <strong>24/7</strong>
-                                    <span>Soporte</span>
-                                </div>
-                            </div>
+            {/* Benefits Section - New Addition */}
+            <section className="benefits-section" id="Beneficios">
+                <div className="benefits-container">
+                    <div className="benefits-grid">
+                        {/* Left Column - Image Placeholder */}
+                        <div className="benefits-image-wrapper">
+                            <span className="benefits-placeholder-text"></span>
                         </div>
-                        <div className="video-player scroll-animate">
-                            <div className="video-placeholder">
-                                <div className="youtube-embed">
-                                    <iframe
-                                        width="100%"
-                                        height="315px"
-                                        src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
-                                        title="Tour Completo de la Plataforma Educativa"
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                    ></iframe>
-                                </div>
-                            </div>
-                            <a
-                                href="https://youtube.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="video-link"
-                            >
-                                Ver video completo en YouTube
-                                <i className="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            {/* CTA Section */}
-            <section className="cta-section" id="Contacto">
-                <div className="section-container">
-                    <div className="cta-content">
-                        <div className="cta-text scroll-animate">
-                            <h2>¿Listo para Transformar tu Institución?</h2>
-                            <p>
-                                Únete a las más de 500 instituciones educativas
-                                que ya optimizaron su gestión con nuestra
-                                plataforma. Comienza tu transformación digital
-                                hoy mismo.
+                        {/* Right Column - Content */}
+                        <div className="benefits-content">
+                            <span className="benefits-badge">Beneficios</span>
+                            <h2>Transforma la gestión de tu institución educativa</h2>
+                            <p className="benefits-description">
+                                Optimiza procesos, mejora la eficiencia y brinda una mejor experiencia a
+                                estudiantes, padres y personal administrativo.
                             </p>
-                            <div className="cta-features">
-                                <div className="cta-feature">
-                                    <i className="fas fa-bolt"></i>
-                                    <span>Configuración en 24h</span>
+
+                            <div className="benefits-checklist">
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Ahorra tiempo en tareas administrativas</span>
                                 </div>
-                                <div className="cta-feature">
-                                    <i className="fas fa-headset"></i>
-                                    <span>Soporte personalizado</span>
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Reduce el uso de papel y archivos físicos</span>
                                 </div>
-                                <div className="cta-feature">
-                                    <i className="fas fa-graduation-cap"></i>
-                                    <span>Capacitación incluida</span>
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Mejora la comunicación con padres y docentes</span>
                                 </div>
-                            </div>
-                        </div>
-                        <div className="cta-action scroll-animate">
-                            <button
-                                className="cta-btn primary-btn large"
-                                onClick={() => setShowLogin(true)}
-                            >
-                                <i className="fas fa-rocket"></i>
-                                Comenzar Ahora
-                            </button>
-                            <div className="cta-guarantee">
-                                <i className="fas fa-shield-check"></i>
-                                <span>Garantía de satisfacción 30 días</span>
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Acceso desde cualquier dispositivo</span>
+                                </div>
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Reportes automáticos y en tiempo real</span>
+                                </div>
+                                <div className="checklist-item">
+                                    <div className="check-icon"><span className="material-symbols-outlined benefit-check-symbol">check</span></div>
+                                    <span>Soporte técnico dedicado 24/7</span>
+                                </div>
                             </div>
                         </div>
                     </div>

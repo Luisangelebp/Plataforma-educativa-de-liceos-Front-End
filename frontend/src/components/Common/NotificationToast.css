@@ -1,0 +1,123 @@
+.notification-container-fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    /* Allow clicks to pass through container */
+}
+
+.notification-toast {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 400px;
+    pointer-events: auto;
+    /* Enable clicks on toasts */
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    border-left: 5px solid transparent;
+    animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
+}
+
+.notification-toast.slide-in {
+    animation: slideInRight 0.3s forwards;
+}
+
+.notification-toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Types */
+.notification-toast.success {
+    border-left-color: #10b981;
+}
+
+.notification-toast.success .notification-icon {
+    color: #10b981;
+}
+
+.notification-toast.error {
+    border-left-color: #ef4444;
+}
+
+.notification-toast.error .notification-icon {
+    color: #ef4444;
+}
+
+.notification-toast.warning {
+    border-left-color: #f59e0b;
+}
+
+.notification-toast.warning .notification-icon {
+    color: #f59e0b;
+}
+
+.notification-toast.info {
+    border-left-color: #3b82f6;
+}
+
+.notification-toast.info .notification-icon {
+    color: #3b82f6;
+}
+
+/* Content */
+.notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-icon .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.notification-message {
+    flex: 1;
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.notification-close:hover {
+    background: #f1f5f9;
+    color: #ef4444;
+}
+
+/* Animation */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

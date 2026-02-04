@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNotification } from '../../../context/NotificationContext';
 import './css/Listas.css';
 
-const API_URL = `${
-    import.meta.env.VITE_API_URL || 'http://localhost:8000'
-}/usuarios/`;
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = `${BASE_URL}/usuarios/`;
 
 // Componente de Ficha/Card
 const UserCard = ({
@@ -32,7 +32,7 @@ const UserCard = ({
                         alt={`${user.nombre} ${user.apellido}`}
                     />
                 ) : (
-                    <i className="fas fa-user-circle default-foto-user"></i>
+                    <span className="material-symbols-outlined default-foto-user">account_circle</span>
                 )}
             </div>
             <div className="card-info">
@@ -46,19 +46,18 @@ const UserCard = ({
                                 {user.grado_seccion?.nivel === 'primaria'
                                     ? 'Grado'
                                     : user.grado_seccion?.nivel === 'secundaria'
-                                      ? 'Año'
-                                      : 'Grado/Año'}
+                                        ? 'Año'
+                                        : 'Grado/Año'}
                                 :
                             </strong>{' '}
                             {user.grado_seccion?.grado
-                                ? `${user.grado_seccion.grado}° ${
-                                      user.grado_seccion.nivel === 'primaria'
-                                          ? 'Grado'
-                                          : user.grado_seccion.nivel ===
-                                              'secundaria'
-                                            ? 'Año'
-                                            : ''
-                                  }`
+                                ? `${user.grado_seccion.grado}° ${user.grado_seccion.nivel === 'primaria'
+                                    ? 'Grado'
+                                    : user.grado_seccion.nivel ===
+                                        'secundaria'
+                                        ? 'Año'
+                                        : ''
+                                }`
                                 : user.grado || 'N/A'}
                         </p>
                         <p>
@@ -82,17 +81,16 @@ const UserCard = ({
                         <p>
                             <strong>Grados Asignados:</strong>{' '}
                             {user.grado_secciones &&
-                            user.grado_secciones.length > 0
+                                user.grado_secciones.length > 0
                                 ? user.grado_secciones
-                                      .map(
-                                          (gs) =>
-                                              `${gs.grado}° ${
-                                                  gs.nivel === 'primaria'
-                                                      ? 'Grado'
-                                                      : 'Año'
-                                              } ${gs.seccion}`,
-                                      )
-                                      .join(', ')
+                                    .map(
+                                        (gs) =>
+                                            `${gs.grado}° ${gs.nivel === 'primaria'
+                                                ? 'Grado'
+                                                : 'Año'
+                                            } ${gs.seccion}`
+                                    )
+                                    .join(', ')
                                 : user.grado_asignado || 'Sin asignar'}
                         </p>
                         <p>
@@ -114,6 +112,19 @@ const UserCard = ({
                         </p>
                     </>
                 )}
+                {type === 'administrador' && (
+                    <>
+                        <p>
+                            <strong>Rol:</strong> Administrador
+                        </p>
+                        <p>
+                            <strong>Fecha de Registro:</strong>{' '}
+                            {user.fecha_creacion
+                                ? new Date(user.fecha_creacion).toLocaleDateString()
+                                : 'N/A'}
+                        </p>
+                    </>
+                )}
             </div>
             {type === 'estudiante' && (
                 <button
@@ -123,7 +134,7 @@ const UserCard = ({
                         onAssing(user);
                     }}
                 >
-                    <i className="fas fa-user-plus"></i> Asignar Representante
+                    <span className="material-symbols-outlined">person_add</span> Asignar Representante
                 </button>
             )}
             {type === 'profesor' && (
@@ -134,7 +145,7 @@ const UserCard = ({
                         onAssingP(user);
                     }}
                 >
-                    <i className="fa-solid fa-book"></i> Asignar Curso y Sección
+                    <span className="material-symbols-outlined">import_contacts</span> Asignar Curso y Sección
                 </button>
             )}
 
@@ -146,7 +157,7 @@ const UserCard = ({
                         onEdit(user);
                     }}
                 >
-                    <i className="fas fa-edit"></i> Editar
+                    <span className="material-symbols-outlined">edit</span> Editar
                 </button>
                 <button
                     className="btn-delete"
@@ -155,7 +166,7 @@ const UserCard = ({
                         onDelete(user);
                     }}
                 >
-                    <i className="fas fa-trash"></i> Eliminar
+                    <span className="material-symbols-outlined">delete</span> Eliminar
                 </button>
             </div>
         </div>
@@ -181,16 +192,18 @@ const UserRow = ({
 
     return (
         <tr onClick={() => onRowClick(user)} className="user-row">
-            <td className="user-photo">
-                <img
-                    src={getPhotoUrl(user.foto)}
-                    alt={`${user.nombre} ${user.apellido}`}
-                    className="user-avatar"
-                    onError={(e) => {
-                        e.target.src =
-                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNSAyNUMzMC41MjI4IDI1IDM1IDI5LjQ3NzIgMzUgMzVDMzUgNDAuNTIyOCAzMC41MjI4IDQ1IDI1IDQ1QzE5LjQ3NzIgNDUgMTUgNDAuNTIyOCAxNSAzNUMxNSAyOS40NzcyIDE5LjQ3NzIgMjUgMjUgMjVaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik0yNSAxNEMyNy43NjE0IDE0IDMwIDE2LjIzODYgMzAgMTlDMzAgMjEuNzYxNCAyNy43NjE0IDI0IDI1IDI0QzIyLjIzODYgMjQgMjAgMjEuNzYxNCAyMCAxOUMyMCAxNi4yMzg2IDIyLjIzODYgMTQgMjUgMTRaIiBmaWxsPSIjQ0NDQ0NDIi8+Cjwvc3ZnPgo=';
-                    }}
-                />
+            <td>
+                <div className="user-photo-wrapper">
+                    {user.foto ? (
+                        <img
+                            src={getPhotoUrl(user.foto)}
+                            alt={`${user.nombre} ${user.apellido}`}
+                            className="user-avatar"
+                        />
+                    ) : (
+                        <span className="material-symbols-outlined default-foto-user">account_circle</span>
+                    )}
+                </div>
             </td>
             <td className="user-name">
                 {user.nombre} {user.apellido}
@@ -211,29 +224,28 @@ const UserRow = ({
                     <td>{user.cedula || 'N/A'}</td>
                     <td>
                         {user.grado_secciones &&
-                        Array.isArray(user.grado_secciones) &&
-                        user.grado_secciones.length > 0
+                            Array.isArray(user.grado_secciones) &&
+                            user.grado_secciones.length > 0
                             ? user.grado_secciones
-                                  .map((gs, idx) => {
-                                      // Manejar tanto objetos como valores primitivos
-                                      const grado =
-                                          typeof gs === 'object' && gs !== null
-                                              ? gs.grado
-                                              : gs;
-                                      const seccion =
-                                          typeof gs === 'object' && gs !== null
-                                              ? gs.seccion
-                                              : '';
-                                      const nivel =
-                                          typeof gs === 'object' && gs !== null
-                                              ? gs.nivel
-                                              : '';
-                                      return `${grado || ''} ${
-                                          seccion || ''
-                                      } (${nivel || ''})`.trim();
-                                  })
-                                  .filter(Boolean)
-                                  .join(', ') || 'Sin grados asignados'
+                                .map((gs, idx) => {
+                                    // Manejar tanto objetos como valores primitivos
+                                    const grado =
+                                        typeof gs === 'object' && gs !== null
+                                            ? gs.grado
+                                            : gs;
+                                    const seccion =
+                                        typeof gs === 'object' && gs !== null
+                                            ? gs.seccion
+                                            : '';
+                                    const nivel =
+                                        typeof gs === 'object' && gs !== null
+                                            ? gs.nivel
+                                            : '';
+                                    return `${grado || ''} ${seccion || ''
+                                        } (${nivel || ''})`.trim();
+                                })
+                                .filter(Boolean)
+                                .join(', ') || 'Sin grados asignados'
                             : 'Sin grados asignados'}
                     </td>
                     <td>{user.tipo_profesor || 'N/A'}</td>
@@ -249,6 +261,12 @@ const UserRow = ({
                     <td>{user.estudiantes?.length || 0} estudiante(s)</td>
                 </>
             )}
+            {type === 'administrador' && (
+                <>
+                    <td>{user.email}</td>
+                    <td>Administrador</td>
+                </>
+            )}
             <td className="user-actions" onClick={(e) => e.stopPropagation()}>
                 {type === 'estudiante' && (
                     <button
@@ -259,7 +277,7 @@ const UserRow = ({
                         }}
                         title="Asignar Representante"
                     >
-                        <i className="fas fa-user-plus"></i>
+                        <span className="material-symbols-outlined">person_add</span>
                     </button>
                 )}
                 {type === 'profesor' && (
@@ -271,7 +289,7 @@ const UserRow = ({
                         }}
                         title="Asignar Curso y Sección"
                     >
-                        <i className="fa-solid fa-book"></i>
+                        <span className="material-symbols-outlined">import_contacts</span>
                     </button>
                 )}
                 <button
@@ -282,7 +300,7 @@ const UserRow = ({
                     }}
                     title="Editar"
                 >
-                    <i className="fas fa-edit"></i>
+                    <span className="material-symbols-outlined">edit</span>
                 </button>
                 <button
                     className="btn-delete"
@@ -292,7 +310,7 @@ const UserRow = ({
                     }}
                     title="Eliminar"
                 >
-                    <i className="fas fa-trash"></i>
+                    <span className="material-symbols-outlined">delete</span>
                 </button>
             </td>
         </tr>
@@ -313,6 +331,19 @@ const useBodyOverflowLock = (isLocked) => {
     }, [isLocked]);
 };
 
+// Item de Detalle
+const DetailItem = ({ label, value, icon }) => (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+        <div style={{ color: '#94a3b8', marginTop: '2px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{icon}</span>
+        </div>
+        <div>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+            <p style={{ margin: 0, fontSize: '1rem', color: '#1e293b', fontWeight: '700' }}>{value || 'N/A'}</p>
+        </div>
+    </div>
+);
+
 // Modal de Detalle
 const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
     const [representante, setRepresentante] = useState(null);
@@ -330,7 +361,7 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
             setRepresentante(response.data);
         } catch (error) {
             console.error('Error al cargar representante:', error);
-            setRepresentante(null); // Reset on error
+            setRepresentante(null);
         }
     };
 
@@ -342,161 +373,189 @@ const DetailModal = ({ user, type, isOpen, onClose, onEdit }) => {
 
     if (!isOpen || !user) return null;
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Información Completa</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+        <div className="modal-overlay" onClick={onClose} style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+            <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{
+                maxWidth: '750px',
+                width: '95%',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                border: 'none',
+                boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                background: '#f1f5f9',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div className="modal-header" style={{
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    padding: '1.75rem 2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--primary)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>visibility</span>
+                        </div>
+                        <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.5rem', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                            Detalles del Perfil
+                        </h3>
+                    </div>
+                    <button className="close-btn" onClick={onClose} title="Cerrar" style={{ background: '#ffffff', color: '#64748b', width: '36px', height: '36px', border: '1px solid #e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
                     </button>
                 </div>
-                <div className="modal-body">
-                    <div className="detail-photo">
-                        <img
-                            src={getPhotoUrl(user.foto)}
-                            alt={`${user.nombre} ${user.apellido}`}
-                            onError={(e) => {
-                                e.target.src =
-                                    'https://via.placeholder.com/200?text=Sin+Foto';
-                            }}
-                        />
-                    </div>
-                    <div className="detail-info">
-                        <div className="detail-row">
-                            <strong>Nombre:</strong>
-                            <span>
+
+                <div className="modal-body" style={{ padding: '2rem', overflowY: 'auto', flex: 1 }}>
+                    <div className="detail-layout" style={{
+                        display: 'flex',
+                        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                        gap: '2rem'
+                    }}>
+                        <div className="detail-photo" style={{ flexShrink: 0 }}>
+                            <div style={{
+                                width: window.innerWidth < 768 ? '100%' : '220px',
+                                maxWidth: '220px',
+                                height: '220px',
+                                margin: window.innerWidth < 768 ? '0 auto' : '0',
+                                borderRadius: '24px',
+                                overflow: 'hidden',
+                                border: '4px solid white',
+                                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)'
+                            }}>
+                                <img
+                                    src={getPhotoUrl(user.foto)}
+                                    alt={`${user.nombre} ${user.apellido}`}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/200?text=Sin+Foto';
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                                <span style={{
+                                    padding: '6px 16px',
+                                    borderRadius: '100px',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    fontFamily: 'Outfit'
+                                }}>
+                                    {type}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="detail-info" style={{ background: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 20px -5px rgba(0, 0, 0, 0.05)', border: '1px solid #ffffff' }}>
+                            <h4 style={{ margin: '0 0 1.5rem 0', fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.4rem', color: '#1e293b' }}>
                                 {user.nombre} {user.apellido}
-                            </span>
-                        </div>
-                        <div className="detail-row">
-                            <strong>Fecha de Nacimiento:</strong>
-                            <span>
-                                {new Date(
-                                    user.fecha_nacimiento,
-                                ).toLocaleDateString('es-ES')}
-                            </span>
-                        </div>
-                        <div className="detail-row">
-                            <strong>Edad:</strong>
-                            <span>{user.edad} años</span>
-                        </div>
-                        {user.cedula && (
-                            <div className="detail-row">
-                                <strong>Cédula:</strong>
-                                <span>{user.cedula}</span>
+                            </h4>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <DetailItem label="Fecha de Nacimiento" value={new Date(user.fecha_nacimiento).toLocaleDateString('es-ES')} icon="calendar_today" />
+                                <DetailItem label="Edad" value={`${user.edad} años`} icon="cake" />
+                                {user.cedula && <DetailItem label="Cédula" value={user.cedula} icon="badge" />}
+                                {user.direccion && <DetailItem label="Dirección" value={user.direccion} icon="location_on" />}
+
+                                {type === 'estudiante' && (
+                                    <>
+                                        <DetailItem label="Grado" value={user.grado} icon="school" />
+                                        <DetailItem label="Nivel" value={user.nivel} icon="layers" />
+                                        {representante && (
+                                            <DetailItem
+                                                label="Representante"
+                                                value={`${representante.nombre} ${representante.apellido} (C.I: ${representante.cedula})`}
+                                                icon="family_history"
+                                            />
+                                        )}
+                                    </>
+                                )}
+
+                                {type === 'profesor' && (
+                                    <>
+                                        <DetailItem
+                                            label="Grados Asignados"
+                                            value={user.grado_secciones?.length > 0
+                                                ? user.grado_secciones.map(gs => `${gs.grado}° ${gs.nivel === 'primaria' ? 'Grado' : 'Año'} ${gs.seccion}`).join(', ')
+                                                : 'Sin asignar'}
+                                            icon="assignment_ind"
+                                        />
+                                        {user.materias?.length > 0 && (
+                                            <DetailItem
+                                                label="Materias"
+                                                value={user.materias.map(m => typeof m === 'object' ? m.nombre : m).join(', ')}
+                                                icon="book"
+                                            />
+                                        )}
+                                        <DetailItem label="Tipo" value={user.tipo_profesor} icon="military_tech" />
+                                        {user.telefono && <DetailItem label="Teléfono" value={user.telefono} icon="call" />}
+                                    </>
+                                )}
+
+                                {type === 'representante' && (
+                                    <>
+                                        {user.telefono && <DetailItem label="Teléfono" value={user.telefono} icon="call" />}
+                                        {user.profesor_asignado && (
+                                            <DetailItem
+                                                label="Profesor Asignado"
+                                                value={`${user.profesor_asignado.nombre} ${user.profesor_asignado.apellido}`}
+                                                icon="person_pin"
+                                            />
+                                        )}
+                                    </>
+                                )}
                             </div>
-                        )}
-                        {user.direccion && (
-                            <div className="detail-row">
-                                <strong>Dirección:</strong>
-                                <span>{user.direccion}</span>
-                            </div>
-                        )}
-                        {type === 'estudiante' && (
-                            <>
-                                <div className="detail-row">
-                                    <strong>Grado:</strong>
-                                    <span>{user.grado}</span>
-                                </div>
-                                <div className="detail-row">
-                                    <strong>Nivel:</strong>
-                                    <span>{user.nivel}</span>
-                                </div>
-                                {representante && (
-                                    <div className="detail-row">
-                                        <strong>Representante:</strong>
-                                        <span>
-                                            {representante.nombre}{' '}
-                                            {representante.apellido} - C.I:{' '}
-                                            {representante.cedula}
-                                        </span>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                        {type === 'profesor' && (
-                            <>
-                                <div className="detail-row">
-                                    <strong>Grados Asignados:</strong>
-                                    <span>
-                                        {user.grado_secciones &&
-                                        user.grado_secciones.length > 0
-                                            ? user.grado_secciones
-                                                  .map(
-                                                      (gs) =>
-                                                          `${gs.grado}° ${
-                                                              gs.nivel ===
-                                                              'primaria'
-                                                                  ? 'Grado'
-                                                                  : 'Año'
-                                                          } ${gs.seccion}`,
-                                                  )
-                                                  .join(', ')
-                                            : 'Sin asignar'}
-                                    </span>
-                                </div>
-                                {user.materias && user.materias.length > 0 && (
-                                    <div className="detail-row">
-                                        <strong>Materias:</strong>
-                                        <span>
-                                            {user.materias
-                                                .map((m) =>
-                                                    typeof m === 'object'
-                                                        ? m.nombre
-                                                        : m,
-                                                )
-                                                .join(', ')}
-                                        </span>
-                                    </div>
-                                )}
-                                <div className="detail-row">
-                                    <strong>Tipo de Profesor:</strong>
-                                    <span>{user.tipo_profesor}</span>
-                                </div>
-                                {user.telefono && (
-                                    <div className="detail-row">
-                                        <strong>Teléfono:</strong>
-                                        <span>{user.telefono}</span>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                        {type === 'representante' && (
-                            <>
-                                {user.telefono && (
-                                    <div className="detail-row">
-                                        <strong>Teléfono:</strong>
-                                        <span>{user.telefono}</span>
-                                    </div>
-                                )}
-                                {user.profesor_asignado && (
-                                    <div className="detail-row">
-                                        <strong>Profesor Asignado:</strong>
-                                        <span>
-                                            {user.profesor_asignado.nombre}{' '}
-                                            {user.profesor_asignado.apellido}
-                                        </span>
-                                    </div>
-                                )}
-                            </>
-                        )}
+                        </div>
                     </div>
                 </div>
-                <div className="modal-footer">
+
+                <div className="modal-footer" style={{ borderTop: '1px solid #e2e8f0', padding: '1.5rem 2rem', background: '#f8fafc', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                     <button
                         className="btn-edit"
-                        onClick={() => {
-                            onClose();
-                            onEdit(user);
+                        onClick={() => { onClose(); onEdit(user); }}
+                        style={{
+                            borderRadius: '14px',
+                            padding: '0.8rem 2rem',
+                            fontWeight: '800',
+                            fontFamily: 'Outfit',
+                            fontSize: '0.95rem',
+                            background: '#0f172a',
+                            color: 'white',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                         }}
                     >
-                        <i className="fas fa-edit"></i> Editar
+                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit</span>
+                        Editar Perfil
                     </button>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
+
+
+// Modal de Edición
 
 // Modal de Edición
 const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
@@ -901,7 +960,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                 headers,
             });
 
-            alert('Usuario actualizado con éxito');
+            addNotification('Usuario actualizado con éxito', 'success');
             onSave();
             onClose();
         } catch (error) {
@@ -922,9 +981,9 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                         .join('; ');
                     errorMessage = errorMessages || errorMessage;
                 }
-                alert(errorMessage);
+                addNotification(errorMessage, 'error');
             } else {
-                alert('Error al actualizar el usuario');
+                addNotification('Error al actualizar el usuario', 'error');
             }
         } finally {
             setIsLoading(false);
@@ -933,471 +992,338 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
 
     if (!isOpen || !user) return null;
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div
-                className="modal-content edit-modal"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="modal-header">
-                    <h2>Editar Usuario</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+        <div className="modal-overlay" onClick={onClose} style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+            <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{
+                maxWidth: '750px',
+                width: '95%',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                border: 'none',
+                boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                background: '#f1f5f9',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div className="modal-header" style={{
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    padding: '1.75rem 2.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--primary)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>edit</span>
+                        </div>
+                        <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.5rem', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                            Editar Usuario
+                        </h3>
+                    </div>
+                    <button className="close-btn" onClick={onClose} title="Cerrar" style={{ background: '#ffffff', color: '#64748b', width: '36px', height: '36px', border: '1px solid #e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="edit-form">
-                    <div className="form-group">
-                        <label>Nombres:</label>
-                        <input
-                            type="text"
-                            name="nombre"
-                            value={formData.nombre || ''}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        {errors.nombre && (
-                            <span className="error">{errors.nombre}</span>
-                        )}
-                    </div>
-                    <div className="form-group">
-                        <label>Apellidos:</label>
-                        <input
-                            type="text"
-                            name="apellido"
-                            value={formData.apellido || ''}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        {errors.apellido && (
-                            <span className="error">{errors.apellido}</span>
-                        )}
-                    </div>
-                    <div className="form-group">
-                        <label>Fecha de Nacimiento:</label>
-                        <input
-                            type="date"
-                            name="fecha_nacimiento"
-                            value={formData.fecha_nacimiento || ''}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        {errors.fecha_nacimiento && (
-                            <span className="error">
-                                {errors.fecha_nacimiento}
-                            </span>
-                        )}
-                    </div>
-                    {(type === 'estudiante' ||
-                        type === 'profesor' ||
-                        type === 'representante') && (
-                        <>
-                            <div className="form-group">
-                                <label>Cédula:</label>
-                                <input
-                                    type="text"
-                                    name="cedula"
-                                    value={formData.cedula || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {errors.cedula && (
-                                    <span className="error">
-                                        {errors.cedula}
-                                    </span>
-                                )}
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                    <div className="modal-body" style={{ padding: '2.5rem', overflowY: 'auto', flex: 1 }}>
+                        <div style={{ background: 'white', padding: '2.5rem', borderRadius: '24px', boxShadow: '0 4px 20px -5px rgba(0, 0, 0, 0.05)', border: '1px solid #ffffff' }}>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr',
+                                gap: '1.5rem',
+                                marginBottom: '1.5rem'
+                            }}>
+                                <div className="form-group">
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Nombres:</label>
+                                    <input
+                                        type="text"
+                                        name="nombre"
+                                        value={formData.nombre || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        required
+                                    />
+                                    {errors.nombre && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.nombre}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Apellidos:</label>
+                                    <input
+                                        type="text"
+                                        name="apellido"
+                                        value={formData.apellido || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        required
+                                    />
+                                    {errors.apellido && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.apellido}</span>}
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label>Dirección:</label>
-                                <input
-                                    type="text"
-                                    name="direccion"
-                                    value={formData.direccion || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {errors.direccion && (
-                                    <span className="error">
-                                        {errors.direccion}
-                                    </span>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr',
+                                gap: '1.5rem',
+                                marginBottom: '1.5rem'
+                            }}>
+                                <div className="form-group">
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Fecha de Nacimiento:</label>
+                                    <input
+                                        type="date"
+                                        name="fecha_nacimiento"
+                                        value={formData.fecha_nacimiento || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        required
+                                    />
+                                    {errors.fecha_nacimiento && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.fecha_nacimiento}</span>}
+                                </div>
+                                {(type === 'estudiante' || type === 'profesor' || type === 'representante' || type === 'administrador') && (
+                                    <div className="form-group">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Cédula:</label>
+                                        <input
+                                            type="text"
+                                            name="cedula"
+                                            value={formData.cedula || ''}
+                                            onChange={handleInputChange}
+                                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                        {errors.cedula && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.cedula}</span>}
+                                    </div>
                                 )}
                             </div>
 
+                            {(type === 'estudiante' || type === 'profesor' || type === 'representante' || type === 'administrador') && (
+                                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Dirección:</label>
+                                    <input
+                                        type="text"
+                                        name="direccion"
+                                        value={formData.direccion || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                    />
+                                    {errors.direccion && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.direccion}</span>}
+                                </div>
+                            )}
+
+                            {type === 'administrador' && (
+                                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Email:</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        required
+                                    />
+                                    {errors.email && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.email}</span>}
+                                </div>
+                            )}
+
                             {user?.usuario && (
-                                <div className="form-group">
-                                    <label>Nueva contraseña (opcional):</label>
+                                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Nueva contraseña (opcional):</label>
                                     <input
                                         type="password"
                                         value={newPassword}
                                         onChange={(e) => {
                                             setNewPassword(e.target.value);
-                                            if (passwordError) {
-                                                setPasswordError('');
-                                            }
+                                            if (passwordError) setPasswordError('');
                                         }}
                                         autoComplete="new-password"
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
                                     />
-                                    {passwordError && (
-                                        <span className="error">
-                                            {passwordError}
-                                        </span>
-                                    )}
+                                    {passwordError && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{passwordError}</span>}
                                 </div>
                             )}
-                        </>
-                    )}
-                    {type === 'estudiante' && (
-                        <>
-                            <div className="form-group">
-                                <label>Nivel:</label>
-                                <select
-                                    name="nivel"
-                                    value={formData.nivel || ''}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Seleccione...</option>
-                                    <option value="primaria">Primaria</option>
-                                    <option value="secundaria">
-                                        Secundaria
-                                    </option>
-                                </select>
-                                {errors.nivel && (
-                                    <span className="error">
-                                        {errors.nivel}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
-                                <label>
-                                    {formData.nivel === 'primaria'
-                                        ? 'Grado:'
-                                        : formData.nivel === 'secundaria'
-                                          ? 'Año:'
-                                          : 'Grado/Año:'}
-                                </label>
-                                <select
-                                    name="grado"
-                                    value={formData.grado || ''}
-                                    onChange={handleInputChange}
-                                    disabled={!formData.nivel}
-                                >
-                                    <option value="">
-                                        {formData.nivel === 'primaria'
-                                            ? 'Seleccione el grado'
-                                            : formData.nivel === 'secundaria'
-                                              ? 'Seleccione el año'
-                                              : 'Seleccione primero el nivel'}
-                                    </option>
-                                    {formData.nivel === 'primaria' ? (
-                                        <>
-                                            <option value="1">1° Grado</option>
-                                            <option value="2">2° Grado</option>
-                                            <option value="3">3° Grado</option>
-                                            <option value="4">4° Grado</option>
-                                            <option value="5">5° Grado</option>
-                                            <option value="6">6° Grado</option>
-                                        </>
-                                    ) : formData.nivel === 'secundaria' ? (
-                                        <>
-                                            <option value="1">1° Año</option>
-                                            <option value="2">2° Año</option>
-                                            <option value="3">3° Año</option>
-                                            <option value="4">4° Año</option>
-                                            <option value="5">5° Año</option>
-                                        </>
-                                    ) : null}
-                                </select>
-                                {errors.grado && (
-                                    <span className="error">
-                                        {errors.grado}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
-                                <label>Sección:</label>
-                                <select
-                                    name="seccion"
-                                    value={formData.seccion || ''}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Seleccione...</option>
-                                    <option value="A">Sección A</option>
-                                    <option value="B">Sección B</option>
-                                    <option value="C">Sección C</option>
-                                </select>
-                                {errors.seccion && (
-                                    <span className="error">
-                                        {errors.seccion}
-                                    </span>
-                                )}
-                            </div>
-                        </>
-                    )}
-                    {type === 'profesor' && (
-                        <>
-                            <div className="form-group">
-                                <label>Tipo de Profesor:</label>
-                                <select
-                                    name="tipo_profesor"
-                                    value={formData.tipo_profesor || ''}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Seleccione...</option>
-                                    <option value="titular">Titular</option>
-                                    <option value="suplente">Suplente</option>
-                                    <option value="especialista">
-                                        Especialista
-                                    </option>
-                                </select>
-                                {errors.tipo_profesor && (
-                                    <span className="error">
-                                        {errors.tipo_profesor}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
-                                <label>Teléfono:</label>
-                                <input
-                                    type="text"
-                                    name="telefono"
-                                    value={formData.telefono || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {errors.telefono && (
-                                    <span className="error">
-                                        {errors.telefono}
-                                    </span>
-                                )}
-                            </div>
-                            {/* Secciones de grados y materias ocultas - se asignan desde otros módulos */}
-                            {/* 
-                            <div className="form-group">
-                                <label>Grados y Secciones Asignados:</label>
-                                <div style={{
-                                    border: '2px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    padding: '10px',
-                                    maxHeight: '200px',
-                                    overflowY: 'auto',
-                                    background: 'white',
-                                    marginTop: '8px',
-                                    minHeight: '80px'
-                                }}>
-                                    {loadingGrados ? (
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.9rem', padding: '10px'}}>
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                            <span>Cargando grados...</span>
+
+                            {type === 'estudiante' && (
+                                <>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                        <div className="form-group">
+                                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Nivel:</label>
+                                            <select
+                                                name="nivel"
+                                                value={formData.nivel || ''}
+                                                onChange={handleInputChange}
+                                                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                            >
+                                                <option value="">Seleccione...</option>
+                                                <option value="primaria">Primaria</option>
+                                                <option value="secundaria">Secundaria</option>
+                                            </select>
+                                            {errors.nivel && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.nivel}</span>}
                                         </div>
-                                    ) : gradosSecciones.length === 0 ? (
-                                        <p style={{color: 'var(--gray)', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', padding: '10px'}}>
-                                            No hay grados disponibles
-                                        </p>
-                                    ) : (
-                                        <ul style={{
-                                            listStyle: 'none',
-                                            padding: 0,
-                                            margin: 0
-                                        }}>
-                                            {gradosSecciones.map((gs) => {
-                                                const isSelected = selectedGradosSecciones.find(sgs => sgs.id === gs.id);
-                                                return (
-                                                    <li
-                                                        key={gs.id}
-                                                        style={{
-                                                            padding: '10px 12px',
-                                                            marginBottom: '6px',
-                                                            border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
-                                                            borderRadius: 'var(--border-radius)',
-                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
-                                                            cursor: 'pointer',
-                                                            transition: 'var(--transition)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '10px'
-                                                        }}
-                                                        onClick={() => handleGradoSeccionToggle(gs)}
-                                                        onMouseEnter={(e) => {
-                                                            if (!isSelected) {
-                                                                e.currentTarget.style.borderColor = 'var(--primary)';
-                                                                e.currentTarget.style.background = 'rgba(67, 97, 238, 0.05)';
-                                                            }
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            if (!isSelected) {
-                                                                e.currentTarget.style.borderColor = 'var(--light-gray)';
-                                                                e.currentTarget.style.background = 'white';
-                                                            }
-                                                        }}
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={!!isSelected}
-                                                            onChange={() => handleGradoSeccionToggle(gs)}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            style={{
-                                                                width: '18px',
-                                                                height: '18px',
-                                                                cursor: 'pointer',
-                                                                accentColor: 'var(--primary)',
-                                                                flexShrink: 0
-                                                            }}
-                                                        />
-                                                        <span style={{
-                                                            flex: 1,
-                                                            fontSize: '0.9rem',
-                                                            color: 'var(--dark)',
-                                                            fontWeight: isSelected ? '600' : '400'
-                                                        }}>
-                                                            {gs.grado}° {gs.nivel === 'primaria' ? 'Grado' : 'Año'} {gs.seccion}
-                                                        </span>
-                                                        {isSelected && (
-                                                            <i className="fas fa-check-circle" style={{
-                                                                color: 'var(--primary)',
-                                                                fontSize: '1rem'
-                                                            }}></i>
-                                                        )}
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Materias Asignadas:</label>
-                                <div style={{
-                                    border: '2px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    padding: '10px',
-                                    maxHeight: '200px',
-                                    overflowY: 'auto',
-                                    background: 'white',
-                                    marginTop: '8px',
-                                    minHeight: '80px'
-                                }}>
-                                    {loadingMaterias ? (
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray)', fontSize: '0.9rem', padding: '10px'}}>
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                            <span>Cargando materias...</span>
+                                        <div className="form-group">
+                                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>
+                                                {formData.nivel === 'primaria' ? 'Grado:' : formData.nivel === 'secundaria' ? 'Año:' : 'Grado/Año:'}
+                                            </label>
+                                            <select
+                                                name="grado"
+                                                value={formData.grado || ''}
+                                                onChange={handleInputChange}
+                                                disabled={!formData.nivel}
+                                                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                            >
+                                                <option value="">{formData.nivel ? 'Seleccione...' : 'Primero el nivel'}</option>
+                                                {formData.nivel === 'primaria' ? (
+                                                    <>
+                                                        <option value="1">1° Grado</option>
+                                                        <option value="2">2° Grado</option>
+                                                        <option value="3">3° Grado</option>
+                                                        <option value="4">4° Grado</option>
+                                                        <option value="5">5° Grado</option>
+                                                        <option value="6">6° Grado</option>
+                                                    </>
+                                                ) : formData.nivel === 'secundaria' ? (
+                                                    <>
+                                                        <option value="1">1° Año</option>
+                                                        <option value="2">2° Año</option>
+                                                        <option value="3">3° Año</option>
+                                                        <option value="4">4° Año</option>
+                                                        <option value="5">5° Año</option>
+                                                    </>
+                                                ) : null}
+                                            </select>
+                                            {errors.grado && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.grado}</span>}
                                         </div>
-                                    ) : materias.length === 0 ? (
-                                        <p style={{color: 'var(--gray)', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', padding: '10px'}}>
-                                            No hay materias disponibles
-                                        </p>
-                                    ) : (
-                                        <ul style={{
-                                            listStyle: 'none',
-                                            padding: 0,
-                                            margin: 0
-                                        }}>
-                                            {materias.map((materia) => {
-                                                const isSelected = selectedMaterias.find(sm => sm.id === materia.id);
-                                                return (
-                                                    <li
-                                                        key={materia.id}
-                                                        style={{
-                                                            padding: '10px 12px',
-                                                            marginBottom: '6px',
-                                                            border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
-                                                            borderRadius: 'var(--border-radius)',
-                                                            background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
-                                                            cursor: 'pointer',
-                                                            transition: 'var(--transition)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '10px'
-                                                        }}
-                                                        onClick={() => handleMateriaToggle(materia)}
-                                                        onMouseEnter={(e) => {
-                                                            if (!isSelected) {
-                                                                e.currentTarget.style.borderColor = 'var(--primary)';
-                                                                e.currentTarget.style.background = 'rgba(67, 97, 238, 0.05)';
-                                                            }
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            if (!isSelected) {
-                                                                e.currentTarget.style.borderColor = 'var(--light-gray)';
-                                                                e.currentTarget.style.background = 'white';
-                                                            }
-                                                        }}
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={!!isSelected}
-                                                            onChange={() => handleMateriaToggle(materia)}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            style={{
-                                                                width: '18px',
-                                                                height: '18px',
-                                                                cursor: 'pointer',
-                                                                accentColor: 'var(--primary)',
-                                                                flexShrink: 0
-                                                            }}
-                                                        />
-                                                        <span style={{
-                                                            flex: 1,
-                                                            fontSize: '0.9rem',
-                                                            color: 'var(--dark)',
-                                                            fontWeight: isSelected ? '600' : '400'
-                                                        }}>
-                                                            {materia.nombre}
-                                                        </span>
-                                                        {materia.descripcion && (
-                                                            <span style={{
-                                                                fontSize: '0.8rem',
-                                                                color: 'var(--gray)',
-                                                                fontStyle: 'italic',
-                                                                maxWidth: '200px',
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                whiteSpace: 'nowrap'
-                                                            }}>
-                                                                {materia.descripcion}
-                                                            </span>
-                                                        )}
-                                                        {isSelected && (
-                                                            <i className="fas fa-check-circle" style={{
-                                                                color: 'var(--primary)',
-                                                                fontSize: '1rem'
-                                                            }}></i>
-                                                        )}
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                            */}
-                        </>
-                    )}
-                    {type === 'representante' && (
-                        <div className="form-group">
-                            <label>Teléfono:</label>
-                            <input
-                                type="text"
-                                name="telefono"
-                                value={formData.telefono || ''}
-                                onChange={handleInputChange}
-                            />
-                            {errors.telefono && (
-                                <span className="error">{errors.telefono}</span>
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Sección:</label>
+                                        <select
+                                            name="seccion"
+                                            value={formData.seccion || ''}
+                                            onChange={handleInputChange}
+                                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        >
+                                            <option value="">Seleccione...</option>
+                                            <option value="A">Sección A</option>
+                                            <option value="B">Sección B</option>
+                                            <option value="C">Sección C</option>
+                                        </select>
+                                        {errors.seccion && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.seccion}</span>}
+                                    </div>
+                                </>
                             )}
+                            {type === 'profesor' && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                    <div className="form-group">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Tipo de Profesor:</label>
+                                        <select
+                                            name="tipo_profesor"
+                                            value={formData.tipo_profesor || ''}
+                                            onChange={handleInputChange}
+                                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        >
+                                            <option value="">Seleccione...</option>
+                                            <option value="titular">Titular</option>
+                                            <option value="suplente">Suplente</option>
+                                            <option value="especialista">Especialista</option>
+                                        </select>
+                                        {errors.tipo_profesor && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.tipo_profesor}</span>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Teléfono:</label>
+                                        <input
+                                            type="text"
+                                            name="telefono"
+                                            value={formData.telefono || ''}
+                                            onChange={handleInputChange}
+                                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                        {errors.telefono && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.telefono}</span>}
+                                    </div>
+                                </div>
+                            )}
+
+                            {type === 'representante' && (
+                                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Teléfono:</label>
+                                    <input
+                                        type="text"
+                                        name="telefono"
+                                        value={formData.telefono || ''}
+                                        onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                    />
+                                    {errors.telefono && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.telefono}</span>}
+                                </div>
+                            )}
+
+                            <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '12px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Foto de Perfil:</label>
+                                <div style={{
+                                    border: '2px dashed #e2e8f0',
+                                    borderRadius: '16px',
+                                    padding: '2rem',
+                                    textAlign: 'center',
+                                    background: '#f8fafc',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }} onClick={() => document.getElementById('edit-foto-input').click()}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#94748b', marginBottom: '8px' }}>cloud_upload</span>
+                                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: '500' }}>
+                                        Haz clic para subir o arrastra una imagen
+                                    </p>
+                                    <input
+                                        id="edit-foto-input"
+                                        type="file"
+                                        name="foto"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+                                {errors.foto && <span className="error" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.foto}</span>}
+                                {formData.foto && typeof formData.foto === 'object' && (
+                                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+                                        <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '18px' }}>check_circle</span>
+                                        <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: '600' }}>Archivo seleccionado: {formData.foto.name}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    )}
-                    <div className="form-group">
-                        <label>Foto:</label>
-                        <input
-                            type="file"
-                            name="foto"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                        />
-                        {errors.foto && (
-                            <span className="error">{errors.foto}</span>
-                        )}
                     </div>
-                    <div className="modal-footer">
+
+                    <div className="modal-footer" style={{
+                        background: '#f8fafc',
+                        borderTop: '1px solid #e2e8f0',
+                        padding: '1.5rem 2.5rem',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '1rem'
+                    }}>
                         <button
                             type="button"
                             className="btn-cancel"
                             onClick={onClose}
+                            style={{
+                                padding: '0.75rem 1.75rem',
+                                borderRadius: '12px',
+                                fontWeight: '700',
+                                border: '1px solid #e2e8f0',
+                                background: 'white',
+                                color: '#64748b',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit'
+                            }}
                         >
                             Cancelar
                         </button>
@@ -1405,8 +1331,33 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
                             type="submit"
                             className="btn-save"
                             disabled={isLoading}
+                            style={{
+                                padding: '0.75rem 2rem',
+                                borderRadius: '12px',
+                                fontWeight: '800',
+                                border: 'none',
+                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                color: 'white',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 10px 20px -5px rgba(15, 23, 42, 0.3)',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
                         >
-                            {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+                            {isLoading ? (
+                                <>
+                                    <span className="material-symbols-outlined spinning" style={{ fontSize: '18px' }}>progress_activity</span>
+                                    Guardando...
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>save</span>
+                                    Guardar Cambios
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
@@ -1418,6 +1369,7 @@ const EditModal = ({ user, type, isOpen, onClose, onSave }) => {
 // Modal para Asignar Representante
 
 const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const [representantes, setRepresentantes] = useState([]);
     const [selectedRep, setSelectedRep] = useState('');
@@ -1436,7 +1388,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
             setRepresentantes(response.data);
         } catch (error) {
             console.error('Error al cargar representantes:', error);
-            alert('Error al cargar la lista de representantes');
+            addNotification('Error al cargar la lista de representantes', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -1444,7 +1396,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
 
     const handleAssign = async () => {
         if (!selectedRep) {
-            alert('Por favor, seleccione un representante');
+            addNotification('Por favor, seleccione un representante', 'warning');
             return;
         }
 
@@ -1452,12 +1404,12 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
             await axios.patch(`${API_URL}${type}/${user.id}/`, {
                 representante: selectedRep,
             });
-            alert('Representante asignado con éxito');
+            addNotification('Representante asignado con éxito', 'success');
             onAssign();
             onClose();
         } catch (error) {
             console.error('Error al asignar representante:', error);
-            alert('Error al asignar el representante');
+            addNotification('Error al asignar el representante', 'error');
         }
     };
 
@@ -1484,111 +1436,191 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
 
     if (!isOpen || !user) return null;
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div
-                className="modal-content assign-modal"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="modal-header">
-                    <h2>Asignar Representante</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+        <div className="modal-overlay" onClick={onClose} style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+            <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{
+                maxWidth: '600px',
+                width: '95%',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                border: 'none',
+                boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                background: '#f1f5f9',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div className="modal-header" style={{
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    padding: '1.5rem 2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            background: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--primary)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>person_add</span>
+                        </div>
+                        <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.25rem', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                            Asignar Representante
+                        </h3>
+                    </div>
+                    <button className="close-btn" onClick={onClose} title="Cerrar" style={{ background: '#ffffff', color: '#64748b', width: '32px', height: '32px', border: '1px solid #e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
                     </button>
                 </div>
-                <div className="modal-body">
-                    <div className="form-group">
-                        <label>Seleccione un Representante:</label>
-                        <input
-                            type="search"
-                            name="searchRep"
-                            id="searchRep"
-                            placeholder="Buscar por nombre..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                <div className="modal-body" style={{ padding: '2rem', overflowY: 'auto', flex: 1 }}>
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Buscar Representante:</label>
+                        <div style={{ position: 'relative' }}>
+                            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '20px' }}>search</span>
+                            <input
+                                type="search"
+                                placeholder="Nombre o Cédula..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontSize: '1rem', outline: 'none' }}
+                            />
+                        </div>
                     </div>
-                    <div className="representantes-list">
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {filteredRepresentantes.length === 0 ? (
-                            <p>No hay representantes registrados</p>
+                            <div style={{ textAlign: 'center', padding: '2rem', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#cbd5e1', marginBottom: '12px' }}>person_search</span>
+                                <p style={{ margin: 0, color: '#64748b', fontWeight: '500' }}>No se encontraron representantes</p>
+                            </div>
                         ) : (
-                            paginatedRepresentantes.map((representante) => (
+                            paginatedRepresentantes.map((rep) => (
                                 <div
-                                    key={representante.id}
-                                    className={`representante-item ${
-                                        selectedRep === representante.id
-                                            ? 'selected'
-                                            : ''
-                                    }`}
-                                    onClick={() =>
-                                        setSelectedRep(representante.id)
-                                    }
+                                    key={rep.id}
+                                    onClick={() => setSelectedRep(rep.id)}
+                                    style={{
+                                        padding: '12px 16px',
+                                        borderRadius: '16px',
+                                        background: selectedRep === rep.id ? 'var(--primary)' : 'white',
+                                        border: `1px solid ${selectedRep === rep.id ? 'var(--primary)' : '#e2e8f0'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: selectedRep === rep.id ? '0 10px 15px -3px rgba(67, 97, 238, 0.2)' : 'none'
+                                    }}
                                 >
-                                    <div className="datos">
-                                        <p>
-                                            Nombre:{' '}
-                                            {`${representante.nombre} ${representante.apellido}`}
-                                        </p>
-                                        <p>Cédula: {representante.cedula}</p>
-                                    </div>
-                                    <div className="card-photo">
-                                        {representante.foto ? (
-                                            <img
-                                                src={representante.foto}
-                                                alt={`Foto de ${representante.nombre} ${representante.apellido}`}
-                                            />
+                                    <div style={{
+                                        width: '44px',
+                                        height: '44px',
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        background: '#f1f5f9',
+                                        flexShrink: 0
+                                    }}>
+                                        {rep.foto ? (
+                                            <img src={rep.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         ) : (
-                                            <i className="fas fa-user-circle default-foto-user"></i>
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                                                <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>account_circle</span>
+                                            </div>
                                         )}
                                     </div>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ margin: 0, fontWeight: '700', color: selectedRep === rep.id ? 'white' : '#0f172a', fontSize: '0.95rem' }}>
+                                            {rep.nombre} {rep.apellido}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: selectedRep === rep.id ? 'rgba(255,255,255,0.8)' : '#64748b' }}>
+                                            C.I. {rep.cedula}
+                                        </p>
+                                    </div>
+                                    {selectedRep === rep.id && (
+                                        <span className="material-symbols-outlined" style={{ color: 'white' }}>check_circle</span>
+                                    )}
                                 </div>
                             ))
                         )}
-                        {totalPages > 1 && (
-                            <div className="carousel-controls">
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.max(prev - 1, 0),
-                                        )
-                                    }
-                                    disabled={currentPage === 0}
-                                >
-                                    ← Anterior
-                                </button>
-
-                                <span style={{ margin: '0 1rem' }}>
-                                    Página {currentPage + 1} de {totalPages}
-                                </span>
-
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.min(prev + 1, totalPages - 1),
-                                        )
-                                    }
-                                    disabled={currentPage === totalPages - 1}
-                                >
-                                    Siguiente →
-                                </button>
-                            </div>
-                        )}
                     </div>
+
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                                disabled={currentPage === 0}
+                                style={{ padding: '8px', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: currentPage === 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                                <span className="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>
+                                {currentPage + 1} / {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={currentPage === totalPages - 1}
+                                style={{ padding: '8px', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer' }}
+                            >
+                                <span className="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
-                <div className="modal-footer">
+
+                <div className="modal-footer" style={{
+                    background: '#f8fafc',
+                    borderTop: '1px solid #e2e8f0',
+                    padding: '1.25rem 2rem',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '1rem'
+                }}>
                     <button
                         type="button"
-                        className="btn-cancel"
                         onClick={onClose}
+                        style={{ padding: '0.6rem 1.25rem', borderRadius: '10px', fontWeight: '700', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'pointer', fontFamily: 'Outfit' }}
                     >
                         Cancelar
                     </button>
                     <button
                         type="button"
-                        className="btn-assing"
                         onClick={handleAssign}
-                        disabled={isLoading}
+                        disabled={isLoading || !selectedRep}
+                        style={{
+                            padding: '0.6rem 1.5rem',
+                            borderRadius: '10px',
+                            fontWeight: '800',
+                            border: 'none',
+                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                            color: 'white',
+                            cursor: (isLoading || !selectedRep) ? 'not-allowed' : 'pointer',
+                            boxShadow: '0 4px 10px rgba(15, 23, 42, 0.2)',
+                            transition: 'all 0.2s ease',
+                            fontFamily: 'Outfit',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
                     >
-                        {isLoading ? 'Guardando...' : 'Asignar'}
+                        {isLoading ? (
+                            <>
+                                <span className="material-symbols-outlined spinning" style={{ fontSize: '18px' }}>progress_activity</span>
+                                Asignando...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>link</span>
+                                Asignar
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -1599,6 +1631,7 @@ const AssignModal = ({ user, type, isOpen, onClose, onAssign }) => {
 // Modal para Asignar Curso y Sección a Profesor
 
 const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const [cursos, setCursos] = useState([]);
     const [selectedCurso, setSelectedCurso] = useState([]);
@@ -1614,19 +1647,19 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
     const fetchCursos = async () => {
         try {
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/grado-seccion/`,
+                `${BASE_URL}/grado-seccion/`
             );
             setCursos(response.data);
         } catch (error) {
             console.error('Error al cargar cursos:', error);
-            alert('Error al cargar la lista de cursos');
+            addNotification('Error al cargar la lista de cursos', 'error');
         } finally {
             setIsLoading(false);
         }
     };
     const handleAssign = async () => {
         if (!selectedCurso) {
-            alert('Por favor, seleccione un curso');
+            addNotification('Por favor, seleccione un curso', 'warning');
             return;
         }
         console.log(selectedCurso);
@@ -1634,12 +1667,12 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
             await axios.patch(`${API_URL}profesor/${user.id}/`, {
                 grado_secciones: selectedCurso,
             });
-            alert('Curso asignado con éxito');
+            addNotification('Curso asignado con éxito', 'success');
             onAssignP();
             onClose();
         } catch (error) {
             console.error('Error al asignar curso:', error);
-            alert('Error al asignar el curso');
+            addNotification('Error al asignar el curso', 'error');
         }
     };
 
@@ -1664,107 +1697,197 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
 
     if (!isOpen || !user) return null;
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div
-                className="modal-content assign-modal"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="modal-header">
-                    <h2>Asignar Curso y Seccion</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+        <div className="modal-overlay" onClick={onClose} style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+            <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{
+                maxWidth: '700px',
+                width: '95%',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                border: 'none',
+                boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                background: '#f1f5f9',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div className="modal-header" style={{
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    padding: '1.5rem 2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            background: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--primary)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>school</span>
+                        </div>
+                        <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.25rem', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                            Asignar Cursos
+                        </h3>
+                    </div>
+                    <button className="close-btn" onClick={onClose} title="Cerrar" style={{ background: '#ffffff', color: '#64748b', width: '32px', height: '32px', border: '1px solid #e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
                     </button>
                 </div>
-                <div className="modal-body">
-                    <div className="form-group">
-                        <label>Seleccione un Curso:</label>
-                        <input
-                            type="search"
-                            name="searchCurso"
-                            id="searchCurso"
-                            placeholder="Buscar por nombre..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+
+                <div className="modal-body" style={{ padding: '2rem', overflowY: 'auto', flex: 1 }}>
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#475569', fontSize: '0.9rem' }}>Buscar Curso:</label>
+                        <div style={{ position: 'relative' }}>
+                            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '20px' }}>search</span>
+                            <input
+                                type="search"
+                                placeholder="Nivel o Grado..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontSize: '1rem', outline: 'none' }}
+                            />
+                        </div>
                     </div>
-                    <div className="representantes-list">
+
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr',
+                        gap: '12px'
+                    }}>
                         {filteredCursos.length === 0 ? (
-                            <p>No hay cursos registrados</p>
+                            <div style={{ textAlign: 'center', padding: '2rem', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#cbd5e1', marginBottom: '12px' }}>domain_disabled</span>
+                                <p style={{ margin: 0, color: '#64748b', fontWeight: '500' }}>No se encontraron cursos</p>
+                            </div>
                         ) : (
                             paginatedCursos.map((curso) => (
                                 <div
                                     key={curso.id}
-                                    className={`representante-item ${
-                                        selectedCurso.includes(curso.id)
-                                            ? 'selected'
-                                            : ''
-                                    }`}
-                                    onClick={() =>
-                                        setSelectedCurso((prev) => {
-                                            if (prev.includes(curso.id)) {
-                                                return prev.filter(
-                                                    (id) => id !== curso.id,
-                                                );
-                                            } else {
-                                                return [...prev, curso.id];
-                                            }
-                                        })
-                                    }
+                                    onClick={() => setSelectedCurso((prev) => {
+                                        if (prev.includes(curso.id)) return prev.filter(id => id !== curso.id);
+                                        return [...prev, curso.id];
+                                    })}
+                                    style={{
+                                        padding: '12px 16px',
+                                        borderRadius: '16px',
+                                        background: selectedCurso.includes(curso.id) ? 'var(--primary)' : 'white',
+                                        border: `1px solid ${selectedCurso.includes(curso.id) ? 'var(--primary)' : '#e2e8f0'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: selectedCurso.includes(curso.id) ? '0 10px 15px -3px rgba(67, 97, 238, 0.2)' : 'none'
+                                    }}
                                 >
-                                    <div className="datos">
-                                        <p>Nivel: {curso.nivel}</p>
-                                        <p>Grado: {curso.grado}</p>
-                                        <p>Sección: {curso.seccion}</p>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '10px',
+                                        background: selectedCurso.includes(curso.id) ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: selectedCurso.includes(curso.id) ? 'white' : 'var(--primary)',
+                                        fontWeight: '800',
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        {curso.grado}°
                                     </div>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ margin: 0, fontWeight: '700', color: selectedCurso.includes(curso.id) ? 'white' : '#0f172a', fontSize: '0.95rem' }}>
+                                            {curso.nivel === 'primaria' ? 'Primaria' : 'Secundaria'} - Sección {curso.seccion}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: selectedCurso.includes(curso.id) ? 'rgba(255,255,255,0.8)' : '#64748b' }}>
+                                            {curso.grado}° {curso.nivel === 'primaria' ? 'Grado' : 'Año'}
+                                        </p>
+                                    </div>
+                                    {selectedCurso.includes(curso.id) && (
+                                        <span className="material-symbols-outlined" style={{ color: 'white' }}>check_circle</span>
+                                    )}
                                 </div>
                             ))
                         )}
-                        {totalPages > 1 && (
-                            <div className="carousel-controls">
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.max(prev - 1, 0),
-                                        )
-                                    }
-                                    disabled={currentPage === 0}
-                                >
-                                    ← Anterior
-                                </button>
-
-                                <span style={{ margin: '0 1rem' }}>
-                                    Página {currentPage + 1} de {totalPages}
-                                </span>
-
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.min(prev + 1, totalPages - 1),
-                                        )
-                                    }
-                                    disabled={currentPage === totalPages - 1}
-                                >
-                                    Siguiente →
-                                </button>
-                            </div>
-                        )}
                     </div>
+
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                                disabled={currentPage === 0}
+                                style={{ padding: '8px', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: currentPage === 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                                <span className="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>
+                                {currentPage + 1} / {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={currentPage === totalPages - 1}
+                                style={{ padding: '8px', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer' }}
+                            >
+                                <span className="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
-                <div className="modal-footer">
+
+                <div className="modal-footer" style={{
+                    background: '#f8fafc',
+                    borderTop: '1px solid #e2e8f0',
+                    padding: '1.25rem 2rem',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '1rem'
+                }}>
                     <button
                         type="button"
-                        className="btn-cancel"
                         onClick={onClose}
+                        style={{ padding: '0.6rem 1.25rem', borderRadius: '10px', fontWeight: '700', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'pointer', fontFamily: 'Outfit' }}
                     >
                         Cancelar
                     </button>
                     <button
                         type="button"
-                        className="btn-assing"
                         onClick={handleAssign}
-                        disabled={isLoading}
+                        disabled={isLoading || selectedCurso.length === 0}
+                        style={{
+                            padding: '0.6rem 1.5rem',
+                            borderRadius: '10px',
+                            fontWeight: '800',
+                            border: 'none',
+                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                            color: 'white',
+                            cursor: (isLoading || selectedCurso.length === 0) ? 'not-allowed' : 'pointer',
+                            boxShadow: '0 4px 10px rgba(15, 23, 42, 0.2)',
+                            transition: 'all 0.2s ease',
+                            fontFamily: 'Outfit',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
                     >
-                        {isLoading ? 'Guardando...' : 'Asignar'}
+                        {isLoading ? (
+                            <>
+                                <span className="material-symbols-outlined spinning" style={{ fontSize: '18px' }}>progress_activity</span>
+                                Asignando...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>link</span>
+                                Asignar
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -1774,6 +1897,7 @@ const AssignPModal = ({ user, type, isOpen, onClose, onAssignP }) => {
 
 // Lista de Estudiantes
 export function ListaE() {
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const [estudiantes, setEstudiantes] = useState([]);
     const [filteredEstudiantes, setFilteredEstudiantes] = useState([]);
@@ -1800,7 +1924,7 @@ export function ListaE() {
             setEstudiantes(response.data);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
-            alert('Error al cargar la lista de estudiantes');
+            addNotification('Error al cargar la lista de estudiantes', 'error');
         } finally {
             setLoading(false);
         }
@@ -1858,11 +1982,11 @@ export function ListaE() {
 
         try {
             await axios.delete(`${API_URL}estudiante/${user.id}/`);
-            alert('Estudiante eliminado con éxito');
+            addNotification('Estudiante eliminado con éxito', 'success');
             fetchEstudiantes();
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar el estudiante');
+            addNotification('Error al eliminar el estudiante', 'error');
         }
     };
 
@@ -1874,18 +1998,12 @@ export function ListaE() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Estudiantes</h1>
-                <button
-                    className="btn-add"
-                    onClick={() => navigate('/admin/registro')}
-                >
-                    <i className="fas fa-plus"></i> Agregar Estudiante
-                </button>
             </div>
 
             {/* Barra de búsqueda y filtros */}
             <div className="listas-toolbar">
                 <div className="search-container">
-                    <i className="fas fa-search search-icon"></i>
+                    <span className="material-symbols-outlined search-icon">search</span>
                     <input
                         type="text"
                         placeholder="Buscar por nombre, apellido, cédula, grado o sección..."
@@ -1907,99 +2025,107 @@ export function ListaE() {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={`view-btn ${
-                            viewMode === 'cards' ? 'active' : ''
-                        }`}
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''
+                            }`}
                         onClick={() => setViewMode('cards')}
                         title="Vista de tarjetas"
                     >
-                        <i className="fas fa-th"></i>
+                        <span className="material-symbols-outlined">grid_view</span>
                     </button>
                     <button
-                        className={`view-btn ${
-                            viewMode === 'table' ? 'active' : ''
-                        }`}
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''
+                            }`}
                         onClick={() => setViewMode('table')}
                         title="Vista de tabla"
                     >
-                        <i className="fas fa-table"></i>
+                        <span className="material-symbols-outlined">table_chart</span>
                     </button>
                 </div>
-            </div>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
+                    <span className="material-symbols-outlined">add</span> Agregar Estudiante
+                </button>
+            </div >
 
             {/* Contador de resultados */}
-            <div className="results-info">
+            < div className="results-info" >
                 <span>
                     Mostrando {filteredEstudiantes.length} de{' '}
                     {estudiantes.length} estudiantes
                 </span>
-            </div>
+            </div >
 
             {/* Vista de Cards */}
-            {viewMode === 'cards' && (
-                <div className="cards-grid">
-                    {loading ? (
-                        <div className="loading">Cargando estudiantes...</div>
-                    ) : filteredEstudiantes.length === 0 ? (
-                        <p className="no-data">
-                            No hay estudiantes que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        filteredEstudiantes.map((estudiante) => (
-                            <UserCard
-                                key={estudiante.id}
-                                user={estudiante}
-                                type="estudiante"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAssing={handleAssign}
-                            />
-                        ))
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'cards' && (
+                    <div className="cards-grid">
+                        {loading ? (
+                            <div className="loading">Cargando estudiantes...</div>
+                        ) : filteredEstudiantes.length === 0 ? (
+                            <p className="no-data">
+                                No hay estudiantes que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            filteredEstudiantes.map((estudiante) => (
+                                <UserCard
+                                    key={estudiante.id}
+                                    user={estudiante}
+                                    type="estudiante"
+                                    onCardClick={handleCardClick}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    onAssing={handleAssign}
+                                />
+                            ))
+                        )}
+                    </div>
+                )
+            }
 
             {/* Vista de Tabla */}
-            {viewMode === 'table' && (
-                <div className="table-container">
-                    {loading ? (
-                        <div className="loading">Cargando estudiantes...</div>
-                    ) : filteredEstudiantes.length === 0 ? (
-                        <p className="no-data">
-                            No hay estudiantes que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        <table className="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Nombre</th>
-                                    <th>Cédula</th>
-                                    <th>Grado/Año</th>
-                                    <th>Sección</th>
-                                    <th>Nivel</th>
-                                    <th>Edad</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredEstudiantes.map((estudiante) => (
-                                    <UserRow
-                                        key={estudiante.id}
-                                        user={estudiante}
-                                        type="estudiante"
-                                        onRowClick={handleCardClick}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                        onAssing={handleAssign}
-                                    />
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'table' && (
+                    <div className="table-container">
+                        {loading ? (
+                            <div className="loading">Cargando estudiantes...</div>
+                        ) : filteredEstudiantes.length === 0 ? (
+                            <p className="no-data">
+                                No hay estudiantes que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            <table className="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nombre</th>
+                                        <th>Cédula</th>
+                                        <th>Grado/Año</th>
+                                        <th>Sección</th>
+                                        <th>Nivel</th>
+                                        <th>Edad</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredEstudiantes.map((estudiante) => (
+                                        <UserRow
+                                            key={estudiante.id}
+                                            user={estudiante}
+                                            type="estudiante"
+                                            onRowClick={handleCardClick}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                            onAssing={handleAssign}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )
+            }
             <DetailModal
                 user={selectedUser}
                 type="estudiante"
@@ -2030,12 +2156,13 @@ export function ListaE() {
                 }}
                 onAssign={fetchEstudiantes}
             />
-        </div>
+        </div >
     );
 }
 
 // Lista de Representantes
 export function ListaR() {
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const [representantes, setRepresentantes] = useState([]);
     const [filteredRepresentantes, setFilteredRepresentantes] = useState([]);
@@ -2060,7 +2187,7 @@ export function ListaR() {
             setRepresentantes(response.data);
         } catch (error) {
             console.error('Error al cargar representantes:', error);
-            alert('Error al cargar la lista de representantes');
+            addNotification('Error al cargar la lista de representantes', 'error');
         } finally {
             setLoading(false);
         }
@@ -2104,11 +2231,11 @@ export function ListaR() {
 
         try {
             await axios.delete(`${API_URL}representante/${user.id}/`);
-            alert('Representante eliminado con éxito');
+            addNotification('Representante eliminado con éxito', 'success');
             fetchRepresentantes();
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            alert('Error al eliminar el representante');
+            console.error('Error alim eliminar:', error);
+            addNotification('Error al eliminar el representante', 'error');
         }
     };
 
@@ -2116,18 +2243,12 @@ export function ListaR() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Representantes</h1>
-                <button
-                    className="btn-add"
-                    onClick={() => navigate('/admin/registro')}
-                >
-                    <i className="fas fa-plus"></i> Agregar Representante
-                </button>
             </div>
 
             {/* Barra de búsqueda y filtros */}
             <div className="listas-toolbar">
                 <div className="search-container">
-                    <i className="fas fa-search search-icon"></i>
+                    <span className="material-symbols-outlined search-icon">search</span>
                     <input
                         type="text"
                         placeholder="Buscar por nombre, apellido, cédula o teléfono..."
@@ -2138,100 +2259,107 @@ export function ListaR() {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={`view-btn ${
-                            viewMode === 'cards' ? 'active' : ''
-                        }`}
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
                         onClick={() => setViewMode('cards')}
                         title="Vista de tarjetas"
                     >
-                        <i className="fas fa-th"></i>
+                        <span className="material-symbols-outlined">grid_view</span>
                     </button>
                     <button
-                        className={`view-btn ${
-                            viewMode === 'table' ? 'active' : ''
-                        }`}
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
                         onClick={() => setViewMode('table')}
                         title="Vista de tabla"
                     >
-                        <i className="fas fa-table"></i>
+                        <span className="material-symbols-outlined">table_chart</span>
                     </button>
                 </div>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
+                    <span className="material-symbols-outlined">add</span> Agregar Representante
+                </button>
             </div>
 
+
             {/* Contador de resultados */}
-            <div className="results-info">
+            < div className="results-info" >
                 <span>
                     Mostrando {filteredRepresentantes.length} de{' '}
                     {representantes.length} representantes
                 </span>
-            </div>
+            </div >
 
             {/* Vista de Cards */}
-            {viewMode === 'cards' && (
-                <div className="cards-grid">
-                    {loading ? (
-                        <div className="loading">
-                            Cargando representantes...
-                        </div>
-                    ) : filteredRepresentantes.length === 0 ? (
-                        <p className="no-data">
-                            No hay representantes que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        filteredRepresentantes.map((representante) => (
-                            <UserCard
-                                key={representante.id}
-                                user={representante}
-                                type="representante"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'cards' && (
+                    <div className="cards-grid">
+                        {loading ? (
+                            <div className="loading">
+                                Cargando representantes...
+                            </div>
+                        ) : filteredRepresentantes.length === 0 ? (
+                            <p className="no-data">
+                                No hay representantes que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            filteredRepresentantes.map((representante) => (
+                                <UserCard
+                                    key={representante.id}
+                                    user={representante}
+                                    type="representante"
+                                    onCardClick={handleCardClick}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                            ))
+                        )}
+                    </div>
+                )
+            }
 
             {/* Vista de Tabla */}
-            {viewMode === 'table' && (
-                <div className="table-container">
-                    {loading ? (
-                        <div className="loading">
-                            Cargando representantes...
-                        </div>
-                    ) : filteredRepresentantes.length === 0 ? (
-                        <p className="no-data">
-                            No hay representantes que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        <table className="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Nombre</th>
-                                    <th>Cédula</th>
-                                    <th>Edad</th>
-                                    <th>Teléfono</th>
-                                    <th>Estudiantes</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredRepresentantes.map((representante) => (
-                                    <UserRow
-                                        key={representante.id}
-                                        user={representante}
-                                        type="representante"
-                                        onRowClick={handleCardClick}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'table' && (
+                    <div className="table-container">
+                        {loading ? (
+                            <div className="loading">
+                                Cargando representantes...
+                            </div>
+                        ) : filteredRepresentantes.length === 0 ? (
+                            <p className="no-data">
+                                No hay representantes que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            <table className="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nombre</th>
+                                        <th>Cédula</th>
+                                        <th>Edad</th>
+                                        <th>Teléfono</th>
+                                        <th>Estudiantes</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredRepresentantes.map((representante) => (
+                                        <UserRow
+                                            key={representante.id}
+                                            user={representante}
+                                            type="representante"
+                                            onRowClick={handleCardClick}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )
+            }
             <DetailModal
                 user={selectedUser}
                 type="representante"
@@ -2252,12 +2380,13 @@ export function ListaR() {
                 }}
                 onSave={fetchRepresentantes}
             />
-        </div>
+        </div >
     );
 }
 
 // Lista de Profesores
 export function ListaP() {
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const [profesores, setProfesores] = useState([]);
     const [filteredProfesores, setFilteredProfesores] = useState([]);
@@ -2282,26 +2411,24 @@ export function ListaP() {
         try {
             const response = await axios.get(`${API_URL}profesor/`);
             // Log detallado para verificar estructura de grado_secciones
-            // if (response.data && response.data.length > 0) {
-            //     response.data.forEach((prof, index) => {
-            //         console.log(
-            //             `Profesor ${index + 1} (${prof.nombre} ${
-            //                 prof.apellido
-            //             }):`,
-            //             {
-            //                 id: prof.id,
-            //                 grado_secciones: prof.grado_secciones,
-            //                 tipo_grado_secciones: typeof prof.grado_secciones,
-            //                 es_array: Array.isArray(prof.grado_secciones),
-            //                 longitud: prof.grado_secciones?.length,
-            //             }
-            //         );
-            //     });
-            // }
+            if (response.data && response.data.length > 0) {
+                response.data.forEach((prof, index) => {
+                    console.log(
+                        `Profesor ${index + 1} (${prof.nombre} ${prof.apellido}):`,
+                        {
+                            id: prof.id,
+                            grado_secciones: prof.grado_secciones,
+                            tipo_grado_secciones: typeof prof.grado_secciones,
+                            es_array: Array.isArray(prof.grado_secciones),
+                            longitud: prof.grado_secciones?.length,
+                        }
+                    );
+                });
+            }
             setProfesores(response.data);
         } catch (error) {
             console.error('Error al cargar profesores:', error);
-            alert('Error al cargar la lista de profesores');
+            addNotification('Error al cargar la lista de profesores', 'error');
         } finally {
             setLoading(false);
         }
@@ -2358,11 +2485,11 @@ export function ListaP() {
 
         try {
             await axios.delete(`${API_URL}profesor/${user.id}/`);
-            alert('Profesor eliminado con éxito');
+            addNotification('Profesor eliminado con éxito', 'success');
             fetchProfesores();
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar el profesor');
+            addNotification('Error al eliminar el profesor', 'error');
         }
     };
 
@@ -2370,18 +2497,12 @@ export function ListaP() {
         <div className="listas-container">
             <div className="listas-header">
                 <h1>Lista de Profesores</h1>
-                <button
-                    className="btn-add"
-                    onClick={() => navigate('/admin/registro')}
-                >
-                    <i className="fas fa-plus"></i> Agregar Profesor
-                </button>
             </div>
 
             {/* Barra de búsqueda y filtros */}
             <div className="listas-toolbar">
                 <div className="search-container">
-                    <i className="fas fa-search search-icon"></i>
+                    <span className="material-symbols-outlined search-icon">search</span>
                     <input
                         type="text"
                         placeholder="Buscar por nombre, apellido, cédula o tipo..."
@@ -2396,107 +2517,114 @@ export function ListaP() {
                         onChange={(e) => setFiltroTipo(e.target.value)}
                         className="filter-select"
                     >
-                        <option value="">Todos los tipos</option>
-                        <option value="titular">Titular</option>
-                        <option value="suplente">Suplente</option>
-                        <option value="especialista">Especialista</option>
+                        <option value="">Todos los Tipos</option>
+                        <option value="planta">Planta</option>
+                        <option value="contratado">Contratado</option>
                     </select>
+
+                    <div className="view-toggle">
+                        <button
+                            className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                            onClick={() => setViewMode('table')}
+                            title="Vista de lista"
+                        >
+                            <span className="material-symbols-outlined">table_rows</span>
+                        </button>
+                        <button
+                            className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                            onClick={() => setViewMode('cards')}
+                            title="Vista de tarjetas"
+                        >
+                            <span className="material-symbols-outlined">grid_view</span>
+                        </button>
+                    </div>
                 </div>
-                <div className="view-toggle">
-                    <button
-                        className={`view-btn ${
-                            viewMode === 'cards' ? 'active' : ''
-                        }`}
-                        onClick={() => setViewMode('cards')}
-                        title="Vista de tarjetas"
-                    >
-                        <i className="fas fa-th"></i>
-                    </button>
-                    <button
-                        className={`view-btn ${
-                            viewMode === 'table' ? 'active' : ''
-                        }`}
-                        onClick={() => setViewMode('table')}
-                        title="Vista de tabla"
-                    >
-                        <i className="fas fa-table"></i>
-                    </button>
-                </div>
-            </div>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
+                    <span className="material-symbols-outlined">add</span> Agregar Profesor
+                </button>
+
+            </div >
 
             {/* Contador de resultados */}
-            <div className="results-info">
+            < div className="results-info" >
                 <span>
                     Mostrando {filteredProfesores.length} de {profesores.length}{' '}
                     profesores
                 </span>
-            </div>
+            </div >
 
             {/* Vista de Cards */}
-            {viewMode === 'cards' && (
-                <div className="cards-grid">
-                    {loading ? (
-                        <div className="loading">Cargando profesores...</div>
-                    ) : filteredProfesores.length === 0 ? (
-                        <p className="no-data">
-                            No hay profesores que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        filteredProfesores.map((profesor) => (
-                            <UserCard
-                                key={profesor.id}
-                                user={profesor}
-                                type="profesor"
-                                onCardClick={handleCardClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAssingP={handleAssign}
-                            />
-                        ))
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'cards' && (
+                    <div className="cards-grid">
+                        {loading ? (
+                            <div className="loading">Cargando profesores...</div>
+                        ) : filteredProfesores.length === 0 ? (
+                            <p className="no-data">
+                                No hay profesores que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            filteredProfesores.map((profesor) => (
+                                <UserCard
+                                    key={profesor.id}
+                                    user={profesor}
+                                    type="profesor"
+                                    onCardClick={handleCardClick}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    onAssingP={handleAssign}
+                                />
+                            ))
+                        )}
+                    </div>
+                )
+            }
 
             {/* Vista de Tabla */}
-            {viewMode === 'table' && (
-                <div className="table-container">
-                    {loading ? (
-                        <div className="loading">Cargando profesores...</div>
-                    ) : filteredProfesores.length === 0 ? (
-                        <p className="no-data">
-                            No hay profesores que coincidan con la búsqueda
-                        </p>
-                    ) : (
-                        <table className="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Nombre</th>
-                                    <th>Cédula</th>
-                                    <th>Grados Asignados</th>
-                                    <th>Tipo</th>
-                                    <th>Edad</th>
-                                    <th>Teléfono</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredProfesores.map((profesor) => (
-                                    <UserRow
-                                        key={profesor.id}
-                                        user={profesor}
-                                        type="profesor"
-                                        onRowClick={handleCardClick}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                        onAssingP={handleAssign}
-                                    />
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            )}
+            {
+                viewMode === 'table' && (
+                    <div className="table-container">
+                        {loading ? (
+                            <div className="loading">Cargando profesores...</div>
+                        ) : filteredProfesores.length === 0 ? (
+                            <p className="no-data">
+                                No hay profesores que coincidan con la búsqueda
+                            </p>
+                        ) : (
+                            <table className="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nombre</th>
+                                        <th>Cédula</th>
+                                        <th>Grados Asignados</th>
+                                        <th>Tipo</th>
+                                        <th>Edad</th>
+                                        <th>Teléfono</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredProfesores.map((profesor) => (
+                                        <UserRow
+                                            key={profesor.id}
+                                            user={profesor}
+                                            type="profesor"
+                                            onRowClick={handleCardClick}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                            onAssingP={handleAssign}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )
+            }
             <DetailModal
                 user={selectedUser}
                 type="profesor"
@@ -2527,6 +2655,209 @@ export function ListaP() {
                 }}
                 onAssignP={fetchProfesores}
             />
-        </div>
+        </div >
     );
 }
+
+// Lista de Administradores
+export function ListaA() {
+    const { addNotification } = useNotification();
+    const navigate = useNavigate();
+    const [administradores, setAdministradores] = useState([]);
+    const [filteredAdmins, setFilteredAdmins] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState('table');
+
+    useEffect(() => {
+        fetchAdmins();
+    }, []);
+
+    useEffect(() => {
+        filterAdmins();
+    }, [administradores, searchTerm]);
+
+    const fetchAdmins = async () => {
+        try {
+            const response = await axios.get(`${API_URL}administrador/`);
+            setAdministradores(response.data);
+        } catch (error) {
+            console.error('Error al cargar administradores:', error);
+            addNotification('Error al cargar la lista de administradores', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filterAdmins = () => {
+        let filtered = [...administradores];
+
+        if (searchTerm) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(
+                (adm) =>
+                    adm.nombre?.toLowerCase().includes(search) ||
+                    adm.apellido?.toLowerCase().includes(search) ||
+                    adm.email?.toLowerCase().includes(search),
+            );
+        }
+
+        setFilteredAdmins(filtered);
+    };
+
+    const handleCardClick = (user) => {
+        setSelectedUser(user);
+        setShowDetailModal(true);
+    };
+
+    const handleEdit = (user) => {
+        setSelectedUser(user);
+        setShowEditModal(true);
+    };
+
+    const handleDelete = async (user) => {
+        if (
+            !window.confirm(
+                `¿Está seguro de eliminar a ${user.nombre} ${user.apellido}?`,
+            )
+        ) {
+            return;
+        }
+
+        try {
+            await axios.delete(`${API_URL}administrador/${user.id}/`);
+            addNotification('Administrador eliminado con éxito', 'success');
+            fetchAdmins();
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            addNotification('Error al eliminar el administrador', 'error');
+        }
+    };
+
+    return (
+        <div className="listas-container">
+            <div className="listas-header">
+                <h1>Lista de Directivos</h1>
+            </div>
+
+            <div className="listas-toolbar">
+                <div className="search-container">
+                    <span className="material-symbols-outlined search-icon">search</span>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, apellido o email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
+                <div className="view-toggle">
+                    <button
+                        className={`view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                        onClick={() => setViewMode('cards')}
+                    >
+                        <span className="material-symbols-outlined">grid_view</span>
+                    </button>
+                    <button
+                        className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => setViewMode('table')}
+                    >
+                        <span className="material-symbols-outlined">table_chart</span>
+                    </button>
+                </div>
+                <button
+                    className="btn-add"
+                    onClick={() => navigate('/admin/registro')}
+                >
+                    <span className="material-symbols-outlined">add</span> Agregar Directivo
+                </button>
+            </div>
+
+            <div className="results-info">
+                <span>
+                    Mostrando {filteredAdmins.length} de {administradores.length} directivos
+                </span>
+            </div>
+
+            {
+                viewMode === 'cards' && (
+                    <div className="cards-grid">
+                        {loading ? (
+                            <div className="loading">Cargando directivos...</div>
+                        ) : (
+                            filteredAdmins.map((admin) => (
+                                <UserCard
+                                    key={admin.id}
+                                    user={admin}
+                                    type="administrador"
+                                    onCardClick={handleCardClick}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                            ))
+                        )}
+                    </div>
+                )
+            }
+
+            {
+                viewMode === 'table' && (
+                    <div className="table-container">
+                        {loading ? (
+                            <div className="loading">Cargando directivos...</div>
+                        ) : (
+                            <table className="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredAdmins.map((admin) => (
+                                        <UserRow
+                                            key={admin.id}
+                                            user={admin}
+                                            type="administrador"
+                                            onRowClick={handleCardClick}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )
+            }
+            <DetailModal
+                user={selectedUser}
+                type="administrador"
+                isOpen={showDetailModal}
+                onClose={() => {
+                    setShowDetailModal(false);
+                    setSelectedUser(null);
+                }}
+                onEdit={handleEdit}
+            />
+            <EditModal
+                user={selectedUser}
+                type="administrador"
+                isOpen={showEditModal}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setSelectedUser(null);
+                }}
+                onSave={fetchAdmins}
+            />
+        </div >
+    );
+}
+
+export default ListaE;

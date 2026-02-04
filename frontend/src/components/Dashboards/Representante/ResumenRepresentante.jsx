@@ -31,11 +31,18 @@ const ListaEstudiantes = ({ isOpen, onClose, estudiantes }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="modal-container"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-header">
-                    <h2>Mis Representados</h2>
-                    <button className="modal-close" onClick={onClose}>
-                        <i className="fas fa-times"></i>
+                    <h3>Mis Representados</h3>
+                    <button
+                        className="close-btn"
+                        onClick={onClose}
+                        title="Cerrar"
+                    >
+                        &times;
                     </button>
                 </div>
                 <div className="modal-body">
@@ -79,12 +86,13 @@ const ListaEstudiantes = ({ isOpen, onClose, estudiantes }) => {
 };
 
 const ResumenRepresentante = () => {
-    const [estudiantes, setEstudiantes] = useState([]);
+    const estudiantes = JSON.parse(localStorage.getItem('user')).estudiantes;
     const [boletines, setBoletines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
     const repreId = JSON.parse(localStorage.getItem('user')).id;
+    const estudiantesId = estudiantes.map((estudiante) => estudiante.id);
 
     useEffect(() => {
         cargarDatos();
@@ -93,7 +101,7 @@ const ResumenRepresentante = () => {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            await Promise.all([cargarEstudiantes(), cargarBoletines()]);
+            await Promise.all([cargarBoletines()]);
         } catch (error) {
             console.error('Error al cargar datos:', error);
         } finally {
@@ -101,35 +109,24 @@ const ResumenRepresentante = () => {
         }
     };
 
-    const cargarEstudiantes = async () => {
-        try {
-            const response = await axios.get(
-                `${API_URL}usuarios/representante/`,
-                {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-                },
-            );
-            response.data.find((rep) => rep.id === repreId) &&
-                setEstudiantes(
-                    response.data.find((rep) => rep.id === repreId)
-                        .estudiantes || [],
-                );
-        } catch (error) {
-            console.error('Error al cargar estudiantes:', error);
-        }
-    };
-
     const cargarBoletines = async () => {
         try {
             const response = await axios.get(`${API_URL}boletines/`, {
-                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                Headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                },
             });
-            setBoletines(response.data || []);
+            setBoletines(
+                response.data.filter((boletin) =>
+                    estudiantesId.includes(boletin.estudiante),
+                ) || [],
+            );
         } catch (error) {
             console.error('Error al cargar boletines:', error);
         }
     };
 
+    console.log(boletines);
     const totalEstudiantes = estudiantes.length || 0;
     const totalBoletines = boletines.length || 0;
     const boletinesRecientes = boletines.slice(0, 3);
@@ -206,7 +203,12 @@ const ResumenRepresentante = () => {
                     {boletinesRecientes.length > 0 && (
                         <div className="boletines-recientes">
                             <h2>
-                                <i className="fas fa-clock"></i>
+                                <span
+                                    className="material-symbols-outlined"
+                                    style={{ fontSize: '2rem' }}
+                                >
+                                    history
+                                </span>
                                 Boletines Recientes
                             </h2>
                             <div className="boletines-recientes-grid">
@@ -217,7 +219,9 @@ const ResumenRepresentante = () => {
                                     >
                                         <div className="boletin-reciente-header">
                                             <h4>
-                                                <i className="fas fa-file-pdf"></i>
+                                                <span className="material-symbols-outlined">
+                                                    picture_as_pdf
+                                                </span>
                                                 {boletin.lapso_display}
                                             </h4>
                                             {boletin.promedio_general && (
@@ -230,12 +234,16 @@ const ResumenRepresentante = () => {
                                         </div>
                                         <div className="boletin-reciente-info">
                                             <p>
-                                                <i className="fas fa-user-graduate"></i>
+                                                <span className="material-symbols-outlined">
+                                                    school
+                                                </span>
                                                 {boletin.estudiante_nombre ||
                                                     'Estudiante'}
                                             </p>
                                             <p>
-                                                <i className="fas fa-calendar"></i>
+                                                <span className="material-symbols-outlined">
+                                                    calendar_today
+                                                </span>
                                                 {new Date(
                                                     boletin.fecha_emision,
                                                 ).toLocaleDateString('es-ES', {
@@ -246,7 +254,7 @@ const ResumenRepresentante = () => {
                                             </p>
                                         </div>
                                         <button
-                                            className="btn-ver-boletin"
+                                            className="card-button"
                                             onClick={() =>
                                                 navigate(
                                                     '/representante/boletines',

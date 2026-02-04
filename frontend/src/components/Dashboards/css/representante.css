@@ -19,6 +19,7 @@
   padding: 1.5rem 2rem;
   color: white;
 }
+
 .main-header .main-title {
   display: flex;
   flex-direction: column;
@@ -27,20 +28,24 @@
   width: 60%;
   font-family: "Chonburi", serif;
 }
+
 .main-header .main-title h2 {
   font-size: 2rem;
   margin-bottom: 0.3rem;
 }
+
 .main-header .main-title p {
   font-family: "Instrument Serif", serif;
   font-size: 0.9rem;
   font-style: italic;
 }
+
 .main-header .logo {
   width: 50px;
   height: auto;
   margin-bottom: 0.5rem;
 }
+
 .main-header .user-info {
   width: 40%;
   display: flex;
@@ -49,9 +54,11 @@
   align-items: end;
   gap: 1rem;
 }
+
 .main-header .user-info span {
   font-weight: bold;
 }
+
 .main-header .user-info button {
   background: #459cff;
   color: #f8f8f8;
@@ -62,6 +69,7 @@
   cursor: pointer;
   transition: background 0.3s;
 }
+
 .main-header .user-info button:hover {
   background: #62abfd;
 }
@@ -74,40 +82,48 @@
   color: white;
   padding: 2rem 0rem;
 }
+
 .sidebar .sidebar-menu ul {
   list-style: none;
 }
-.sidebar .sidebar-menu ul > li:not(:has(details)) {
+
+.sidebar .sidebar-menu ul>li:not(:has(details)) {
   padding: 0.75rem 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
 }
-.sidebar .sidebar-menu ul > li:not(:has(details)):hover {
+
+.sidebar .sidebar-menu ul>li:not(:has(details)):hover {
   background-color: #75b4fc;
 }
+
 .sidebar .sidebar-menu ul li details summary {
   padding: 0.75rem 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
 .sidebar .sidebar-menu ul li details summary:hover {
   background-color: #75b4fc;
 }
+
 .sidebar .sidebar-menu ul li details[open] summary {
   background-color: transparent;
 }
+
 .sidebar .sidebar-menu ul li details ul {
   list-style: none;
   padding-left: 1rem;
 }
+
 .sidebar .sidebar-menu ul li details ul li {
   padding: 0.5rem 1rem;
   font-weight: normal;
   transition: background-color 0.3s;
 }
+
 .sidebar .sidebar-menu ul li details ul li:hover {
   background-color: #1abc9c;
 }
-

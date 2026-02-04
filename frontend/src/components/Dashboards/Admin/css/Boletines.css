@@ -21,6 +21,8 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+
+
 .boletines-table th {
     background: #007bff;
     color: white;
@@ -84,6 +86,11 @@
     background: #e0a800;
 }
 
+.boletin-btn-succes{
+    background: rgb(173, 77, 77);
+
+}
+
 /* Modal */
 .modal-overlay {
     position: fixed;
@@ -124,7 +131,7 @@
     color: #555;
 }
 
-    /* Esta seccion fue comentada por un error con el login */
+/* Esta seccion fue comentada por un error con el login */
 
 /* .form-group input[type="file"],
 .form-group input[type="text"],
@@ -192,7 +199,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
 }
 
 .periodo-selector label {
@@ -680,7 +689,7 @@
     background: #5a32a3;
 }
 
-.btn-plantilla i{
+.btn-plantilla i {
     font-size: 1rem;
 }
 
@@ -692,32 +701,39 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+
     padding-bottom: 15px;
     border-bottom: 2px solid #007bff;
 }
 
-.modal-header h2 {
+.modal-header h3 {
     margin: 0;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
 }
 
-.modal-close {
-    background: none;
+.close-btn {
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    font-size: 2rem;
-    color: #999;
     cursor: pointer;
+    color: white;
     padding: 0;
-    width: 30px;
-    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.3s;
+    border-radius: 50%;
+    transition: all 0.2s;
+    font-size: 1.5rem;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    line-height: 1;
 }
 
-.modal-close:hover {
-    color: #333;
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .file-name {
@@ -837,7 +853,7 @@
     flex-shrink: 0;
 }
 
-.plantilla-info-left > div {
+.plantilla-info-left>div {
     min-width: 0;
     flex: 1;
 }
@@ -943,30 +959,27 @@
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .boletines-grid,
     .eventos-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .boletines-header {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .plantillas-buttons {
         flex-direction: column;
     }
-    
+
     .btn-plantilla {
         width: 100%;
         justify-content: center;
     }
-    
+
     .plantillas-grid {
         grid-template-columns: 1fr;
     }
 }
-
-
-

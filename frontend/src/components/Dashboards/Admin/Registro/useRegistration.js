@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useNotification } from '../../../../context/NotificationContext';
 
 const API_URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -17,23 +18,31 @@ const calcularEdad = (fechaNacimiento) => {
 };
 
 export const useRegistration = () => {
+    const { addNotification } = useNotification();
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [openModal, setOpenModal] = useState(null); // 'estudiante', 'profesor', 'representante', 'administrador', null
     const [gradosSecciones, setGradosSecciones] = useState([]);
     const [materias, setMaterias] = useState([]);
+    const [representantes, setRepresentantes] = useState([]);
     const [selectedGradosSecciones, setSelectedGradosSecciones] = useState([]);
     const [selectedMaterias, setSelectedMaterias] = useState([]);
     const [loadingGrados, setLoadingGrados] = useState(false);
     const [loadingMaterias, setLoadingMaterias] = useState(false);
+    const [loadingRepresentantes, setLoadingRepresentantes] = useState(false);
 
     useEffect(() => {
         if (openModal === 'profesor') {
             cargarGradosSecciones();
+            cargarMaterias();
+        } else if (openModal === 'estudiante') {
+            cargarGradosSecciones();
+            cargarRepresentantes();
         } else {
             setGradosSecciones([]);
             setMaterias([]);
+            setRepresentantes([]);
             setSelectedGradosSecciones([]);
             setSelectedMaterias([]);
         }
@@ -42,7 +51,6 @@ export const useRegistration = () => {
     const cargarGradosSecciones = async () => {
         setLoadingGrados(true);
         try {
-            // No se crea una instancia de axios, se usa el global por el interceptor
             const response = await axios.get(`${API_URL_BASE}/grado-seccion/`);
             setGradosSecciones(response.data || []);
         } catch (error) {
@@ -50,6 +58,32 @@ export const useRegistration = () => {
             setGradosSecciones([]);
         } finally {
             setLoadingGrados(false);
+        }
+    };
+
+    const cargarMaterias = async () => {
+        setLoadingMaterias(true);
+        try {
+            const response = await axios.get(`${API_URL_BASE}/horarios/materias/`);
+            setMaterias(response.data || []);
+        } catch (error) {
+            console.error('Error al cargar materias:', error);
+            setMaterias([]);
+        } finally {
+            setLoadingMaterias(false);
+        }
+    };
+
+    const cargarRepresentantes = async () => {
+        setLoadingRepresentantes(true);
+        try {
+            const response = await axios.get(`${API_URL_BASE}/usuarios/representante/`);
+            setRepresentantes(response.data || []);
+        } catch (error) {
+            console.error('Error al cargar representantes:', error);
+            setRepresentantes([]);
+        } finally {
+            setLoadingRepresentantes(false);
         }
     };
 
@@ -66,7 +100,7 @@ export const useRegistration = () => {
             newErrors.apellido = 'El apellido es requerido.';
             isValid = false;
         }
-        if (formData.cedula[0] !== 'V' && formData.cedula[0] !== 'E') {
+        if (formData.cedula && formData.cedula.length > 0 && formData.cedula[0] !== 'V' && formData.cedula[0] !== 'E') {
             newErrors.cedula = 'La cédula debe comenzar con V o E.';
             isValid = false;
         }
@@ -248,7 +282,7 @@ export const useRegistration = () => {
 
     const openModalHandler = useCallback((tipo) => {
         setOpenModal(tipo);
-        setFormData({ typeU: tipo });
+        setFormData({ typeU: tipo, cedula: 'V' });
         setErrors({});
         setSelectedGradosSecciones([]);
         setSelectedMaterias([]);
@@ -298,16 +332,16 @@ export const useRegistration = () => {
             );
 
             console.log('Usuario registrado con éxito:', response.data);
-            alert('Usuario registrado con éxito');
+            addNotification('Usuario registrado con éxito', 'success');
             closeModal();
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
             let errorMessage = 'Error en datos ingresados o error de conexión.';
             if (error.response?.data) {
                 if (error.response.data.error) {
-                    errorMessage = error.response.data.error;
+                    errorMessage = 'Error del servidor: ' + error.response.data.error;
                 } else if (error.response.data.detail) {
-                    errorMessage = error.response.data.detail;
+                    errorMessage = 'Detalle: ' + error.response.data.detail;
                 } else if (typeof error.response.data === 'object') {
                     const errorMessages = Object.entries(error.response.data)
                         .map(
@@ -318,9 +352,10 @@ export const useRegistration = () => {
                     errorMessage = errorMessages || errorMessage;
                 }
             } else if (error.message) {
-                errorMessage = error.message;
+                errorMessage = 'Error desconocido: ' + error.message;
             }
             setErrors({ submit: errorMessage });
+            addNotification('Error al registrar: ' + errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -332,7 +367,11 @@ export const useRegistration = () => {
         isLoading,
         openModal,
         gradosSecciones,
+        materias,
+        representantes,
         loadingGrados,
+        loadingMaterias,
+        loadingRepresentantes,
         handleInputChange,
         openModalHandler,
         closeModal,
@@ -340,21 +379,25 @@ export const useRegistration = () => {
         getRoleIcon,
         getRoleName,
         calcularEdad,
+        setSelectedGradosSecciones,
+        setSelectedMaterias,
+        selectedGradosSecciones,
+        selectedMaterias
     };
 };
 
 const getRoleIcon = (role) => {
     switch (role) {
         case 'estudiante':
-            return 'fa-user-graduate';
+            return 'school';
         case 'profesor':
-            return 'fa-chalkboard-teacher';
+            return 'person';
         case 'representante':
-            return 'fa-user-friends';
+            return 'family_restroom';
         case 'administrador':
-            return 'fa-user-cog';
+            return 'admin_panel_settings';
         default:
-            return 'fa-user';
+            return 'person';
     }
 };
 

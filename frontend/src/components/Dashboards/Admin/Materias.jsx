@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import './css/Materias.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export function Materias() {
     const [showRegistrar, setShowRegistrar] = useState(false);
     const [materiaEditando, setMateriaEditando] = useState(null);
-    const [materiaAsignando, setMateriaAsignando] = useState(null);
-    const [showAsignarProfesores, setShowAsignarProfesores] = useState(false);
-    const [profesores, setProfesores] = useState([]);
-    const [profesoresSeleccionados, setProfesoresSeleccionados] = useState([]);
-    const [loadingProfesores, setLoadingProfesores] = useState(false);
     const [materias, setMaterias] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -59,366 +55,57 @@ export function Materias() {
         setShowRegistrar(true);
     };
 
-    const handleAsignarProfesores = async (materia) => {
-        setMateriaAsignando(materia);
-        setShowAsignarProfesores(true);
-        setLoadingProfesores(true);
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            // Cargar profesores
-            const responseProfesores = await axios.get(
-                `${API_URL}/usuarios/profesor/`,
-                {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
-            );
-            setProfesores(responseProfesores.data || []);
-
-            // Cargar profesores ya asignados a esta materia
-            const responseMateria = await axios.get(
-                `${API_URL}/horarios/materias/${materia.id}/`,
-                {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
-            );
-            // Si la materia tiene profesores asignados, marcarlos como seleccionados
-            if (
-                responseMateria.data.profesores_detalle &&
-                responseMateria.data.profesores_detalle.length > 0
-            ) {
-                setProfesoresSeleccionados(
-                    responseMateria.data.profesores_detalle.map((p) => p.id),
-                );
-            } else if (
-                responseMateria.data.profesores &&
-                responseMateria.data.profesores.length > 0
-            ) {
-                // Si viene como array de IDs
-                setProfesoresSeleccionados(responseMateria.data.profesores);
-            } else {
-                setProfesoresSeleccionados([]);
-            }
-        } catch (error) {
-            console.error('Error al cargar profesores:', error);
-            setProfesores([]);
-            setProfesoresSeleccionados([]);
-        } finally {
-            setLoadingProfesores(false);
-        }
-    };
-
-    const toggleProfesor = (profesorId) => {
-        setProfesoresSeleccionados((prev) => {
-            if (prev.includes(profesorId)) {
-                return prev.filter((id) => id !== profesorId);
-            } else {
-                return [...prev, profesorId];
-            }
-        });
-    };
-
-    const guardarAsignacionProfesores = async () => {
-        if (!materiaAsignando) return;
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            // Actualizar la materia con los profesores seleccionados
-            await axios.patch(
-                `${API_URL}/horarios/materias/${materiaAsignando.id}/`,
-                { profesores: profesoresSeleccionados },
-                {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
-            );
-            alert('Profesores asignados correctamente.');
-            setShowAsignarProfesores(false);
-            setMateriaAsignando(null);
-            setProfesoresSeleccionados([]);
-            fetchMaterias();
-        } catch (error) {
-            console.error('Error al asignar profesores:', error);
-            alert(
-                'Error al asignar profesores. Verifique que el backend soporte esta funcionalidad.',
-            );
-        }
-    };
-
     const ListaMaterias = () => {
         if (loading) {
             return (
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: '50px',
-                        color: 'var(--gray)',
-                    }}
-                >
-                    Cargando materias...
+                <div className="loading-container" style={{ padding: '4rem', textAlign: 'center' }}>
+                    <span className="material-symbols-outlined spin" style={{ fontSize: '2.5rem', color: '#137fec' }}>progress_activity</span>
+                    <p style={{ marginTop: '1rem', color: '#64748b' }}>Cargando materias...</p>
                 </div>
             );
         }
 
         return (
-            <>
-                {materias.length === 0 ? (
-                    <div
-                        className="section-card"
-                        style={{ textAlign: 'center', padding: '40px' }}
-                    >
-                        <p style={{ color: 'var(--gray)', fontSize: '1rem' }}>
-                            No hay materias registradas.
-                        </p>
-                    </div>
-                ) : (
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns:
-                                'repeat(auto-fill, minmax(300px, 1fr))',
-                            gap: '20px',
-                        }}
-                    >
-                        {materias.map((materia) => (
-                            <div
-                                key={materia.id}
-                                style={{
-                                    background: 'white',
-                                    border: '1px solid var(--light-gray)',
-                                    borderRadius: 'var(--border-radius)',
-                                    padding: '20px',
-                                    transition: 'var(--transition)',
-                                    position: 'relative',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.boxShadow =
-                                        'var(--box-shadow)';
-                                    e.currentTarget.style.transform =
-                                        'translateY(-3px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.boxShadow = 'none';
-                                    e.currentTarget.style.transform =
-                                        'translateY(0)';
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        justifyContent: 'space-between',
-                                        marginBottom: '15px',
-                                    }}
-                                >
-                                    <div style={{ flex: 1 }}>
-                                        <h3
-                                            style={{
-                                                fontSize: '1.2rem',
-                                                fontWeight: '600',
-                                                color: 'var(--dark)',
-                                                marginBottom: '10px',
-                                            }}
-                                        >
-                                            {materia.nombre}
-                                        </h3>
-                                        <p
-                                            style={{
-                                                color: 'var(--gray)',
-                                                fontSize: '0.9rem',
-                                                margin: 0,
-                                                lineHeight: '1.5',
-                                            }}
-                                        >
-                                            {materia.descripcion ||
-                                                'Sin descripción'}
-                                        </p>
+            <div className="materias-container">
+                <div className="materias-grid">
+                    {materias.length === 0 ? (
+                        <div className="no-data" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '4rem', color: '#cbd5e1', marginBottom: '1rem' }}>book_off</span>
+                            <p style={{ color: '#64748b' }}>No hay materias registradas.</p>
+                        </div>
+                    ) : (
+                        materias.map((materia) => (
+                            <div key={materia.id} className="materia-card">
+                                <div className="materia-card-header">
+                                    <div className="materia-icon">
+                                        <span className="material-symbols-outlined">book</span>
                                     </div>
-                                    <div
-                                        style={{
-                                            width: '45px',
-                                            height: '45px',
-                                            borderRadius: '12px',
-                                            background:
-                                                'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'white',
-                                            flexShrink: 0,
-                                            marginLeft: '15px',
-                                            lineHeight: '1',
-                                        }}
-                                    >
-                                        <i
-                                            className="fas fa-book"
-                                            style={{
-                                                fontSize: '0.85rem',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                lineHeight: '1',
-                                                margin: '0',
-                                                padding: '0',
-                                            }}
-                                        ></i>
+                                    <div className="materia-actions">
+                                        <button
+                                            onClick={() => handleEdit(materia)}
+                                            className="btn-materia-action edit"
+                                            title="Editar"
+                                        >
+                                            <span className="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(materia)}
+                                            className="btn-materia-action delete"
+                                            title="Eliminar"
+                                        >
+                                            <span className="material-symbols-outlined">delete</span>
+                                        </button>
                                     </div>
                                 </div>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        gap: '8px',
-                                        marginTop: '15px',
-                                        justifyContent: 'flex-end',
-                                    }}
-                                >
-                                    {/* Botón de asignar profesores oculto - se asigna desde la lista de profesores */}
-                                    {/* 
-                                    <button
-                                        onClick={() => handleAsignarProfesores(materia)}
-                                        title="Asignar profesores"
-                                        style={{
-                                            width: '36px',
-                                            height: '36px',
-                                            padding: '0',
-                                            margin: '0',
-                                            background: 'var(--primary)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: 'var(--border-radius-sm)',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'var(--transition)',
-                                            flexShrink: 0,
-                                            lineHeight: '1'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = '#0056b3';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--primary)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <i className="fas fa-user-plus" style={{
-                                            fontSize: '0.7rem',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            lineHeight: '1',
-                                            margin: '0',
-                                            padding: '0'
-                                        }}></i>
-                                    </button>
-                                    */}
-                                    <button
-                                        onClick={() => handleEdit(materia)}
-                                        title="Editar materia"
-                                        style={{
-                                            width: '36px',
-                                            height: '36px',
-                                            padding: '0',
-                                            margin: '0',
-                                            background: 'var(--info)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius:
-                                                'var(--border-radius-sm)',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'var(--transition)',
-                                            flexShrink: 0,
-                                            lineHeight: '1',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background =
-                                                '#3a7bd5';
-                                            e.currentTarget.style.transform =
-                                                'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background =
-                                                'var(--info)';
-                                            e.currentTarget.style.transform =
-                                                'translateY(0)';
-                                        }}
-                                    >
-                                        <i
-                                            className="fas fa-edit"
-                                            style={{
-                                                fontSize: '0.7rem',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                lineHeight: '1',
-                                                margin: '0',
-                                                padding: '0',
-                                            }}
-                                        ></i>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(materia)}
-                                        title="Eliminar materia"
-                                        style={{
-                                            width: '36px',
-                                            height: '36px',
-                                            padding: '0',
-                                            margin: '0',
-                                            background: 'var(--danger)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius:
-                                                'var(--border-radius-sm)',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'var(--transition)',
-                                            flexShrink: 0,
-                                            lineHeight: '1',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background =
-                                                '#d81b60';
-                                            e.currentTarget.style.transform =
-                                                'translateY(-2px)';
-                                            e.currentTarget.style.boxShadow =
-                                                '0 4px 12px rgba(247, 37, 133, 0.3)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background =
-                                                'var(--danger)';
-                                            e.currentTarget.style.transform =
-                                                'translateY(0)';
-                                            e.currentTarget.style.boxShadow =
-                                                'none';
-                                        }}
-                                    >
-                                        <i
-                                            className="fas fa-trash"
-                                            style={{
-                                                fontSize: '0.7rem',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                lineHeight: '1',
-                                                margin: '0',
-                                                padding: '0',
-                                            }}
-                                        ></i>
-                                    </button>
+                                <div className="materia-info">
+                                    <h3>{materia.nombre}</h3>
+                                    <p>{materia.descripcion || 'Sin descripción'}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </>
+                        ))
+                    )}
+                </div>
+            </div>
         );
     };
 
@@ -440,14 +127,6 @@ export function Materias() {
             }
         }, [materia, isOpen]);
 
-        const handleInputChange = (e) => {
-            const { name, value } = e.target;
-            setFormData((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
-        };
-
         const handleSubmit = async (e) => {
             e.preventDefault();
             setIsLoading(true);
@@ -455,32 +134,22 @@ export function Materias() {
 
             try {
                 if (materia) {
-                    // Actualizar
                     await axios.patch(
                         `${API_URL}/horarios/materias/${materia.id}/`,
                         formData,
-                        {
-                            headers: token
-                                ? { Authorization: `Bearer ${token}` }
-                                : {},
-                        },
+                        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
                     );
                     alert('Materia actualizada correctamente.');
                 } else {
-                    // Crear
                     await axios.post(
                         `${API_URL}/horarios/materias/`,
                         formData,
-                        {
-                            headers: token
-                                ? { Authorization: `Bearer ${token}` }
-                                : {},
-                        },
+                        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
                     );
                     alert('Materia registrada correctamente.');
                 }
                 onClose();
-                window.location.reload();
+                fetchMaterias();
             } catch (error) {
                 console.error('Error al guardar materia:', error);
                 alert('Error al guardar la materia.');
@@ -490,142 +159,103 @@ export function Materias() {
         };
 
         if (!isOpen) return null;
+
         return (
-            <div className="modal" onClick={onClose}>
-                <div
-                    className="modal-content"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="modal-header">
-                        <h3 className="modal-title">
-                            {materia
-                                ? 'Editar Materia'
-                                : 'Registrar Nueva Materia'}
-                        </h3>
-                        <button className="close-modal" onClick={onClose}>
-                            &times;
+            <div className="modal-overlay" onClick={onClose} style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+                <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{
+                    maxWidth: '600px',
+                    borderRadius: '28px',
+                    overflow: 'hidden',
+                    border: 'none',
+                    boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                    background: '#f1f5f9'
+                }}>
+                    <div className="modal-header" style={{
+                        background: '#f8fafc',
+                        borderBottom: '1px solid #e2e8f0',
+                        padding: '1.75rem 2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                background: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--primary)',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>book</span>
+                            </div>
+                            <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.5rem', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                                {materia ? 'Editar Materia' : 'Registrar Materia'}
+                            </h3>
+                        </div>
+                        <button className="close-btn" onClick={onClose} title="Cerrar" style={{ background: '#ffffff', color: '#64748b', width: '36px', height: '36px', border: '1px solid #e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
                         </button>
                     </div>
-                    <div className="modal-body">
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label
-                                    htmlFor="nombre"
-                                    style={{ fontSize: '0.95rem' }}
-                                >
-                                    Nombre de la Materia *
-                                </label>
-                                <div className="input-with-icon">
-                                    <i
-                                        className="fas fa-book"
-                                        style={{ fontSize: '0.8rem' }}
-                                    ></i>
-                                    <input
-                                        type="text"
-                                        id="nombre"
-                                        name="nombre"
-                                        value={formData.nombre}
-                                        onChange={handleInputChange}
-                                        placeholder="Ej: Matemáticas"
-                                        required
-                                    />
-                                </div>
-                            </div>
 
-                            <div className="form-group">
-                                <label
-                                    htmlFor="descripcion"
-                                    style={{ fontSize: '0.95rem' }}
-                                >
-                                    Descripción *
-                                </label>
-                                <div style={{ position: 'relative' }}>
-                                    <i
-                                        className="fas fa-align-left"
-                                        style={{
-                                            position: 'absolute',
-                                            left: '15px',
-                                            top: '15px',
-                                            color: 'var(--gray)',
-                                            fontSize: '0.8rem',
-                                            zIndex: 1,
-                                        }}
-                                    ></i>
-                                    <textarea
-                                        id="descripcion"
-                                        name="descripcion"
-                                        value={formData.descripcion}
-                                        onChange={handleInputChange}
-                                        placeholder="Descripción de la materia"
-                                        required
-                                        rows="4"
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px 15px 12px 40px',
-                                            border: '2px solid var(--light-gray)',
-                                            borderRadius:
-                                                'var(--border-radius)',
-                                            fontSize: '0.95rem',
-                                            transition: 'var(--transition)',
-                                            background: 'white',
-                                            color: 'var(--dark)',
-                                            fontFamily: 'inherit',
-                                            resize: 'vertical',
-                                        }}
-                                        onFocus={(e) => {
-                                            e.currentTarget.style.borderColor =
-                                                'var(--primary)';
-                                            e.currentTarget.style.boxShadow =
-                                                '0 0 0 3px rgba(67, 97, 238, 0.1)';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.currentTarget.style.borderColor =
-                                                'var(--light-gray)';
-                                            e.currentTarget.style.boxShadow =
-                                                'none';
-                                        }}
-                                    />
+                    <div className="modal-body" style={{ padding: '2rem' }}>
+                        <div style={{ background: 'white', padding: '2rem', borderRadius: '24px', boxShadow: '0 4px 20px -5px rgba(0, 0, 0, 0.05)', border: '1px solid #ffffff' }}>
+                            <form onSubmit={handleSubmit}>
+                                <div className="form-group-materia" style={{ marginBottom: '1.5rem' }}>
+                                    <label htmlFor="nombre" style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#4b5563', fontSize: '0.9rem' }}>Nombre de la Materia *</label>
+                                    <div className="input-materia-wrapper" style={{ position: 'relative' }}>
+                                        <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '20px' }}>book</span>
+                                        <input
+                                            type="text"
+                                            id="nombre"
+                                            name="nombre"
+                                            value={formData.nombre}
+                                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                            placeholder="Ej: Matemáticas"
+                                            required
+                                            style={{ width: '100%', padding: '12px 12px 12px 42px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                                <div className="form-group-materia">
+                                    <label htmlFor="descripcion" style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#4b5563', fontSize: '0.9rem' }}>Descripción *</label>
+                                    <div className="input-materia-wrapper">
+                                        <textarea
+                                            id="descripcion"
+                                            name="descripcion"
+                                            value={formData.descripcion}
+                                            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                                            placeholder="Descripción de la materia"
+                                            required
+                                            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', outline: 'none', minHeight: '120px', resize: 'vertical' }}
+                                        />
+                                    </div>
+                                </div>
 
-                            <div
-                                style={{
-                                    marginTop: '25px',
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                    gap: '12px',
-                                }}
-                            >
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={onClose}
-                                    style={{
-                                        width: 'auto',
-                                        padding: '12px 24px',
-                                        fontSize: '0.9rem',
-                                    }}
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    disabled={isLoading}
-                                    style={{
-                                        width: 'auto',
-                                        padding: '12px 30px',
-                                        fontSize: '0.9rem',
-                                    }}
-                                >
-                                    {isLoading
-                                        ? 'Guardando...'
-                                        : materia
-                                          ? 'Actualizar'
-                                          : 'Registrar'}
-                                </button>
-                            </div>
-                        </form>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '2.5rem' }}>
+                                    <button
+                                        type="button"
+                                        className="btn-secondary-materia"
+                                        onClick={onClose}
+                                        style={{ borderRadius: '14px', padding: '0.8rem 2rem', fontWeight: '700', fontFamily: 'Outfit', fontSize: '0.95rem', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer' }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn-primary-materia"
+                                        disabled={isLoading}
+                                        style={{ borderRadius: '14px', padding: '0.8rem 2.5rem', fontWeight: '700', fontFamily: 'Outfit', fontSize: '1rem', background: '#0f172a', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    >
+                                        {isLoading ? 'Guardando...' : materia ? 'Actualizar' : 'Registrar'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -633,56 +263,31 @@ export function Materias() {
     };
 
     return (
-        <>
-            <div className="header">
-                <div className="page-title">
+        <div className="materias-page-wrapper">
+            <div className="materias-header-section">
+                <div className="materias-title">
                     <h1>Materias</h1>
                     <p>Gestiona las materias del sistema educativo</p>
                 </div>
-                <div className="header-actions">
-                    <button
-                        className="btn"
-                        onClick={() => {
-                            setMateriaEditando(null);
-                            setShowRegistrar(true);
-                        }}
-                        style={{
-                            width: 'auto',
-                            padding: '12px 24px',
-                            fontSize: '0.9rem',
-                            background: 'var(--primary)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--border-radius)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'var(--transition)',
-                            boxShadow: '0 4px 15px rgba(67, 97, 238, 0.3)',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background =
-                                'var(--primary-dark)';
-                            e.currentTarget.style.transform =
-                                'translateY(-2px)';
-                            e.currentTarget.style.boxShadow =
-                                '0 6px 20px rgba(67, 97, 238, 0.4)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'var(--primary)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow =
-                                '0 4px 15px rgba(67, 97, 238, 0.3)';
-                        }}
-                    >
-                        <i
-                            className="fas fa-plus"
-                            style={{ fontSize: '0.85rem' }}
-                        ></i>
-                        Registrar Materia
-                    </button>
-                </div>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                        setMateriaEditando(null);
+                        setShowRegistrar(true);
+                    }}
+                    style={{
+                        padding: '0.6rem 1.25rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        height: 'fit-content',
+                        borderRadius: '10px',
+                        fontSize: '0.9rem'
+                    }}
+                >
+                    <span className="material-symbols-outlined">add</span>
+                    Registrar Materia
+                </button>
             </div>
 
             <ListaMaterias />
@@ -692,161 +297,9 @@ export function Materias() {
                 onClose={() => {
                     setShowRegistrar(false);
                     setMateriaEditando(null);
-                    fetchMaterias();
                 }}
                 materia={materiaEditando}
             />
-
-            {/* Modal para asignar profesores - OCULTO - se asigna desde la lista de profesores */}
-            {/* 
-            {showAsignarProfesores && materiaAsignando && (
-                <div className="modal" onClick={() => setShowAsignarProfesores(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{maxWidth: '600px'}}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">
-                                <i className="fas fa-user-plus" style={{marginRight: '10px', color: 'var(--primary)'}}></i>
-                                Asignar Profesores a {materiaAsignando.nombre}
-                            </h3>
-                            <button className="close-modal" onClick={() => setShowAsignarProfesores(false)}>&times;</button>
-                        </div>
-                        <div className="modal-body">
-                            {loadingProfesores ? (
-                                <div style={{textAlign: 'center', padding: '40px', color: 'var(--gray)'}}>
-                                    <i className="fas fa-spinner fa-spin" style={{fontSize: '2rem', marginBottom: '10px'}}></i>
-                                    <p>Cargando profesores...</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <p style={{color: 'var(--gray)', fontSize: '0.9rem', marginBottom: '20px'}}>
-                                        Seleccione los profesores que dictarán esta materia:
-                                    </p>
-                                    <div style={{
-                                        border: '2px solid var(--light-gray)',
-                                        borderRadius: 'var(--border-radius)',
-                                        padding: '15px',
-                                        maxHeight: '400px',
-                                        overflowY: 'auto',
-                                        background: 'white'
-                                    }}>
-                                        {profesores.length === 0 ? (
-                                            <p style={{color: 'var(--gray)', fontSize: '0.9rem', textAlign: 'center', padding: '20px'}}>
-                                                No hay profesores registrados en el sistema.
-                                            </p>
-                                        ) : (
-                                            <div style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '10px'
-                                            }}>
-                                                {profesores.map((profesor) => {
-                                                    const isSelected = profesoresSeleccionados.includes(profesor.id);
-                                                    return (
-                                                        <label
-                                                            key={profesor.id}
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '12px',
-                                                                padding: '12px 15px',
-                                                                border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--light-gray)'}`,
-                                                                borderRadius: 'var(--border-radius)',
-                                                                background: isSelected ? 'rgba(67, 97, 238, 0.1)' : 'white',
-                                                                cursor: 'pointer',
-                                                                transition: 'var(--transition)'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                if (!isSelected) {
-                                                                    e.currentTarget.style.borderColor = 'var(--primary)';
-                                                                }
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                if (!isSelected) {
-                                                                    e.currentTarget.style.borderColor = 'var(--light-gray)';
-                                                                }
-                                                            }}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isSelected}
-                                                                onChange={() => toggleProfesor(profesor.id)}
-                                                                style={{
-                                                                    width: '20px',
-                                                                    height: '20px',
-                                                                    cursor: 'pointer',
-                                                                    accentColor: 'var(--primary)'
-                                                                }}
-                                                            />
-                                                            <div style={{flex: 1}}>
-                                                                <div style={{
-                                                                    fontWeight: '600',
-                                                                    color: 'var(--dark)',
-                                                                    fontSize: '0.95rem',
-                                                                    marginBottom: '4px'
-                                                                }}>
-                                                                    {profesor.nombre} {profesor.apellido}
-                                                                </div>
-                                                                <div style={{
-                                                                    color: 'var(--gray)',
-                                                                    fontSize: '0.85rem'
-                                                                }}>
-                                                                    {profesor.tipo_profesor}
-                                                                </div>
-                                                            </div>
-                                                            {isSelected && (
-                                                                <i className="fas fa-check-circle" style={{
-                                                                    color: 'var(--primary)',
-                                                                    fontSize: '1.1rem'
-                                                                }}></i>
-                                                            )}
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div style={{
-                                        marginTop: '25px',
-                                        display: 'flex',
-                                        justifyContent: 'flex-end',
-                                        gap: '12px',
-                                        paddingTop: '20px',
-                                        borderTop: '1px solid var(--light-gray)'
-                                    }}>
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary"
-                                            onClick={() => {
-                                                setShowAsignarProfesores(false);
-                                                setMateriaAsignando(null);
-                                                setProfesoresSeleccionados([]);
-                                            }}
-                                            style={{width: 'auto', padding: '12px 24px', fontSize: '0.9rem'}}
-                                        >
-                                            Cancelar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary"
-                                            onClick={guardarAsignacionProfesores}
-                                            style={{
-                                                width: 'auto',
-                                                padding: '12px 30px',
-                                                fontSize: '0.9rem',
-                                                background: 'var(--primary)',
-                                                color: 'white'
-                                            }}
-                                        >
-                                            <i className="fas fa-save" style={{marginRight: '8px'}}></i>
-                                            Guardar Asignación
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
         </div>
-            )}
-            */}
-        </>
     );
 }

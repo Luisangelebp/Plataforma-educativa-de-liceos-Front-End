@@ -1,2 +1,2 @@
-const elementsMenu = ['Inicio', 'Nosotros', 'Funcionalidades', 'Contacto'];
+const elementsMenu = ['Inicio', 'Características', 'Beneficios'];
 export { elementsMenu };

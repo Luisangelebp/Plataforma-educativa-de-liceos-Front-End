@@ -101,7 +101,7 @@ export default function LandingPage() {
                 transition: 'none', // Sin transición para evitar parpadeo
             }}
         >
-            <Header />
+            <Header setShowLogin={handleShowLogin} />
             <Main setShowLogin={handleShowLogin} />
             <Footer />
         </div>

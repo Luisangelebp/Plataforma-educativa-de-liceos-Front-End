@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Chonburi&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
 .btn {
   background-color: white;
   padding: 1%;
@@ -7,68 +8,165 @@
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 }
+
 .btn:hover {
   background-color: rgb(216, 216, 216);
 }
 
 .mobil-menu {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  color: var(--gray-900);
 }
 
 i {
   font-size: 50px;
   color: #000000;
   text-align: center;
-  margin-right: 5vw;
+
 }
 
+.mobil-menu:hover {
+  background: var(--gray-100);
+}
 
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  /* Dark slate overlay */
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modalMenu {
-  position: absolute;
-  z-index: 1001;
-  top: 15vh;
-  left: 0vw;
-  width: 33vw;
+  position: fixed;
+  z-index: 2001;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100vh;
   background-color: #fff;
-  padding: 20px;
-  border: #005cff 1px solid;
-  border-radius: 0 5px 5px 0;
-  box-shadow: 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  animation: mover 0.3s ease-in-out;
+  padding: 2rem 1.5rem;
+  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   list-style-type: none;
-  padding: 0;
 }
-@keyframes mover {
+
+@keyframes slideIn {
   from {
     transform: translateX(-100%);
   }
+
   to {
     transform: translateX(0);
   }
 }
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.mobile-menu-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-blue);
+  letter-spacing: -1px;
+}
+
+.close-mobile-menu {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-600);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-mobile-menu:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+  transform: rotate(90deg);
+}
+
 .modalMenu li {
-  margin: 10px 0;
-  font-family: "Chonburi", serif;
+  margin: 0.5rem 0;
 }
+
 .modalMenu li .menu-item {
+  display: block;
+  padding: 1rem 1.25rem;
   text-decoration: none !important;
-  font-weight: bold;
-  color: rgb(0, 0, 0);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  border-radius: 12px;
+  transition: all 0.2s;
 }
-.modalMenu li .menu-item:visited {
-  color: rgb(0, 0, 0);
-}/*# sourceMappingURL=MobilMenu.css.map */
+
+.modalMenu li .menu-item:hover {
+  background: var(--gray-50);
+  color: var(--primary-blue);
+  padding-left: 1.75rem;
+}
+
+.mobile-auth-section {
+  margin-top: auto !important;
+  padding-top: 2rem;
+  border-top: 1px solid var(--gray-100);
+}
+
+.mobile-login-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.mobile-login-btn:hover {
+  background: var(--blue-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+/*# sourceMappingURL=MobilMenu.css.map */

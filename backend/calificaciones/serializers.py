@@ -20,7 +20,7 @@ class CalificacionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'estudiante', 'estudiante_nombre', 'estudiante_apellido',
             'materia', 'materia_nombre', 'profesor', 'lapso', 
-            'promedio', 'evaluaciones', 'enviado',
+            'promedio', 'evaluaciones', 'enviado', 'observaciones',
             'fecha_creacion', 'fecha_actualizacion',
         ]
         read_only_fields = ['promedio', 'fecha_creacion', 'fecha_actualizacion']

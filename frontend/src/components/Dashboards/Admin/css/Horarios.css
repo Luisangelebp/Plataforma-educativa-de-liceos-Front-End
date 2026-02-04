@@ -1,53 +1,176 @@
-.calendario {
+/* ===== HORARIOS CSS ===== */
+
+.horarios-container {
+  padding: 0;
+}
+
+.horarios-header {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.horarios-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.horarios-header p {
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+}
+
+/* Subjects for Selection */
+.horarios-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.horario-subject-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  border: 1px solid #ccc;
+  gap: 1rem;
 }
 
-.header {
-  display: grid;
-  grid-template-columns: 100px repeat(5, 1fr);
-  background: #f0f0f0;
-  font-weight: bold;
+.horario-subject-card:hover {
+  transform: translateY(-4px);
+  border-color: #137fec;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-.corner {
-  text-align: center;
-  padding: 8px;
+.subject-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.dia {
-  text-align: center;
-  padding: 8px;
+.subject-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #137fec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.fila {
-  display: grid;
-  grid-template-columns: 100px repeat(5, 1fr);
-  border-top: 1px solid #ddd;
+.subject-card-icon span {
+  font-size: 20px;
 }
 
-.hora {
-  text-align: center;
-  padding: 4px;
-  background: #fafafa;
+.subject-card-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
-.celda {
-  border-left: 1px solid #ddd;
-  min-height: 40px;
-  position: relative;
+.subject-card-info p {
+  margin: 2px 0 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.clase {
-  background: #4caf50;
+.btn-assign-horario {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #137fec;
   color: white;
-  font-size: 12px;
-  padding: 4px;
-  border-radius: 4px;
-  text-align: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
 }
 
-.modal-content {
-  max-width: none !important;
-}/*# sourceMappingURL=Horarios.css.map */
+.btn-assign-horario:hover {
+  background: #0ea5e9;
+  box-shadow: 0 4px 10px rgba(19, 127, 236, 0.3);
+}
+
+/* Modal Styling */
+.horario-modal .modal-content {
+  max-width: 550px;
+}
+
+.form-grid-horario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group-horario {
+  margin-bottom: 1.25rem;
+}
+
+.form-group-horario label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.375rem;
+}
+
+.select-horario-wrapper,
+.input-horario-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select-horario-wrapper span,
+.input-horario-wrapper span {
+  position: absolute;
+  left: 0.875rem;
+  color: #94a3b8;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.select-horario-wrapper select,
+.input-horario-wrapper input {
+  width: 100%;
+  padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.select-horario-wrapper select:focus,
+.input-horario-wrapper input:focus {
+  outline: none;
+  background: white;
+  border-color: #137fec;
+  box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+}
+
+@media (max-width: 640px) {
+  .form-grid-horario {
+    grid-template-columns: 1fr;
+  }
+}

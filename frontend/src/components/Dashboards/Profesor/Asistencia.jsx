@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNotification } from '../../../context/NotificationContext';
 import './css/Asistencia.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export function Asistencia() {
+    const { addNotification } = useNotification();
     const [materias, setMaterias] = useState([]);
     const [estudiantes, setEstudiantes] = useState([]);
     const [asistencia, setAsistencia] = useState({});
@@ -37,7 +39,7 @@ export function Asistencia() {
         try {
             const token = localStorage.getItem('accessToken');
             const user = JSON.parse(localStorage.getItem('user'));
-            
+
             // Obtener materias del profesor
             const response = await axios.get(`${API_URL}/horarios/materias/`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -45,30 +47,30 @@ export function Asistencia() {
             setMaterias(response.data);
         } catch (error) {
             console.error('Error al cargar materias:', error);
-            alert('Error al cargar las materias');
+            addNotification('Error al cargar las materias', 'error');
         }
     };
 
     const cargarEstudiantes = async () => {
         if (!selectedMateria || !selectedFecha) return;
-        
+
         setLoading(true);
         try {
             const token = localStorage.getItem('accessToken');
             const user = JSON.parse(localStorage.getItem('user'));
-            
+
             // Obtener estudiantes de la materia seleccionada
             // Primero necesitamos obtener el grado_seccion de la materia
             const horariosResponse = await axios.get(`${API_URL}/horarios/`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             const horarioMateria = horariosResponse.data.find(
                 h => h.materia === parseInt(selectedMateria) && h.profesor === user.id
             );
-            
+
             if (!horarioMateria) {
-                alert('No se encontró horario para esta materia');
+                addNotification('No se encontró horario para esta materia', 'warning');
                 setLoading(false);
                 return;
             }
@@ -78,14 +80,14 @@ export function Asistencia() {
                 `${API_URL}/usuarios/estudiante/?grado_seccion=${horarioMateria.grado_seccion}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            
+
             setEstudiantes(estudiantesResponse.data);
-            
+
             // Cargar asistencia existente
             cargarAsistenciaExistente(estudiantesResponse.data);
         } catch (error) {
             console.error('Error al cargar estudiantes:', error);
-            alert('Error al cargar los estudiantes');
+            addNotification('Error al cargar los estudiantes', 'error');
         } finally {
             setLoading(false);
         }
@@ -95,7 +97,7 @@ export function Asistencia() {
         try {
             const token = localStorage.getItem('accessToken');
             const asistenciaData = {};
-            
+
             // Inicializar todos como ausentes
             estudiantesList.forEach(est => {
                 asistenciaData[est.id] = {
@@ -106,7 +108,7 @@ export function Asistencia() {
 
             // TODO: Cargar asistencia desde el backend cuando esté implementado
             // Por ahora, inicializamos todos como ausentes
-            
+
             setAsistencia(asistenciaData);
         } catch (error) {
             console.error('Error al cargar asistencia:', error);
@@ -158,19 +160,19 @@ export function Asistencia() {
 
     const guardarAsistencia = async () => {
         if (!selectedMateria || !selectedFecha) {
-            alert('Por favor, seleccione materia y fecha');
+            addNotification('Por favor, seleccione materia y fecha', 'warning');
             return;
         }
 
         if (estudiantes.length === 0) {
-            alert('No hay estudiantes para guardar');
+            addNotification('No hay estudiantes para guardar', 'warning');
             return;
         }
 
         try {
             const token = localStorage.getItem('accessToken');
             const user = JSON.parse(localStorage.getItem('user'));
-            
+
             // TODO: Implementar guardado en el backend cuando esté disponible
             // Por ahora, guardamos en localStorage como temporal
             const asistenciaData = {
@@ -189,10 +191,10 @@ export function Asistencia() {
             asistenciaGuardada.push(asistenciaData);
             localStorage.setItem('asistencia', JSON.stringify(asistenciaGuardada));
 
-            alert('Asistencia guardada correctamente');
+            addNotification('Asistencia guardada correctamente', 'success');
         } catch (error) {
             console.error('Error al guardar asistencia:', error);
-            alert('Error al guardar la asistencia');
+            addNotification('Error al guardar la asistencia', 'error');
         }
     };
 
@@ -210,12 +212,12 @@ export function Asistencia() {
                     <h2 className="section-title">Registrar Asistencia</h2>
                     <div className="attendance-actions">
                         <div className="input-with-icon">
-                            <i className="fas fa-book" style={{fontSize: '0.8rem'}}></i>
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>menu_book</span>
                             <select
                                 value={selectedMateria}
                                 onChange={(e) => setSelectedMateria(e.target.value)}
                                 className="grade-input"
-                                style={{width: '200px'}}
+                                style={{ width: '200px' }}
                             >
                                 <option value="">Seleccionar Materia</option>
                                 {materias.map(materia => (
@@ -226,22 +228,22 @@ export function Asistencia() {
                             </select>
                         </div>
                         <div className="input-with-icon">
-                            <i className="fas fa-calendar-alt" style={{fontSize: '0.8rem'}}></i>
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>calendar_month</span>
                             <input
                                 type="date"
                                 value={selectedFecha}
                                 onChange={(e) => setSelectedFecha(e.target.value)}
                                 className="grade-input"
-                                style={{width: '180px'}}
+                                style={{ width: '180px' }}
                             />
                         </div>
-                        <button 
+                        <button
                             className="btn btn-primary"
                             onClick={cargarEstudiantes}
                             disabled={!selectedMateria || !selectedFecha || loading}
-                            style={{width: 'auto', padding: '10px 20px', fontSize: '0.9rem'}}
+                            style={{ width: 'auto', padding: '10px 20px', fontSize: '0.9rem' }}
                         >
-                            <i className="fas fa-search" style={{fontSize: '0.85rem'}}></i>
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>search</span>
                             Cargar
                         </button>
                     </div>
@@ -262,15 +264,15 @@ export function Asistencia() {
                     <div>
                         <h3>Resumen del Día</h3>
                         <p>Total estudiantes: <strong>{resumen.total}</strong></p>
-                        <p>Presentes: <strong style={{color: '#38b000'}}>{resumen.presentes}</strong></p>
-                        <p>Ausentes: <strong style={{color: '#f72585'}}>{resumen.ausentes}</strong></p>
-                        <p>Justificados: <strong style={{color: '#f8961e'}}>{resumen.justificados}</strong></p>
+                        <p>Presentes: <strong style={{ color: '#38b000' }}>{resumen.presentes}</strong></p>
+                        <p>Ausentes: <strong style={{ color: '#f72585' }}>{resumen.ausentes}</strong></p>
+                        <p>Justificados: <strong style={{ color: '#f8961e' }}>{resumen.justificados}</strong></p>
                         <p>Porcentaje: <strong>{resumen.porcentaje}%</strong></p>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--gray)'}}>
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--gray)' }}>
                         Cargando estudiantes...
                     </div>
                 ) : estudiantes.length > 0 ? (
@@ -295,7 +297,7 @@ export function Asistencia() {
                                                     value={asistencia[estudiante.id]?.estado || 'ausente'}
                                                     onChange={(e) => handleAsistenciaChange(estudiante.id, e.target.value)}
                                                     className="grade-input"
-                                                    style={{width: '150px'}}
+                                                    style={{ width: '150px' }}
                                                 >
                                                     <option value="presente">Presente</option>
                                                     <option value="ausente">Ausente</option>
@@ -309,7 +311,7 @@ export function Asistencia() {
                                                     onChange={(e) => handleJustificacionChange(estudiante.id, e.target.value)}
                                                     className="grade-input"
                                                     placeholder="Motivo (opcional)"
-                                                    style={{width: '100%', textAlign: 'left'}}
+                                                    style={{ width: '100%', textAlign: 'left' }}
                                                 />
                                             </td>
                                         </tr>
@@ -318,20 +320,20 @@ export function Asistencia() {
                             </table>
                         </div>
 
-                        <div style={{textAlign: 'center', marginTop: '20px'}}>
-                            <button 
+                        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                            <button
                                 className="btn btn-primary"
                                 onClick={guardarAsistencia}
                                 disabled={!selectedMateria || !selectedFecha}
-                                style={{width: 'auto', padding: '12px 30px', fontSize: '0.9rem'}}
+                                style={{ width: 'auto', padding: '12px 30px', fontSize: '0.9rem' }}
                             >
-                                <i className="fas fa-save" style={{fontSize: '0.85rem'}}></i>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>save</span>
                                 Guardar Asistencia
                             </button>
                         </div>
                     </>
                 ) : selectedMateria && selectedFecha ? (
-                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--gray)'}}>
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--gray)' }}>
                         <p>No hay estudiantes asignados para esta materia</p>
                     </div>
                 ) : null}

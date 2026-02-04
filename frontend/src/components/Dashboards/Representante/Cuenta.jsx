@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNotification } from '../../../context/NotificationContext';
 import '../Admin/css/Listas.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -59,6 +60,7 @@ axiosInstanceFile.interceptors.request.use((config) => {
 
 export default function Cuenta() {
     const navigate = useNavigate();
+    const { addNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [representante, setRepresentante] = useState(null);
     const [formData, setFormData] = useState({
@@ -129,7 +131,9 @@ export default function Cuenta() {
             setUser(userData);
 
             // Obtener el perfil del representante
-            const response = await axiosInstance.get('usuarios/representante/');
+            const response = await axios.get('usuarios/representante/', {
+                headers: getAuthHeaders(),
+            });
 
             if (!response.data) {
                 setErrors({
@@ -177,7 +181,7 @@ export default function Cuenta() {
                         r.usuario === userData.id
                     ) {
                         console.log(
-                            '✅ Encontrado por r.usuario (number) === userData.id'
+                            '✅ Encontrado por r.usuario (number) === userData.id',
                         );
                         return true;
                     }
@@ -187,7 +191,7 @@ export default function Cuenta() {
                         r.usuario.id === userData.id
                     ) {
                         console.log(
-                            '✅ Encontrado por r.usuario.id === userData.id'
+                            '✅ Encontrado por r.usuario.id === userData.id',
                         );
                         return true;
                     }
@@ -211,7 +215,7 @@ export default function Cuenta() {
             if (!representanteData) {
                 console.error(
                     '❌ No se encontró representante. Buscando userId:',
-                    userData.id
+                    userData.id,
                 );
                 if (Array.isArray(response.data)) {
                     console.error(
@@ -221,7 +225,7 @@ export default function Cuenta() {
                             usuario: r.usuario,
                             tipoUsuario: typeof r.usuario,
                             nombre: r.nombre || 'N/A',
-                        }))
+                        })),
                     );
                 }
             }
@@ -241,7 +245,7 @@ export default function Cuenta() {
                     setFotoPreview(
                         userData.foto.startsWith('http')
                             ? userData.foto
-                            : `${baseUrl}${userData.foto}`
+                            : `${baseUrl}${userData.foto}`,
                     );
                 } else if (representanteData.foto) {
                     const baseUrl =
@@ -249,7 +253,7 @@ export default function Cuenta() {
                     setFotoPreview(
                         representanteData.foto.startsWith('http')
                             ? representanteData.foto
-                            : `${baseUrl}${representanteData.foto}`
+                            : `${baseUrl}${representanteData.foto}`,
                     );
                 }
             } else {
@@ -272,7 +276,7 @@ export default function Cuenta() {
                                           typeof response.data[0].usuario,
                                   }
                                 : null,
-                    }
+                    },
                 );
                 // No establecer error aquí, el renderizado condicional lo manejará
             }
@@ -418,13 +422,13 @@ export default function Cuenta() {
                 if (formData.direccion !== (representante.direccion || '')) {
                     representanteData.append(
                         'direccion',
-                        formData.direccion || ''
+                        formData.direccion || '',
                     );
                 }
                 if (formData.telefono !== (representante.telefono || '')) {
                     representanteData.append(
                         'telefono',
-                        formData.telefono || ''
+                        formData.telefono || '',
                     );
                 }
                 if (pass.password !== '') {
@@ -434,23 +438,27 @@ export default function Cuenta() {
                 // Actualizar foto y datos en el endpoint del representante
                 const representanteResponse = await axiosInstanceFile.patch(
                     `usuarios/representante/${representante.id}/`,
-                    representanteData
+                    representanteData,
                 );
                 setRepresentante(representanteResponse.data);
 
                 if (passSend !== undefined) {
                     const responsePass = await axiosInstanceFile.patch(
                         `usuario/${representante.usuario}/`,
-                        passSend
+                        passSend,
                     );
                     console.log(responsePass);
                     if (responsePass.status == 200) {
-                        alert(
-                            `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}" Por favor recuerdela, inicie sesión nuevamente.`
+                        addNotification(
+                            `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}". Por favor recuérdela, inicie sesión nuevamente.`,
+                            'success',
                         );
-                        handleLogout();
+                        setTimeout(() => handleLogout(), 2000);
                     } else {
-                        alert('Error al actualizar la contraseña.');
+                        addNotification(
+                            'Error al actualizar la contraseña.',
+                            'error',
+                        );
                     }
                 }
 
@@ -468,7 +476,7 @@ export default function Cuenta() {
                     const baseUrl =
                         import.meta.env.VITE_API_URL || 'http://localhost:8000';
                     const fotoUrl = representanteResponse.data.foto.startsWith(
-                        'http'
+                        'http',
                     )
                         ? representanteResponse.data.foto
                         : `${baseUrl}${representanteResponse.data.foto}`;
@@ -477,7 +485,7 @@ export default function Cuenta() {
 
                 // Disparar evento personalizado para notificar a otros componentes
                 window.dispatchEvent(
-                    new CustomEvent('userUpdated', { detail: updatedUser })
+                    new CustomEvent('userUpdated', { detail: updatedUser }),
                 );
 
                 setFormData((prev) => ({ ...prev, foto: null }));
@@ -506,22 +514,26 @@ export default function Cuenta() {
 
                 const response = await axiosInstance.patch(
                     `usuarios/representante/${representante.id}/`,
-                    dataToSend
+                    dataToSend,
                 );
 
                 if (passSend !== undefined) {
                     const responsePass = await axiosInstanceFile.patch(
                         `usuario/${representante.usuario}/`,
-                        passSend
+                        passSend,
                     );
                     console.log(responsePass);
                     if (responsePass.status == 200) {
-                        alert(
-                            `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}" Por favor recuerdela, inicie sesión nuevamente.`
+                        addNotification(
+                            `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}". Por favor recuérdela, inicie sesión nuevamente.`,
+                            'success',
                         );
-                        handleLogout();
+                        setTimeout(() => handleLogout(), 2000);
                     } else {
-                        alert('Error al actualizar la contraseña.');
+                        addNotification(
+                            'Error al actualizar la contraseña.',
+                            'error',
+                        );
                     }
                 }
                 setRepresentante(response.data);
@@ -569,10 +581,11 @@ export default function Cuenta() {
     }
 
     return (
-        <div className="dashboard-content">
-            <div
-                style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}
-            >
+        <div
+            className="dashboard-content"
+            style={{ padding: window.innerWidth < 768 ? '1rem' : '2rem' }}
+        >
+            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                 <h1 style={{ marginBottom: '2rem', color: '#2563eb' }}>
                     <i className="fas fa-user-cog"></i> Mi Cuenta
                 </h1>
@@ -865,6 +878,10 @@ export default function Cuenta() {
                                 display: 'flex',
                                 gap: '1rem',
                                 justifyContent: 'flex-end',
+                                flexDirection:
+                                    window.innerWidth < 640
+                                        ? 'column-reverse'
+                                        : 'row',
                             }}
                         >
                             <button
@@ -873,14 +890,16 @@ export default function Cuenta() {
                                     navigate('/representante');
                                 }}
                                 style={{
-                                    padding: '0.75rem 1.5rem',
-                                    backgroundColor: '#6b7280',
+                                    padding: '0.875rem 1.75rem',
+                                    backgroundColor: '#64748b',
                                     color: '#fff',
                                     border: 'none',
-                                    borderRadius: '6px',
+                                    borderRadius: '12px',
                                     cursor: 'pointer',
                                     fontSize: '1rem',
-                                    fontWeight: '600',
+                                    fontWeight: '700',
+                                    transition: 'all 0.2s ease',
+                                    fontFamily: 'Outfit',
                                 }}
                             >
                                 Cancelar
@@ -889,27 +908,45 @@ export default function Cuenta() {
                                 type="submit"
                                 disabled={saving}
                                 style={{
-                                    padding: '0.75rem 1.5rem',
+                                    padding: '0.875rem 2rem',
                                     backgroundColor: saving
-                                        ? '#9ca3af'
+                                        ? '#94a3b8'
                                         : '#2563eb',
                                     color: '#fff',
                                     border: 'none',
-                                    borderRadius: '6px',
+                                    borderRadius: '12px',
                                     cursor: saving ? 'not-allowed' : 'pointer',
                                     fontSize: '1rem',
-                                    fontWeight: '600',
+                                    fontWeight: '800',
+                                    boxShadow:
+                                        '0 10px 15px -3px rgba(37, 99, 235, 0.3)',
+                                    transition: 'all 0.2s ease',
+                                    fontFamily: 'Outfit',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
                                 }}
                             >
                                 {saving ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i>{' '}
+                                        <i
+                                            className="material-symbols-outlined spin"
+                                            style={{ fontSize: '1.25rem' }}
+                                        >
+                                            progress_activity
+                                        </i>{' '}
                                         Guardando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-save"></i> Guardar
-                                        Cambios
+                                        <i
+                                            className="material-symbols-outlined"
+                                            style={{ fontSize: '1.25rem' }}
+                                        >
+                                            save
+                                        </i>{' '}
+                                        Guardar Cambios
                                     </>
                                 )}
                             </button>

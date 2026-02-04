@@ -5,23 +5,46 @@ from django.core.exceptions import ValidationError
 # --- GESTIÓN DE USUARIOS ---
 
 class UsuarioManager(BaseUserManager):
-    def create_user(self, email, nombre, apellido, rol, password=None):
+    def create_user(self, email, nombre, apellido, rol, password=None, **extra_fields):
         if not email:
             raise ValueError("El correo electrónico es obligatorio")
         if not rol:
             raise ValueError("El rol es obligatorio")
+        
         email = self.normalize_email(email)
-        usuario = self.model(email=email, nombre=nombre, apellido=apellido, rol=rol)
+        usuario = self.model(
+            email=email, 
+            nombre=nombre, 
+            apellido=apellido, 
+            rol=rol, 
+            **extra_fields
+        )
         usuario.set_password(password)
         usuario.save(using=self._db)
         return usuario
 
-    def create_superuser(self, email, nombre, apellido, password=None):
-        usuario = self.create_user(email=email, nombre=nombre, apellido=apellido, rol='admin', password=password)
-        usuario.is_staff = True
-        usuario.is_superuser = True
-        usuario.save(using=self._db)
-        return usuario
+    def create_superuser(self, email, nombre, apellido, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser debe tener is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser debe tener is_superuser=True.')
+
+        # Si el rol viene en los argumentos extra (por el REQUIRED_FIELDS), lo usamos, 
+        # de lo contrario, por defecto es 'admin'
+        rol = extra_fields.pop('rol', 'admin')
+
+        return self.create_user(
+            email=email, 
+            nombre=nombre, 
+            apellido=apellido, 
+            rol=rol, 
+            password=password, 
+            **extra_fields
+        )
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
     ROLES = [
@@ -68,7 +91,6 @@ class Institucion(models.Model):
         verbose_name_plural = "Configuración de la Institución"
 
     def clean(self):
-        # Evita que se cree más de un registro de Institución (Singleton)
         if not self.pk and Institucion.objects.exists():
             raise ValidationError("Ya existe una configuración institucional. Solo se permite un registro.")
 
@@ -88,7 +110,6 @@ class PeriodoEscolar(models.Model):
         verbose_name_plural = "Periodos Escolares"
 
     def save(self, *args, **kwargs):
-        # Al activar un periodo, desactiva automáticamente los demás
         if self.es_actual:
             PeriodoEscolar.objects.filter(es_actual=True).exclude(pk=self.pk).update(es_actual=False)
         super().save(*args, **kwargs)
@@ -122,7 +143,6 @@ class GradoSeccion(models.Model):
     grado = models.CharField(max_length=50, choices=TODOS_LOS_GRADOS)
     seccion = models.CharField(max_length=5, choices=SECCION_OPCIONES)
     
-    # Relación para el Docente Guía (Referenciando a la app Usuarios)
     docente_guia = models.ForeignKey(
         'Usuarios.Profesor', 
         on_delete=models.SET_NULL, 
@@ -140,7 +160,6 @@ class GradoSeccion(models.Model):
         unique_together = ['nivel', 'grado', 'seccion']
 
     def __str__(self):
-        # Mapeo inteligente del nombre del grado según el nivel
         if self.nivel == "primaria":
             grado_texto = dict(self.GRADO_OPCIONES_PRIMARIA).get(self.grado, self.grado)
         else:

@@ -179,75 +179,73 @@ export default function Cuenta() {
         setShowConfirm(false);
         setSaving(true);
         setSuccessMessage('');
+        setErrors({});
 
         try {
             const userStr = localStorage.getItem('user');
             const userData = JSON.parse(userStr);
 
-            let dataToSend;
-            let axiosToUse;
-            if (pass.password.length !== '') {
-                dataToSend = { password: pass.password };
-                axiosToUse = axiosInstance;
-                const responsePass = await axiosToUse.patch(
-                    `usuario/${userData.usuario}/`,
-                    dataToSend
-                );
-                setPass({ password: '' });
-                if (responsePass.status == 200) {
-                    alert(
-                        `Contraseña actualizada correctamente, la nueva contraseña es: "${pass.password}" Por favor recuerdela, inicie sesión nuevamente.`
-                    );
-                    handleLogout();
-                } else {
-                    alert('Error al actualizar la contraseña.');
-                }
-            }
-            // Solo actualizar si hay foto nueva
+            const dataToSend = new FormData();
+            let changesMade = false;
+
             if (formData.foto) {
-                dataToSend = new FormData();
                 dataToSend.append('foto', formData.foto);
-                axiosToUse = axiosInstanceFile;
+                changesMade = true;
+            }
 
-                const response = await axiosToUse.patch(
-                    `usuario/${userData.usuario}/`,
-                    dataToSend
-                );
+            if (pass.password.length > 0) {
+                dataToSend.append('password', pass.password);
+                changesMade = true;
+            }
 
-                // Actualizar el usuario en localStorage
-                const updatedUser = {
-                    ...userData,
-                    foto: response.data.foto,
-                };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
-                setUser(updatedUser);
-
-                if (response.data.foto) {
-                    const baseUrl =
-                        import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                    setFotoPreview(
-                        response.data.foto.startsWith('http')
-                            ? response.data.foto
-                            : `${baseUrl}${response.data.foto}`
-                    );
-                }
-
-                // Disparar evento personalizado para notificar a otros componentes
-                window.dispatchEvent(
-                    new CustomEvent('userUpdated', { detail: updatedUser })
-                );
-
-                setSuccessMessage('Información actualizada correctamente');
-                setTimeout(() => setSuccessMessage(''), 5000);
-                setSaving(false);
-                return;
-            } else {
-                // Si no hay foto nueva, no hay nada que actualizar
+            if (!changesMade) {
                 setSuccessMessage('No hay cambios para guardar');
                 setTimeout(() => setSuccessMessage(''), 3000);
                 setSaving(false);
                 return;
             }
+
+            const response = await axiosInstanceFile.patch(
+                `usuario/${userData.usuario}/`,
+                dataToSend
+            );
+
+            // If password was changed, logout user
+            if (pass.password.length > 0) {
+                setPass({ password: '' });
+                alert(
+                    `Información actualizada. La contraseña fue cambiada, por favor inicie sesión nuevamente.`
+                );
+                handleLogout();
+                return;
+            }
+
+            // If only photo was updated
+            const updatedUser = {
+                ...userData,
+                foto: response.data.foto,
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+
+            if (response.data.foto) {
+                const baseUrl =
+                    import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                setFotoPreview(
+                    response.data.foto.startsWith('http')
+                        ? response.data.foto
+                        : `${baseUrl}${response.data.foto}`
+                );
+            }
+
+            window.dispatchEvent(
+                new CustomEvent('userUpdated', { detail: updatedUser })
+            );
+
+            setFormData(prev => ({ ...prev, foto: null }));
+            setSuccessMessage('Información actualizada correctamente');
+            setTimeout(() => setSuccessMessage(''), 5000);
+
         } catch (error) {
             console.error('Error al actualizar información:', error);
             if (error.response?.data) {
@@ -277,9 +275,11 @@ export default function Cuenta() {
             <div className="dashboard-content">
                 <div style={{ textAlign: 'center', padding: '2rem' }}>
                     <i
-                        className="fas fa-spinner fa-spin"
+                        className="material-symbols-outlined spin"
                         style={{ fontSize: '2rem' }}
-                    ></i>
+                    >
+                        progress_activity
+                    </i>
                     <p>Cargando información...</p>
                 </div>
             </div>
@@ -287,12 +287,12 @@ export default function Cuenta() {
     }
 
     return (
-        <div className="dashboard-content">
+        <div className="dashboard-content" style={{ padding: window.innerWidth < 768 ? '1rem' : '2rem' }}>
             <div
-                style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}
+                style={{ maxWidth: '800px', margin: '0 auto' }}
             >
-                <h1 style={{ marginBottom: '2rem', color: '#2563eb' }}>
-                    <i className="fas fa-user-cog"></i> Mi Cuenta
+                <h1 style={{ marginBottom: '2rem', color: '#2563eb', fontSize: window.innerWidth < 768 ? '1.5rem' : '2rem' }}>
+                    <i className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '8px' }}>manage_accounts</i> Mi Cuenta
                 </h1>
 
                 {successMessage && (
@@ -306,7 +306,7 @@ export default function Cuenta() {
                             border: '1px solid #10b981',
                         }}
                     >
-                        <i className="fas fa-check-circle"></i> {successMessage}
+                        <i className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '8px' }}>check_circle</i> {successMessage}
                     </div>
                 )}
 
@@ -321,7 +321,7 @@ export default function Cuenta() {
                             border: '1px solid #ef4444',
                         }}
                     >
-                        <i className="fas fa-exclamation-circle"></i>{' '}
+                        <i className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '8px' }}>error</i>{' '}
                         {errors.general}
                     </div>
                 )}
@@ -360,9 +360,8 @@ export default function Cuenta() {
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: `1px solid ${
-                                        errors.password ? '#ef4444' : '#d1d5db'
-                                    }`,
+                                    border: `1px solid ${errors.password ? '#ef4444' : '#d1d5db'
+                                        }`,
                                     borderRadius: '6px',
                                     fontSize: '1rem',
                                 }}
@@ -380,36 +379,43 @@ export default function Cuenta() {
                             <div
                                 style={{
                                     display: 'flex',
-                                    gap: '1rem',
-                                    alignItems: 'center',
+                                    gap: '1.5rem',
+                                    alignItems: window.innerWidth < 640 ? 'stretch' : 'center',
+                                    flexDirection: window.innerWidth < 640 ? 'column' : 'row'
                                 }}
                             >
                                 {fotoPreview && (
-                                    <img
-                                        src={fotoPreview}
-                                        alt="Preview"
+                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                        <img
+                                            src={fotoPreview}
+                                            alt="Preview"
+                                            style={{
+                                                width: '120px',
+                                                height: '120px',
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                                border: '4px solid #f1f5f9',
+                                                boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                <div style={{ flex: 1 }}>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
                                         style={{
-                                            width: '100px',
-                                            height: '100px',
-                                            borderRadius: '50%',
-                                            objectFit: 'cover',
-                                            border: '2px solid #d1d5db',
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: `1px solid ${errors.foto ? '#ef4444' : '#d1d5db'}`,
+                                            borderRadius: '12px',
+                                            fontSize: '0.875rem',
+                                            background: '#f8fafc'
                                         }}
                                     />
-                                )}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    style={{
-                                        padding: '0.5rem',
-                                        border: `1px solid ${
-                                            errors.foto ? '#ef4444' : '#d1d5db'
-                                        }`,
-                                        borderRadius: '6px',
-                                        fontSize: '0.875rem',
-                                    }}
-                                />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>Recomendado: JPG o PNG de máx. 5MB</p>
+                                </div>
                             </div>
                             {errors.foto && (
                                 <span
@@ -429,6 +435,7 @@ export default function Cuenta() {
                             display: 'flex',
                             gap: '1rem',
                             justifyContent: 'flex-end',
+                            flexDirection: window.innerWidth < 640 ? 'column-reverse' : 'row'
                         }}
                     >
                         <button
@@ -437,14 +444,16 @@ export default function Cuenta() {
                                 navigate('/admin');
                             }}
                             style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: '#6b7280',
+                                padding: '0.875rem 1.75rem',
+                                backgroundColor: '#64748b',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '6px',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
                                 fontSize: '1rem',
-                                fontWeight: '600',
+                                fontWeight: '700',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit'
                             }}
                         >
                             Cancelar
@@ -453,25 +462,31 @@ export default function Cuenta() {
                             type="submit"
                             disabled={saving}
                             style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: saving ? '#9ca3af' : '#2563eb',
+                                padding: '0.875rem 2rem',
+                                backgroundColor: saving ? '#94a3b8' : '#2563eb',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '6px',
+                                borderRadius: '12px',
                                 cursor: saving ? 'not-allowed' : 'pointer',
                                 fontSize: '1rem',
-                                fontWeight: '600',
+                                fontWeight: '800',
+                                boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'Outfit',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
                             }}
                         >
                             {saving ? (
                                 <>
-                                    <i className="fas fa-spinner fa-spin"></i>{' '}
+                                    <i className="material-symbols-outlined spin" style={{ fontSize: '1.25rem' }}>progress_activity</i>{' '}
                                     Guardando...
                                 </>
                             ) : (
                                 <>
-                                    <i className="fas fa-save"></i> Guardar
-                                    Cambios
+                                    <i className="material-symbols-outlined" style={{ fontSize: '1.25rem' }}>save</i> Guardar Cambios
                                 </>
                             )}
                         </button>
@@ -507,12 +522,13 @@ export default function Cuenta() {
                     >
                         <h3 style={{ marginBottom: '1rem', color: '#1f2937' }}>
                             <i
-                                className="fas fa-exclamation-triangle"
+                                className="material-symbols-outlined"
                                 style={{
                                     color: '#f59e0b',
                                     marginRight: '0.5rem',
+                                    verticalAlign: 'middle'
                                 }}
-                            ></i>
+                            >warning</i>
                             Confirmar Cambios
                         </h3>
                         <p style={{ marginBottom: '1.5rem', color: '#6b7280' }}>

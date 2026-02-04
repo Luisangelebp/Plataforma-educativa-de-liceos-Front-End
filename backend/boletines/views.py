@@ -1,8 +1,6 @@
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
@@ -20,9 +18,6 @@ from core.models import Institucion, PeriodoEscolar
 # --- HELPERS DE CONVERSIÓN Y LÓGICA ---
 
 def obtener_literal_venezuela(promedio):
-    """
-    Convierte escala 0-20 a A-E según escala oficial.
-    """
     nota = round(promedio)
     if 18 <= nota <= 20:
         return "A", "El estudiante alcanzó todas las competencias de manera sobresaliente."
@@ -36,10 +31,6 @@ def obtener_literal_venezuela(promedio):
         return "E", "El estudiante no logró alcanzar las competencias mínimas del grado."
 
 def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, observaciones=""):
-    """
-    Carga notas y jala configuración dinámica de la Institución y Periodo.
-    Se agregó 'request' para construir URLs absolutas de imágenes.
-    """
     calificaciones_qs = Calificacion.objects.filter(
         estudiante=estudiante, 
         enviado=True
@@ -48,7 +39,6 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
     if not calificaciones_qs.exists():
         return None
 
-    # Obtener configuración del plantel y periodo
     inst = Institucion.objects.first()
     if not periodo_manual:
         per_activo = PeriodoEscolar.objects.filter(es_actual=True).first()
@@ -58,6 +48,7 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
 
     es_primaria = (estudiante.grado_seccion.nivel == 'primaria') if estudiante.grado_seccion else False
     materias_dict = {}
+    observaciones_por_materia = []
     
     for cal in calificaciones_qs:
         m_id = cal.materia.id
@@ -67,6 +58,14 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
                 'l1': '-', 'l2': '-', 'l3': '-',
                 'nums': {} 
             }
+        
+        # Agregar observaciones si existen
+        if cal.observaciones:
+            observaciones_por_materia.append({
+                'materia': cal.materia.nombre,
+                'observaciones': cal.observaciones
+            })
+        
         valor = float(cal.promedio or 0)
         materias_dict[m_id]['nums'][str(cal.lapso)] = valor
         
@@ -105,15 +104,14 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         notas_este_lapso = [v for m in materias_dict.values() for k, v in m['nums'].items() if k == str(lapso)]
         promedio_final_num = sum(notas_este_lapso) / len(notas_este_lapso) if notas_este_lapso else 0
 
-    significado_literal = ""
     if es_primaria:
         letra, significado = obtener_literal_venezuela(promedio_final_num)
         promedio_display_nota = letra
         significado_literal = significado
     else:
         promedio_display_nota = f"{promedio_final_num:.2f}"
+        significado_literal = ""
 
-    # Construir URL absoluta para el logo
     logo_full_url = None
     if inst and inst.logo:
         logo_full_url = request.build_absolute_uri(inst.logo.url)
@@ -131,6 +129,7 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         "periodo": periodo_display,
         "fecha_emision": timezone.now(),
         "observaciones": observaciones,
+        "observaciones_por_materia": observaciones_por_materia,
         "es_vista_previa": False,
         "nombre_liceo": inst.nombre if inst else "Institución No Configurada",
         "codigo_dea": inst.codigo_dea if inst else "",
@@ -141,16 +140,12 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         "logo_url": logo_full_url,
     }
 
-# --- VISTAS ---
+# --- VISTAS LIBERADAS PARA PRESENTACIÓN ---
 
 class VistaPreviaBoletinView(APIView):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # ABIERTO
 
     def get(self, request, estudiante_id, lapso):
-        if request.user.rol != 'admin':
-            return Response({'error': 'No autorizado'}, status=403)
-
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.query_params.get('periodo')
         
@@ -171,12 +166,9 @@ class VistaPreviaBoletinView(APIView):
             return Response({'error': str(e)}, status=500)
 
 class GenerarBoletinView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # ABIERTO
 
     def post(self, request, estudiante_id, lapso):
-        if request.user.rol != 'admin':
-            return Response({'error': 'No autorizado'}, status=403)
-
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.data.get('periodo_escolar')
         obs = request.data.get('observaciones', '')
@@ -192,6 +184,9 @@ class GenerarBoletinView(APIView):
             pdf_file = BytesIO()
             HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file)
 
+            # Ajuste para que no pida request.user obligatorio
+            usuario_generador = request.user if request.user.is_authenticated else None
+
             boletin, _ = Boletin.objects.update_or_create(
                 estudiante=estudiante, 
                 lapso=str(lapso), 
@@ -199,7 +194,7 @@ class GenerarBoletinView(APIView):
                 defaults={
                     'grado_seccion': estudiante.grado_seccion,
                     'promedio_general': context['promedio_numerico'],
-                    'generado_por': request.user,
+                    'generado_por': usuario_generador,
                     'es_definitivo': True,
                     'observaciones': obs
                 }
@@ -214,14 +209,15 @@ class GenerarBoletinView(APIView):
             return Response({'error': str(e)}, status=500)
 
 class BoletinListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # ABIERTO - Luisangel podrá listar todo
+    
     def get(self, request):
-        if request.user.rol != 'admin': return Response(status=403)
         boletines = Boletin.objects.all().order_by('-fecha_emision')
         return Response(BoletinSerializer(boletines, many=True).data)
 
 class DescargarBoletinView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # ABIERTO
+    
     def get(self, request, pk):
         boletin = get_object_or_404(Boletin, pk=pk)
         if not boletin.archivo_pdf: raise Http404()

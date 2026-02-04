@@ -1,0 +1,213 @@
+/* Services Section - Rediseño Radical Premium */
+.radical-features-section {
+    background-color: #F8FAFC;
+    padding: 5rem 0;
+    /* Reduced from 8rem */
+    position: relative;
+    border-top: 1px solid #E2E8F0;
+}
+
+.radical-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    /* Reduced from 5rem */
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1rem;
+}
+
+.radical-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #EFF6FF;
+    color: #3B82F6;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    /* Smaller font */
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.radical-header h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.25rem;
+    /* Reduced from 3rem */
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+}
+
+.radical-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    /* Reduced from 1.25rem */
+    color: #64748B;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+.radical-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    /* Reduced from 2rem */
+}
+
+.radical-card {
+    background: #FFFFFF;
+    padding: 1.75rem;
+    /* Reduced from 2.5rem */
+    border-radius: 16px;
+    border: 1px solid #F1F5F9;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    height: 100%;
+    position: relative;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.radical-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    border-color: #E2E8F0;
+}
+
+/* Icon Styles - Compact & Centered */
+/* Icon Styles - Container (The Background Shape) */
+.radical-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    transition: none;
+    pointer-events: none;
+    position: relative;
+    /* Allows absolute positioning of children if needed */
+}
+
+/* Icon Styles - The Symbol Itself */
+.radical-symbol {
+    font-size: 1.25rem;
+    /* Size of the icon itself */
+    width: auto;
+    height: auto;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    /* Removed redundant padding-left that caused off-centering */
+}
+
+/* Ensure global resets don't mess with our specific symbol class */
+.radical-features-section .radical-symbol {
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Force static state even on card hover */
+.radical-card:hover .radical-icon,
+.radical-card:hover .radical-symbol {
+    transform: none !important;
+    filter: none !important;
+}
+
+/* Precise Pastels from Image */
+.radical-icon.blue {
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+.radical-icon.green {
+    background: #F0FDF4;
+    color: #16A34A;
+}
+
+.radical-icon.purple {
+    background: #FAF5FF;
+    color: #7E22CE;
+}
+
+.radical-icon.orange {
+    background: #FFF7ED;
+    color: #EA580C;
+}
+
+.radical-icon.pink {
+    background: #FDF2F8;
+    color: #DB2777;
+}
+
+.radical-icon.indigo {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+.radical-icon.teal {
+    background: #F0FDFA;
+    color: #0D9488;
+}
+
+.radical-icon.red {
+    background: #FEF2F2;
+    color: #DC2626;
+}
+
+/* Security */
+
+.radical-card h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1E293B;
+    /* Slate 800 */
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.radical-card p {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #64748B;
+    /* Slate 500 */
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .radical-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .radical-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .radical-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .radical-header h2 {
+        font-size: 2.25rem;
+    }
+}

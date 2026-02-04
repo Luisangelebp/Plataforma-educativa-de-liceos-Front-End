@@ -1,0 +1,248 @@
+/* ===== MATERIAS CSS ===== */
+
+.materias-container {
+    padding: 0;
+    background: transparent;
+}
+
+/* Header Section */
+.materias-header-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.materias-title h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.materias-title p {
+    color: #64748b;
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+}
+
+/* Cards Grid */
+.materias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 50%));
+    gap: 1.5rem;
+}
+
+.materia-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.materia-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+    border-color: #137fec;
+}
+
+.materia-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.materia-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #137fec, #4361ee);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 10px rgba(19, 127, 236, 0.2);
+}
+
+.materia-icon span {
+    font-size: 24px;
+}
+
+.materia-info h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.materia-info p {
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.materia-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+}
+
+.btn-materia-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-materia-action:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+.btn-materia-action.edit:hover {
+    color: #137fec;
+    border-color: #137fec;
+    background: #eff6ff;
+}
+
+.btn-materia-action.delete:hover {
+    color: #dc2626;
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+/* Modal Specifics */
+.materia-modal .modal-content {
+    max-width: 500px;
+}
+
+.form-group-materia {
+    margin-bottom: 1.5rem;
+}
+
+.form-group-materia label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.input-materia-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-materia-wrapper span {
+    position: absolute;
+    left: 1rem;
+    color: #94a3b8;
+    font-size: 20px;
+}
+
+.input-materia-wrapper input,
+.input-materia-wrapper textarea {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.input-materia-wrapper input:focus,
+.input-materia-wrapper textarea:focus {
+    outline: none;
+    background: white;
+    border-color: #137fec;
+    box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+}
+
+.input-materia-wrapper textarea {
+    padding-left: 1rem;
+    /* Textarea icons are optional or placed differently */
+    min-height: 100px;
+}
+
+/* Modal Buttons */
+.btn-primary-materia,
+.btn-secondary-materia {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-primary-materia {
+    background: #137fec;
+    color: white;
+    box-shadow: 0 2px 8px rgba(19, 127, 236, 0.2);
+}
+
+.btn-primary-materia:hover:not(:disabled) {
+    background: #0d5cb8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(19, 127, 236, 0.3);
+}
+
+.btn-primary-materia:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.btn-secondary-materia {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-secondary-materia:hover {
+    background: #e2e8f0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .materias-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .materias-grid {
+        grid-template-columns: 1fr;
+    }
+}

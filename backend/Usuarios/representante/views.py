@@ -17,12 +17,18 @@ class RegistroRepresentanteView(generics.CreateAPIView):
 
 class ListRepresentantesView(generics.ListAPIView):
     """
-    Solo el Administrador puede ver la lista de todos los representantes.
+    - Admin: Ve todos los representantes.
+    - Representante: Ve solo su propios datos.
     """
-    queryset = Representante.objects.all()
     serializer_class = RepresentanteListSerializer
     authentication_classes = [JWTAuthentication, SessionAuthentication]
-    permission_classes = [permissions.IsAdminUser] # 🛡️ Privacidad total
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.rol == 'admin':
+            return Representante.objects.all()
+        return Representante.objects.filter(usuario=user)
 
 
 class RepresentanteDetailView(generics.RetrieveUpdateDestroyAPIView):
