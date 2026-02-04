@@ -31,7 +31,7 @@ def obtener_literal_venezuela(promedio):
     else:
         return "E", "El estudiante no logró alcanzar las competencias mínimas del grado."
 
-def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, observaciones=""):
+def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, observaciones_manual=""):
     calificaciones_qs = Calificacion.objects.filter(
         estudiante=estudiante, 
         enviado=True
@@ -41,16 +41,16 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         return None
 
     inst = Institucion.objects.first()
-    if not periodo_manual:
-        per_activo = PeriodoEscolar.objects.filter(es_actual=True).first()
-        periodo_display = per_activo.nombre if per_activo else "Sin Periodo"
-    else:
-        periodo_display = periodo_manual
+    periodo_display = periodo_manual if periodo_manual else (
+        PeriodoEscolar.objects.filter(es_actual=True).first().nombre 
+        if PeriodoEscolar.objects.filter(es_actual=True).exists() else "Sin Periodo"
+    )
 
     es_primaria = (estudiante.grado_seccion.nivel == 'primaria') if estudiante.grado_seccion else False
     materias_dict = {}
-    observaciones_por_materia = []
+    textos_observaciones = []
     
+    # --- PROCESAMIENTO DE MATERIAS ---
     for cal in calificaciones_qs:
         m_id = cal.materia.id
         if m_id not in materias_dict:
@@ -60,11 +60,9 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
                 'nums': {} 
             }
         
-        if cal.observaciones:
-            observaciones_por_materia.append({
-                'materia': cal.materia.nombre,
-                'observaciones': cal.observaciones
-            })
+        # RECOPILACIÓN: Solo si es primaria y es el lapso consultado
+        if es_primaria and str(cal.lapso) == str(lapso) and cal.observaciones:
+            textos_observaciones.append(cal.observaciones)
         
         valor = float(cal.promedio or 0)
         materias_dict[m_id]['nums'][str(cal.lapso)] = valor
@@ -74,6 +72,18 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
             materias_dict[m_id][f'l{cal.lapso}'] = letra
         else:
             materias_dict[m_id][f'l{cal.lapso}'] = f"{int(valor):02d}"
+
+    # --- LÓGICA DE OBSERVACIÓN FINAL ---
+    if observaciones_manual:
+        observacion_final = observaciones_manual
+    elif es_primaria and textos_observaciones:
+        # Une todas las observaciones de los profes de primaria
+        observacion_final = " ".join(textos_observaciones)
+    elif es_primaria:
+        observacion_final = "Sin observaciones registradas."
+    else:
+        # Para secundaria, según tu decisión, va vacío o ignorado
+        observacion_final = ""
 
     materias_finales = []
     suma_definitivas_anuales = 0 
@@ -98,11 +108,8 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
             'definitiva': def_val
         })
 
-    if str(lapso) == '3':
-        promedio_final_num = suma_definitivas_anuales / len(materias_finales) if materias_finales else 0
-    else:
-        notas_este_lapso = [v for m in materias_dict.values() for k, v in m['nums'].items() if k == str(lapso)]
-        promedio_final_num = sum(notas_este_lapso) / len(notas_este_lapso) if notas_este_lapso else 0
+    notas_este_lapso = [v for m in materias_dict.values() for k, v in m['nums'].items() if k == str(lapso)]
+    promedio_final_num = sum(notas_este_lapso) / len(notas_este_lapso) if notas_este_lapso else 0
 
     if es_primaria:
         letra, significado = obtener_literal_venezuela(promedio_final_num)
@@ -112,9 +119,7 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         promedio_display_nota = f"{promedio_final_num:.2f}"
         significado_literal = ""
 
-    logo_full_url = None
-    if inst and inst.logo:
-        logo_full_url = request.build_absolute_uri(inst.logo.url)
+    logo_full_url = request.build_absolute_uri(inst.logo.url) if inst and inst.logo else None
 
     return {
         "estudiante": estudiante,
@@ -128,10 +133,9 @@ def procesar_data_boletin(request, estudiante, lapso, periodo_manual=None, obser
         "significado_literal": significado_literal,
         "periodo": periodo_display,
         "fecha_emision": timezone.now(),
-        "observaciones": observaciones,
-        "observaciones_por_materia": observaciones_por_materia,
+        "observaciones": observacion_final,
         "es_vista_previa": False,
-        "nombre_liceo": inst.nombre if inst else "Institución No Configurada",
+        "nombre_liceo": inst.nombre if inst else "Institución",
         "codigo_dea": inst.codigo_dea if inst else "",
         "rif": inst.rif if inst else "",
         "director_nombre": inst.director if inst else "Director(a)",
@@ -148,26 +152,23 @@ class VistaPreviaBoletinView(APIView):
 
     def get(self, request, estudiante_id, lapso):
         if request.user.rol != 'admin' and not request.user.is_staff:
-            return Response({"error": "No tienes permisos de administrador"}, status=403)
+            return Response({"error": "No autorizado"}, status=403)
 
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.query_params.get('periodo')
-        
         context = procesar_data_boletin(request, estudiante, lapso, periodo_param)
+        
         if not context:
-            return Response({'error': 'No hay notas enviadas para el lapso solicitado'}, status=404)
+            return Response({'error': 'No hay notas enviadas'}, status=404)
 
         context['es_vista_previa'] = True
         template_name = "boletines/boletin_primaria.html" if context['nivel'] == 'primaria' else "boletines/boletin_secundaria.html"
 
-        try:
-            html_string = render_to_string(template_name, context)
-            pdf_bytes = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
-            response = HttpResponse(pdf_bytes, content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="vista_previa.pdf"'
-            return response
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
+        html_string = render_to_string(template_name, context)
+        pdf_bytes = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="vista_previa.pdf"'
+        return response
 
 class GenerarBoletinView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -175,43 +176,33 @@ class GenerarBoletinView(APIView):
 
     def post(self, request, estudiante_id, lapso):
         if request.user.rol != 'admin' and not request.user.is_staff:
-            return Response({"error": "No tienes permisos para realizar esta acción"}, status=403)
+            return Response({"error": "No autorizado"}, status=403)
 
         estudiante = get_object_or_404(Estudiante, pk=estudiante_id)
         periodo_param = request.data.get('periodo_escolar')
-        obs = request.data.get('observaciones', '')
+        obs_manual = request.data.get('observaciones', '')
 
-        context = procesar_data_boletin(request, estudiante, lapso, periodo_param, obs)
+        context = procesar_data_boletin(request, estudiante, lapso, periodo_param, obs_manual)
         if not context:
-            return Response({'error': 'No hay notas para generar el boletín'}, status=404)
+            return Response({'error': 'Sin notas'}, status=404)
 
         template_name = "boletines/boletin_primaria.html" if context['nivel'] == 'primaria' else "boletines/boletin_secundaria.html"
+        html_string = render_to_string(template_name, context)
+        pdf_file = BytesIO()
+        HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file)
 
-        try:
-            html_string = render_to_string(template_name, context)
-            pdf_file = BytesIO()
-            HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file)
-
-            boletin, _ = Boletin.objects.update_or_create(
-                estudiante=estudiante, 
-                lapso=str(lapso), 
-                periodo_escolar=context['periodo'],
-                defaults={
-                    'grado_seccion': estudiante.grado_seccion,
-                    'promedio_general': context['promedio_numerico'],
-                    'generado_por': request.user,
-                    'es_definitivo': True,
-                    'observaciones': obs
-                }
-            )
-            boletin.archivo_pdf.save(
-                f"boletin_{estudiante.cedula}_L{lapso}.pdf", 
-                ContentFile(pdf_file.getvalue()), 
-                save=True
-            )
-            return Response(BoletinSerializer(boletin).data, status=201)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
+        boletin, _ = Boletin.objects.update_or_create(
+            estudiante=estudiante, lapso=str(lapso), periodo_escolar=context['periodo'],
+            defaults={
+                'grado_seccion': estudiante.grado_seccion,
+                'promedio_general': context['promedio_numerico'],
+                'generado_por': request.user,
+                'es_definitivo': True,
+                'observaciones': context['observaciones']
+            }
+        )
+        boletin.archivo_pdf.save(f"boletin_{estudiante.cedula}_L{lapso}.pdf", ContentFile(pdf_file.getvalue()), save=True)
+        return Response(BoletinSerializer(boletin).data, status=201)
 
 class BoletinListCreateView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -220,36 +211,23 @@ class BoletinListCreateView(APIView):
     def get(self, request):
         user = request.user
         queryset = Boletin.objects.all().select_related('estudiante', 'grado_seccion').order_by('-fecha_emision')
-
-        # Captura de query params pedidos por Luisangel
         id_estudiante = request.query_params.get('idEstudiante')
         id_representante = request.query_params.get('idRepresentante')
 
-        # --- FILTROS DE SEGURIDAD POR ROL ---
         if user.rol == 'estudiante':
             queryset = queryset.filter(estudiante__usuario=user)
-        
         elif user.rol == 'representante':
             repre_perfil = getattr(user, 'representante_profile', None)
-            if not repre_perfil:
-                return Response([], status=200)
-            
-            if id_estudiante:
-                queryset = queryset.filter(estudiante_id=id_estudiante, estudiante__representante=repre_perfil)
-            else:
-                queryset = queryset.filter(estudiante__representante=repre_perfil)
-
-        elif user.rol == 'admin' or user.is_staff:
-            if id_estudiante:
-                queryset = queryset.filter(estudiante_id=id_estudiante)
-            if id_representante:
-                queryset = queryset.filter(estudiante__representante_id=id_representante)
-        
+            if not repre_perfil: return Response([], status=200)
+            queryset = queryset.filter(estudiante__representante=repre_perfil)
+            if id_estudiante: queryset = queryset.filter(estudiante_id=id_estudiante)
+        elif user.rol in ['admin', 'staff'] or user.is_staff:
+            if id_estudiante: queryset = queryset.filter(estudiante_id=id_estudiante)
+            if id_representante: queryset = queryset.filter(estudiante__representante_id=id_representante)
         else:
-            return Response({"error": "No tienes permiso para ver este listado"}, status=403)
+            return Response({"error": "No permitido"}, status=403)
 
-        serializer = BoletinSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(BoletinSerializer(queryset, many=True).data)
 
 class DescargarBoletinView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -258,19 +236,10 @@ class DescargarBoletinView(APIView):
     def get(self, request, pk):
         boletin = get_object_or_404(Boletin, pk=pk)
         user = request.user
+        pueden = (user.rol in ['admin', 'staff']) or \
+                 (user.rol == 'estudiante' and boletin.estudiante.usuario == user) or \
+                 (user.rol == 'representante' and boletin.estudiante.representante.usuario == user)
 
-        pueden_descargar = False
-        if user.rol == 'admin' or user.is_staff:
-            pueden_descargar = True
-        elif user.rol == 'estudiante' and boletin.estudiante.usuario == user:
-            pueden_descargar = True
-        elif user.rol == 'representante' and boletin.estudiante.representante.usuario == user:
-            pueden_descargar = True
-
-        if not pueden_descargar:
-            return Response({"error": "No tienes permiso para descargar este boletín."}, status=403)
-
-        if not boletin.archivo_pdf: 
-            raise Http404()
-            
+        if not pueden: return Response({"error": "No permitido"}, status=403)
+        if not boletin.archivo_pdf: raise Http404()
         return FileResponse(open(boletin.archivo_pdf.path, 'rb'), as_attachment=True)

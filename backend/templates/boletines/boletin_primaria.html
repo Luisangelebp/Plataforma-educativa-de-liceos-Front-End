@@ -24,7 +24,7 @@
         .contenedor-descriptivo { 
             border: 1px solid #000; 
             margin-top: 10px; 
-            min-height: 450px; 
+            min-height: 480px; /* Ajustado para dar más espacio */
             position: relative;
         }
         .desc-header { 
@@ -35,7 +35,16 @@
             background-color: #f2f2f2;
             text-transform: uppercase;
         }
-        .desc-contenido { padding: 15px; text-align: justify; font-size: 11px; line-height: 1.5; }
+        /* CORRECCIÓN: Estilos para que las observaciones múltiples se vean bien */
+        .desc-contenido { 
+            padding: 15px; 
+            text-align: justify; 
+            font-size: 11px; 
+            line-height: 1.6; 
+        }
+        .desc-contenido p {
+            margin-bottom: 12px; /* Espaciado entre observaciones de distintos profesores */
+        }
 
         /* Reconocimiento */
         .reconocimiento { margin-top: 15px; font-size: 10px; text-align: justify; }
@@ -52,11 +61,11 @@
 
         /* Firmas */
         .firmas { margin-top: 40px; width: 100%; text-align: center; }
-        .firmas td { width: 50%; vertical-align: top; padding-top: 30px; }
+        .firmas td { width: 50%; vertical-align: top; padding-top: 25px; }
         .nombre-firma { font-weight: bold; font-size: 10px; margin-bottom: 2px; border-top: 1px solid #000; display: inline-block; padding-top: 5px; min-width: 180px; }
         .cargo-firma { font-size: 9px; }
 
-        .footer-nota { text-align: center; margin-top: 30px; font-style: italic; font-weight: bold; font-size: 10px; }
+        .footer-nota { text-align: center; margin-top: 25px; font-style: italic; font-weight: bold; font-size: 10px; }
 
         .watermark {
             position: absolute; top: 40%; left: 10%; font-size: 80px;
@@ -104,15 +113,15 @@
         <div class="desc-contenido">
             {{ observaciones|linebreaks }}
             
-            {% if not observaciones %}
-            <p style="color: #666;">(No se han ingresado descripciones cualitativas para este informe).</p>
+            {% if not observaciones or observaciones == "" %}
+            <p style="color: #666; text-align: center;">(No se han ingresado descripciones cualitativas para este informe).</p>
             {% endif %}
         </div>
     </div>
 
     <div class="reconocimiento">
         <strong>RECONOCIMIENTO:</strong> Es oportuno enaltecer el rol de las madres, padres y representantes que asumieron 
-        responsablemente su participación en el proceso educativo. Sin ustedes no es posible la formación de nuestros estudiantes.
+        responsamblemente su participación en el proceso educativo. Sin ustedes no es posible la formación de nuestros estudiantes.
     </div>
 
     <table class="cuadro-final">
@@ -160,7 +169,7 @@
     </table>
 
     <div class="footer-nota">
-        "{{ slogan }}"
+        {% if slogan %} "{{ slogan }}" {% endif %}
     </div>
 </body>
 </html>
